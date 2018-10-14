@@ -1,12 +1,14 @@
 package moar;
 
 import static moar.Exceptional.$;
+import static moar.Exceptional.expect;
 import static moar.Exceptional.require;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
@@ -15,7 +17,8 @@ import com.google.gson.JsonParser;
  */
 public class JsonUtil {
   private static final String FMT = "{} {}";
-  private static final Gson gson = new Gson();
+  private static final Gson gson = new GsonBuilder().setLenient().create();
+  private static final Gson gsonPretty = new GsonBuilder().setLenient().setPrettyPrinting().create();
   private static final JsonParser jsonParser = new JsonParser();
 
   public static void debug(final Logger log, Object... args) {
@@ -57,6 +60,28 @@ public class JsonUtil {
     } else {
       log.info(FMT, $(1), toJson(unpack(args)));
     }
+  }
+
+  public static String prettyJson(final Object... args) {
+    try {
+      final Object[] safe = new Object[args.length];
+      for (int i = 0; i < args.length; i++) {
+        final Object a = args[i];
+        try {
+          gsonPretty.toJson(a);
+          safe[i] = a;
+        } catch (final RuntimeException e) {
+          safe[i] = gsonPretty.toJson(a.toString());
+        }
+      }
+      return gsonPretty.toJson(safe);
+    } catch (final RuntimeException e) {
+      return null;
+    }
+  }
+
+  public static String prettyJson(final String ugly) {
+    return ugly == null ? null : expect(() -> prettyJson(fromJson(ugly)));
   }
 
   public static String toJson(final Object... args) {
@@ -109,4 +134,5 @@ public class JsonUtil {
       log.warn(FMT, $(1), toJson(unpack(args)));
     }
   }
+
 }

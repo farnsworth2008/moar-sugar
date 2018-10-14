@@ -45,9 +45,9 @@ public class Exceptional {
     }
   }
 
-  public static final Object expect(final ExceptionableCall c) {
+  public static final <T> T expect(final ExceptionableCall c) {
     try {
-      return c.call();
+      return (T) c.call();
     } catch (final Exception e) {
       warn(LOG, e.getMessage(), e);
       return null;
@@ -107,9 +107,18 @@ public class Exceptional {
   public static final <T> T require(final ExceptionableCall c) {
     try {
       return (T) c.call();
+    } catch (final FutureListException e) {
+      int i = 0;
+      for (final Two<Object, Exception> result : e.getResults()) {
+        warn(LOG, "FutureListException #" + i++, result.getOne(), result.getTwo());
+      }
+      warn(LOG, "require", e);
+      throw e;
     } catch (final RuntimeException e) {
+      warn(LOG, "require", e);
       throw e;
     } catch (final Exception e) {
+      warn(LOG, "require", e);
       throw new RuntimeException(e);
     }
   }

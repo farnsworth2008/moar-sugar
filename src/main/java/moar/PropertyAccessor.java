@@ -15,6 +15,10 @@ public class PropertyAccessor {
 
   private final String baseName;
 
+  public PropertyAccessor(final Class<?> clz) {
+    this(clz.getName());
+  }
+
   public PropertyAccessor(final String baseName) {
     this.baseName = baseName;
   }
