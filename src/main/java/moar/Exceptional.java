@@ -1,6 +1,5 @@
 package moar;
 import static java.lang.Math.random;
-import static moar.JsonUtil.debug;
 import static moar.JsonUtil.trace;
 import static moar.JsonUtil.warn;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -31,10 +30,6 @@ public class Exceptional {
       }
     }
     return null;
-  }
-
-  public static void $(final String description) {
-    debug(LOG, $(1), description);
   }
 
   public static final void expect(final Exceptionable r) {
