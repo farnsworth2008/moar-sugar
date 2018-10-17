@@ -1,7 +1,7 @@
 package moar;
 import static java.lang.Math.random;
+import static moar.JsonUtil.debug;
 import static moar.JsonUtil.trace;
-import static moar.JsonUtil.warn;
 import static org.slf4j.LoggerFactory.getLogger;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -36,7 +36,7 @@ public class Exceptional {
     try {
       r.run();
     } catch (final Exception e) {
-      warn(LOG, e.getMessage(), e);
+      debug(LOG, e.getMessage(), e);
     }
   }
 
@@ -44,7 +44,7 @@ public class Exceptional {
     try {
       return (T) c.call();
     } catch (final Exception e) {
-      warn(LOG, e.getMessage(), e);
+      debug(LOG, e.getMessage(), e);
       return null;
     }
   }
@@ -53,7 +53,7 @@ public class Exceptional {
     try {
       return require(o);
     } catch (final Exception e) {
-      warn(LOG, "expect", $(1));
+      debug(LOG, "expect", $(1));
       return false;
     }
   }
@@ -80,7 +80,7 @@ public class Exceptional {
     try {
       return call.call();
     } catch (final Exception e) {
-      warn(LOG, e.getClass().getSimpleName(), e.getMessage());
+      debug(LOG, e.getClass().getSimpleName(), e.getMessage());
       return null;
     }
   }
@@ -105,15 +105,13 @@ public class Exceptional {
     } catch (final FutureListException e) {
       int i = 0;
       for (final Two<Object, Exception> result : e.getResults()) {
-        warn(LOG, "FutureListException #" + i++, result.getOne(), result.getTwo());
+        debug(LOG, "FutureListException #" + i++, result.getOne(), result.getTwo());
       }
-      warn(LOG, "require", e);
+      debug(LOG, "require", e);
       throw e;
     } catch (final RuntimeException e) {
-      warn(LOG, "require", e);
       throw e;
     } catch (final Exception e) {
-      warn(LOG, "require", e);
       throw new RuntimeException(e);
     }
   }
@@ -145,7 +143,7 @@ public class Exceptional {
       } catch (final Exception e) {
         last = e;
         Thread.sleep(retryWaitMs + (long) (random() * retryWaitMs));
-        warn(LOG, "retryable", tries, e.getMessage());
+        debug(LOG, "retryable", tries, e.getMessage());
       }
     }
     throw last;
