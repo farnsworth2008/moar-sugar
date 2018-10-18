@@ -158,6 +158,14 @@ public class Exceptional {
     });
   }
 
+  public static <T> Two<T, Exception> safely(final ExceptionableCall callable) {
+    try {
+      return new Two<>((T) callable.call(), null);
+    } catch (final Exception e) {
+      return new Two<>(null, e);
+    }
+  }
+
   public static void swallow(final Exceptionable r) {
     swallow(() -> {
       r.run();
