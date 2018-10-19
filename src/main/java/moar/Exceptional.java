@@ -76,6 +76,10 @@ public class Exceptional {
     return o instanceof String && ((String) o).isEmpty();
   }
 
+  public static <T> T nullOr(final Object test, final Callable<T> callable) {
+    return test == null ? null : require(() -> callable.call());
+  }
+
   public static <T> T quietly(final Callable<T> call) {
     try {
       return call.call();
@@ -173,9 +177,9 @@ public class Exceptional {
     });
   }
 
-  public static Object swallow(final ExceptionableCall c) {
+  public static <T> T swallow(final ExceptionableCall c) {
     try {
-      return c.call();
+      return (T) c.call();
     } catch (final Exception e) {
       // Yum, that was tasty
       return null;
