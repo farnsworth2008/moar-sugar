@@ -32,6 +32,13 @@ public class Exceptional {
     return null;
   }
 
+  public static RuntimeException asRuntimeException(final Exception e) {
+    if (e instanceof RuntimeException) {
+      return (RuntimeException) e;
+    }
+    return new RuntimeException(e);
+  }
+
   public static final void expect(final Exceptionable r) {
     try {
       r.run();
@@ -113,10 +120,8 @@ public class Exceptional {
       }
       debug(LOG, "require", e);
       throw e;
-    } catch (final RuntimeException e) {
-      throw e;
     } catch (final Exception e) {
-      throw new RuntimeException(e);
+      throw asRuntimeException(e);
     }
   }
 
