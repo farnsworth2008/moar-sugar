@@ -68,7 +68,9 @@ public class Exceptional {
 
   public static boolean has(final Object o) {
     try {
-      require(o);
+      if (o == null || isEmptyList(o) || isEmptyString(o)) {
+        return false;
+      }
       return true;
     } catch (final Exception e) {
       trace(LOG, "has", $(1));
