@@ -32,7 +32,7 @@ public class Exceptional {
     return null;
   }
 
-  public static RuntimeException asRuntimeException(final Exception e) {
+  public static RuntimeException asRuntimeException(final Throwable e) {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
     }
@@ -42,7 +42,7 @@ public class Exceptional {
   public static final void expect(final Exceptionable r) {
     try {
       r.run();
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       debug(LOG, e.getMessage(), e);
     }
   }
@@ -50,7 +50,7 @@ public class Exceptional {
   public static final <T> T expect(final ExceptionableCall c) {
     try {
       return (T) c.call();
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       debug(LOG, e.getMessage(), e);
       return null;
     }
@@ -60,7 +60,7 @@ public class Exceptional {
     try {
       require(o);
       return true;
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       debug(LOG, "expect", $(1));
       return false;
     }
@@ -169,10 +169,17 @@ public class Exceptional {
     });
   }
 
-  public static <T> Two<T, Exception> safely(final ExceptionableCall callable) {
+  public static Throwable safely(final Exceptionable run) {
+    return safely(() -> {
+      run.run();
+      return null;
+    }).getTwo();
+  }
+
+  public static <T> Two<T, Throwable> safely(final ExceptionableCall callable) {
     try {
       return new Two<>((T) callable.call(), null);
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       return new Two<>(null, e);
     }
   }
@@ -187,7 +194,7 @@ public class Exceptional {
   public static <T> T swallow(final ExceptionableCall c) {
     try {
       return (T) c.call();
-    } catch (final Exception e) {
+    } catch (final Throwable e) {
       // Yum, that was tasty
       return null;
     }
