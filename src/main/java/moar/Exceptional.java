@@ -58,7 +58,8 @@ public class Exceptional {
 
   public static final boolean expect(final Object o) {
     try {
-      return require(o);
+      require(o);
+      return true;
     } catch (final Exception e) {
       debug(LOG, "expect", $(1));
       return false;
@@ -67,7 +68,8 @@ public class Exceptional {
 
   public static boolean has(final Object o) {
     try {
-      return require(o);
+      require(o);
+      return true;
     } catch (final Exception e) {
       trace(LOG, "has", $(1));
       return false;
@@ -125,14 +127,12 @@ public class Exceptional {
     }
   }
 
-  public static final boolean require(Object o) {
+  public static final void require(Object o) {
     if (isEmptyList(o) || isEmptyString(o)) {
       o = null;
     }
     if (o == null) {
       throw new NullPointerException();
-    } else {
-      return true;
     }
   }
 
