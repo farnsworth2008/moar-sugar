@@ -52,6 +52,10 @@ public class JsonUtil {
     return (T) jsonParser.parse(json);
   }
 
+  public static Gson getGson() {
+    return gson;
+  }
+
   public static void info(final Logger log, Object... args) {
     if (args[args.length - 1] instanceof Throwable) {
       final Object t = args[args.length - 1];
