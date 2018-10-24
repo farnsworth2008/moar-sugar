@@ -2,6 +2,7 @@ package moar;
 import static java.lang.Math.random;
 import static moar.JsonUtil.debug;
 import static moar.JsonUtil.trace;
+import static moar.JsonUtil.*;
 import static org.slf4j.LoggerFactory.getLogger;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -43,7 +44,7 @@ public class Exceptional {
     try {
       r.run();
     } catch (final Throwable e) {
-      debug(LOG, e.getMessage(), e);
+      warn(LOG, e.getMessage(), e);
     }
   }
 
@@ -51,7 +52,7 @@ public class Exceptional {
     try {
       return (T) c.call();
     } catch (final Throwable e) {
-      debug(LOG, e.getMessage(), e);
+      warn(LOG, e.getMessage(), e);
       return null;
     }
   }
@@ -61,7 +62,7 @@ public class Exceptional {
       require(o);
       return true;
     } catch (final Throwable e) {
-      debug(LOG, "expect", $(1));
+      warn(LOG, "expect", $(1));
       return false;
     }
   }
@@ -144,17 +145,21 @@ public class Exceptional {
     }
   }
 
-  public static <T> T retryable(int tries, final long retryWaitMs, final Callable<T> call) throws Exception {
+  public static <T> T retryable(final int triesAllowed, final long retryWaitMs, final Callable<T> call) throws Exception {
     Exception last = null;
-    while (tries-- > 0) {
+    int tries = 0;
+    while (tries++ < triesAllowed) {
       try {
+        last = null;
         return call.call();
-      } catch (final NonRetryableException e) {
-        throw e;
-      } catch (final Exception e) {
+      } catch (final RetryableException e) {
         last = e;
         Thread.sleep(retryWaitMs + (long) (random() * retryWaitMs));
         debug(LOG, "retryable", tries, e.getMessage());
+      } finally {
+        if (last == null && tries > 1) {
+          info(LOG, "retryable-success-with-tries", tries);
+        }
       }
     }
     throw last;
@@ -200,4 +205,16 @@ public class Exceptional {
     }
   }
 
+  public static void warnFor(final Logger log, final Throwable exception) {
+    if (exception instanceof FutureListException) {
+      final FutureListException futureListException = (FutureListException) exception;
+      for (final Two<Object, Exception> result : futureListException.getResults()) {
+        if (result.getTwo() != null) {
+          warnFor(log, result.getTwo());
+        }
+      }
+    } else {
+      warn(log, "from async future", exception);
+    }
+  }
 }
