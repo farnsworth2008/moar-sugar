@@ -1,8 +1,9 @@
 package moar;
 import static java.lang.Math.random;
 import static moar.JsonUtil.debug;
+import static moar.JsonUtil.info;
 import static moar.JsonUtil.trace;
-import static moar.JsonUtil.*;
+import static moar.JsonUtil.warn;
 import static org.slf4j.LoggerFactory.getLogger;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -38,6 +39,12 @@ public class Exceptional {
       return (RuntimeException) e;
     }
     return new RuntimeException(e);
+  }
+
+  public static void closeQuietly(final AutoCloseable closeable) {
+    if (closeable != null) {
+      swallow(() -> closeable.close());
+    }
   }
 
   public static final void expect(final Exceptionable r) {
@@ -86,6 +93,10 @@ public class Exceptional {
 
   private static boolean isEmptyString(final Object o) {
     return o instanceof String && ((String) o).isEmpty();
+  }
+
+  public static boolean isThrowable(final Object o) {
+    return o instanceof Throwable;
   }
 
   public static <T> T nullOr(final Object test, final Callable<T> callable) {
@@ -145,7 +156,8 @@ public class Exceptional {
     }
   }
 
-  public static <T> T retryable(final int triesAllowed, final long retryWaitMs, final Callable<T> call) throws Exception {
+  public static <T> T retryable(final int triesAllowed, final long retryWaitMs, final Callable<T> call)
+      throws Exception {
     Exception last = null;
     int tries = 0;
     while (tries++ < triesAllowed) {
@@ -217,4 +229,5 @@ public class Exceptional {
       warn(log, "from async future", exception);
     }
   }
+
 }

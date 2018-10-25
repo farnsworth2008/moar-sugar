@@ -31,6 +31,10 @@ public class PropertyAccessor {
     return Integer.valueOf(getString(name, defaultValue.toString()));
   }
 
+  public Long getLong(final String name, final Integer i) {
+    return getLong(name, i.longValue());
+  }
+
   public Long getLong(final String name, final Long defaultValue) {
     return Long.valueOf(getString(name, defaultValue.toString()));
   }
