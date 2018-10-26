@@ -7,6 +7,7 @@ import static moar.JsonUtil.warn;
 import static org.slf4j.LoggerFactory.getLogger;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import org.slf4j.Logger;
 
 public class Exceptional {
@@ -47,21 +48,20 @@ public class Exceptional {
     }
   }
 
-  public static final void expect(final Exceptionable r) {
+  public static final <T> T expect(final Callable<T> c) {
     try {
-      r.run();
-    } catch (final Throwable e) {
-      warn(LOG, e.getMessage(), e);
-    }
-  }
-
-  public static final <T> T expect(final ExceptionableCall c) {
-    try {
-      return (T) c.call();
-    } catch (final Throwable e) {
+      return c.call();
+    } catch (final Exception e) {
       warn(LOG, e.getMessage(), e);
       return null;
     }
+  }
+
+  public static final void expect(final Exceptionable r) {
+    expect(() -> {
+      r.run();
+      return null;
+    });
   }
 
   public static final boolean expect(final Object o) {
@@ -99,6 +99,25 @@ public class Exceptional {
     return o instanceof Throwable;
   }
 
+  /**
+   * Resolve a number of args and return the first nonNull result
+   */
+  public static Object nonNull(final Object... args) {
+    for (final Object arg : args) {
+      if (arg != null) {
+        final Object value = require(() -> resolve(arg));
+        if (value != null) {
+          return value;
+        }
+      }
+    }
+    throw new NullPointerException();
+  }
+
+  public static <T> T nonNullOr(final Object arg, final Callable<T> c) {
+    return (T) nonNull(arg, c);
+  }
+
   public static <T> T nullOr(final Object test, final Callable<T> callable) {
     return test == null ? null : require(() -> callable.call());
   }
@@ -119,16 +138,9 @@ public class Exceptional {
     });
   }
 
-  public static final void require(final Exceptionable r) {
-    require(() -> {
-      r.run();
-      return null;
-    });
-  }
-
-  public static final <T> T require(final ExceptionableCall c) {
+  public static final <T> T require(final Callable<T> c) {
     try {
-      return (T) c.call();
+      return c.call();
     } catch (final FutureListException e) {
       int i = 0;
       for (final Two<Object, Exception> result : e.getResults()) {
@@ -139,6 +151,13 @@ public class Exceptional {
     } catch (final Exception e) {
       throw asRuntimeException(e);
     }
+  }
+
+  public static final void require(final Exceptionable r) {
+    require(() -> {
+      r.run();
+      return null;
+    });
   }
 
   public static final void require(Object o) {
@@ -154,6 +173,28 @@ public class Exceptional {
     if (!test) {
       throw new StringMessageException(message);
     }
+  }
+
+  /**
+   * Evaluate an object that may be a callable or future.
+   * <p>
+   * If the object is a callable make the call and return the result otherwise return the value.
+   * <p>
+   * Evaluation will recurse until a value (or null) that is not a callable or a future is found.
+   *
+   * @param valueOrCallable
+   * @return
+   * @throws Exception
+   */
+  @SuppressWarnings("rawtypes")
+  public static Object resolve(Object valueOrCallable) throws Exception {
+    if (valueOrCallable instanceof Callable) {
+      valueOrCallable = resolve(((Callable) valueOrCallable).call());
+    }
+    if (valueOrCallable instanceof Future) {
+      valueOrCallable = resolve(((Future) valueOrCallable).get());
+    }
+    return valueOrCallable;
   }
 
   public static <T> T retryable(final int triesAllowed, final long retryWaitMs, final Callable<T> call)
@@ -186,6 +227,14 @@ public class Exceptional {
     });
   }
 
+  public static <T> Two<T, Throwable> safely(final Callable<T> callable) {
+    try {
+      return new Two<>(callable.call(), null);
+    } catch (final Throwable e) {
+      return new Two<>(null, e);
+    }
+  }
+
   public static Throwable safely(final Exceptionable run) {
     return safely(() -> {
       run.run();
@@ -193,11 +242,12 @@ public class Exceptional {
     }).getTwo();
   }
 
-  public static <T> Two<T, Throwable> safely(final ExceptionableCall callable) {
+  public static <T> T swallow(final Callable<T> c) {
     try {
-      return new Two<>((T) callable.call(), null);
+      return c.call();
     } catch (final Throwable e) {
-      return new Two<>(null, e);
+      // Yum, that was tasty
+      return null;
     }
   }
 
@@ -206,15 +256,6 @@ public class Exceptional {
       r.run();
       return null;
     });
-  }
-
-  public static <T> T swallow(final ExceptionableCall c) {
-    try {
-      return (T) c.call();
-    } catch (final Throwable e) {
-      // Yum, that was tasty
-      return null;
-    }
   }
 
   public static void warnFor(final Logger log, final Throwable exception) {
@@ -229,5 +270,4 @@ public class Exceptional {
       warn(log, "from async future", exception);
     }
   }
-
 }
