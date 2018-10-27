@@ -42,7 +42,7 @@ public class JsonUtil {
   }
 
   public static JsonElement fromJson(final InputStream s) {
-    return (JsonElement) require(() -> {
+    return require(() -> {
       final JsonElement o = jsonParser.parse(new InputStreamReader(s));
       return o;
     });
@@ -50,6 +50,10 @@ public class JsonUtil {
 
   public static <T extends JsonElement> T fromJson(final String json) {
     return (T) jsonParser.parse(json);
+  }
+
+  public static Gson getGson() {
+    return gson;
   }
 
   public static void info(final Logger log, Object... args) {

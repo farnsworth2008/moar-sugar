@@ -1,8 +1,8 @@
 package moar;
 
 public class Two<T1, T2> {
-  private final T1 one;
-  private final T2 two;
+  private T1 one;
+  private T2 two;
 
   public Two(final T1 one, final T2 two) {
     this.one = one;
@@ -15,5 +15,13 @@ public class Two<T1, T2> {
 
   public T2 getTwo() {
     return two;
+  }
+
+  public void setOne(final T1 value) {
+    one = value;
+  }
+
+  public void setTwo(final T2 value) {
+    two = value;
   }
 }
