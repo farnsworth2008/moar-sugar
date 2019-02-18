@@ -118,4 +118,4 @@ Stuff to make Java sweet!
 Additional Examples:
 ----------
 
-See the [Moar Sugar Example App](https://github.com/farnsworth2008/moar-sugar-example/blob/master/moar-sugar-app/src/main/java/moar/sugar/example/MoarSugarExampleApp.java) for additional examples.
+See the [Moar Sugar Example App](https://github.com/farnsworth2008/moar-sugar-example/blob/master/README.md) for additional examples.
