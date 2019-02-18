@@ -11,11 +11,9 @@ public class FutureListException
     extends
     RuntimeException {
 
-  private static void doWarnFor(final MoarLogger log,
-      final Throwable exception) {
+  private static void doWarnFor(MoarLogger log, Throwable exception) {
     if (exception instanceof FutureListException) {
-      final FutureListException futureListException
-          = (FutureListException) exception;
+      FutureListException futureListException = (FutureListException) exception;
       for (SafeResult<Object> result : futureListException.getResults()) {
         if (result.thrown() != null) {
           doWarnFor(log, result.thrown());
@@ -28,7 +26,7 @@ public class FutureListException
 
   private final List<SafeResult<Object>> results;
 
-  public FutureListException(final List<SafeResult<Object>> results) {
+  public FutureListException(List<SafeResult<Object>> results) {
     this.results = results;
   }
 
@@ -36,7 +34,7 @@ public class FutureListException
     return results;
   }
 
-  public void warn(final MoarLogger log) {
+  public void warn(MoarLogger log) {
     doWarnFor(log, this);
   }
 

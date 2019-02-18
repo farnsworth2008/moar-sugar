@@ -15,13 +15,13 @@ public class WokeMappableRow {
 
   private final Object[] rowObjects;
 
-  WokeMappableRow(final Object[] rowObjects) {
+  WokeMappableRow(Object[] rowObjects) {
     this.rowObjects = rowObjects;
   }
 
   @SuppressWarnings("unchecked")
-  public <Row> Row get(final Class<Row> clz) {
-    for (final Object object : rowObjects) {
+  public <Row> Row get(Class<Row> clz) {
+    for (Object object : rowObjects) {
       if (asWokeProxy(object).getTargetClass() == clz) {
         return (Row) object;
       }

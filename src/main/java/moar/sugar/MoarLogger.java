@@ -16,12 +16,12 @@ import java.util.logging.Logger;
 public class MoarLogger {
   private static MoarJson moarJson = MoarJson.getMoarJson();
 
-  private static Object[] unpack(final Object[] args) {
+  private static Object[] unpack(Object[] args) {
     for (int i = 0; i < args.length; i++) {
       if (args[i] instanceof String) {
         try {
           args[i] = moarJson.getJsonParser().parse((String) args[i]);
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
           // swallow
         }
       }
@@ -29,7 +29,7 @@ public class MoarLogger {
     return args;
   }
 
-  final Logger log;
+  Logger log;
 
   public MoarLogger(Class<?> clz) {
     log = Logger.getLogger(clz.getName());
@@ -48,11 +48,10 @@ public class MoarLogger {
   }
 
   public void log(Level level, Object... args) {
-    final Object lastArg = args[args.length - 1];
+    Object lastArg = args[args.length - 1];
     if (lastArg instanceof Throwable) {
       args = Arrays.copyOf(args, args.length - 1);
-      log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)),
-          (Throwable) lastArg);
+      log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)), (Throwable) lastArg);
     } else {
       args = Arrays.copyOf(args, args.length - 1);
       log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)));

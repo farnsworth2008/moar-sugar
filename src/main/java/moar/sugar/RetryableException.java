@@ -11,7 +11,7 @@ public class RetryableException
     extends
     RuntimeException {
 
-  public RetryableException(final Throwable cause) {
+  public RetryableException(Throwable cause) {
     super(cause);
   }
 
