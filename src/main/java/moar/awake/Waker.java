@@ -345,6 +345,9 @@ public class Waker<Row>
     if (isSelect) {
       tableish = format("(%s) %s", tableish, simpleName);
     } else if (!isCall) {
+      if (tableish.toLowerCase().startsWith("where ")) {
+        tableish = getTableName() + " " + this.clz.getSimpleName() + " " + tableish;
+      }
       tableish = format("(select [*] from %s) %s ", tableish, simpleName);
     }
     AtomicReference<ConnectionHold> cn = new AtomicReference<>();
