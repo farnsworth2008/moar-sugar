@@ -51,8 +51,7 @@ public class MoarLogger {
     final Object lastArg = args[args.length - 1];
     if (lastArg instanceof Throwable) {
       args = Arrays.copyOf(args, args.length - 1);
-      log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)),
-          (Throwable) lastArg);
+      log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)), (Throwable) lastArg);
     } else {
       args = Arrays.copyOf(args, args.length - 1);
       log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)));

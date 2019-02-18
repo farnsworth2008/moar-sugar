@@ -38,8 +38,7 @@ import moar.sugar.Sugar;
  */
 public class MoarThreadSugar {
   private static class Activity {
-    private final Map<String, MoarThreadTracker> costMap
-        = new ConcurrentHashMap<>();
+    private final Map<String, MoarThreadTracker> costMap = new ConcurrentHashMap<>();
     private final long start = currentTimeMillis();
     private final AtomicLong cost = new AtomicLong();
 
@@ -96,41 +95,33 @@ public class MoarThreadSugar {
   }
 
   private static final MoarLogger LOG = new MoarLogger(MoarThreadSugar.class);
-  private static final PropertyAccessor prop
-      = new PropertyAccessor(MoarThreadSugar.class.getName());
+  private static final PropertyAccessor prop = new PropertyAccessor(MoarThreadSugar.class.getName());
   private final static boolean asyncEnabled = prop.getBoolean("async", true);
-  private static final long TRACE_COST_LIMIT
-      = prop.getLong("traceCostLimit", 10 * 1000L);
-  private static final ThreadLocal<Activity> threadActivity
-      = new ThreadLocal<>();
+  private static final long TRACE_COST_LIMIT = prop.getLong("traceCostLimit", 10 * 1000L);
+  private static final ThreadLocal<Activity> threadActivity = new ThreadLocal<>();
   private static final ThreadLocal<Boolean> threadIsAsync = new ThreadLocal<>();
-  private static final ListeningExecutorService directExecutorService
-      = MoreExecutors.newDirectExecutorService();
+  private static final ListeningExecutorService directExecutorService = MoreExecutors.newDirectExecutorService();
   private static boolean trackCosts = prop.getBoolean("trackCosts", true);
-  private static boolean trackDetailCosts
-      = prop.getBoolean("trackDetailCosts", true);
-  private static AsyncProvider directAsyncProvider
-      = new MoarThreadSugar.AsyncProvider() {
-        @Override
-        public <T> Future<T> submit(final Callable<T> c) {
-          return directExecutorService.submit(c);
-        }
-      };
+  private static boolean trackDetailCosts = prop.getBoolean("trackDetailCosts", true);
+  private static AsyncProvider directAsyncProvider = new MoarThreadSugar.AsyncProvider() {
+    @Override
+    public <T> Future<T> submit(final Callable<T> c) {
+      return directExecutorService.submit(c);
+    }
+  };
   private static MoarJson moarJson = MoarJson.getMoarJson();
 
   public static Vector<Future<Object>> $() {
     return $(Object.class);
   }
 
-  public static <T> Future<T> $(final AsyncProvider provider,
-      final Callable<T> callable) {
+  public static <T> Future<T> $(final AsyncProvider provider, final Callable<T> callable) {
     final Vector<Future<T>> futures = new Vector<>();
     $(provider, futures, callable);
     return futures.get(0);
   }
 
-  public static Future<Object> $(final AsyncProvider provider,
-      final Runnable runnable) {
+  public static Future<Object> $(final AsyncProvider provider, final Runnable runnable) {
     final Vector<Future<Object>> futures = new Vector<>();
     $(provider, futures, runnable);
     return futures.get(0);
@@ -139,16 +130,14 @@ public class MoarThreadSugar {
   /**
    * submit a runnable
    */
-  public static void $(final AsyncProvider provider,
-      final Vector<Future<Object>> futures, final Runnable runnable) {
+  public static void $(final AsyncProvider provider, final Vector<Future<Object>> futures, final Runnable runnable) {
     $(provider, futures, () -> {
       runnable.run();
       return null;
     });
   }
 
-  public static <T> void $(final AsyncProvider provider,
-      final Vector<Future<T>> futures, final Callable<T> callable) {
+  public static <T> void $(final AsyncProvider provider, final Vector<Future<T>> futures, final Callable<T> callable) {
     if (futures == null) {
       throw new NullPointerException("futures");
     }
@@ -168,8 +157,7 @@ public class MoarThreadSugar {
       futures.add(future);
     } catch (final Throwable t) {
       // Ignore the exception and attempt to run on our thread.
-      futures.add(
-          CompletableFuture.completedFuture(require(() -> callable.call())));
+      futures.add(CompletableFuture.completedFuture(require(() -> callable.call())));
     }
   }
 
@@ -203,8 +191,7 @@ public class MoarThreadSugar {
     return new AsyncService(Executors.newFixedThreadPool(nThreads));
   }
 
-  public static <T> T $(final MoarLogger log, final String desc,
-      final Callable<T> callable) throws Exception {
+  public static <T> T $(final MoarLogger log, final String desc, final Callable<T> callable) throws Exception {
     final long start = currentTimeMillis();
     try {
       log.debug(desc);
@@ -214,8 +201,7 @@ public class MoarThreadSugar {
     }
   }
 
-  public static void $(final MoarLogger log, final String desc,
-      final Runnable r) throws Exception {
+  public static void $(final MoarLogger log, final String desc, final Runnable r) throws Exception {
     $(log, desc, () -> {
       r.run();
       return null;
@@ -226,8 +212,7 @@ public class MoarThreadSugar {
     $(Sugar.codeLocationAt(1), r);
   }
 
-  public static <T> T $(final String description, final Callable<T> callable)
-      throws Exception {
+  public static <T> T $(final String description, final Callable<T> callable) throws Exception {
     if (!trackDetailCosts) {
       return callable.call();
     }
@@ -252,15 +237,13 @@ public class MoarThreadSugar {
    * Create a proxy to track the cost of the methods
    */
   @SuppressWarnings("unchecked")
-  public static <T> T $(final String generalDescription, final Class<?> clz,
-      final T r) {
+  public static <T> T $(final String generalDescription, final Class<?> clz, final T r) {
     if (!trackDetailCosts) {
       return r;
     }
     final String simpleName = clz.getSimpleName();
     if (!clz.isInterface()) {
-      LOG.warn(clz.getSimpleName(),
-          "Unable to track cost because it is not an interface");
+      LOG.warn(clz.getSimpleName(), "Unable to track cost because it is not an interface");
       return r;
     }
     final ClassLoader c = MoarThreadSugar.class.getClassLoader();
@@ -270,8 +253,8 @@ public class MoarThreadSugar {
       if (isRestExchange(r, method, args)) {
         final URI uri = (URI) args[0];
         desc = uri.toString();
-      } else if (clz == Statement.class && method.getName().equals("execute")
-          && args.length == 1 && args[0] instanceof String) {
+      } else if (clz == Statement.class && method.getName().equals("execute") && args.length == 1
+          && args[0] instanceof String) {
         final String sql = (String) args[0];
         desc = sql.substring(0, min(sql.length(), 40));
       } else {
@@ -282,8 +265,7 @@ public class MoarThreadSugar {
         desc = moarJson.toJsonSafely(simpleName, method.getName(), pTypes);
       }
       try {
-        return $(generalDescription,
-            () -> $(desc, () -> method.invoke(r, args)));
+        return $(generalDescription, () -> $(desc, () -> method.invoke(r, args)));
       } catch (final UndeclaredThrowableException e1) {
         throw e1.getCause();
       } catch (final InvocationTargetException e2) {
@@ -375,8 +357,7 @@ public class MoarThreadSugar {
   /**
    * Detect rest exchange so we can provide better descriptions.
    */
-  private static <T> boolean isRestExchange(final T r, final Method method,
-      final Object[] args) {
+  private static <T> boolean isRestExchange(final T r, final Method method, final Object[] args) {
     if (method.getName().equals("exchange") && args != null) {
       if (args.length == 4 && args[0] instanceof URI) {
         return true;

@@ -7,8 +7,7 @@ public class MoarThreadReport {
   private long time;
   private List<MoarThreadTracker> trackerList;
 
-  public MoarThreadReport(final long time,
-      final List<MoarThreadTracker> detail) {
+  public MoarThreadReport(final long time, final List<MoarThreadTracker> detail) {
     setTime(time);
     setTrackers(detail);
   }

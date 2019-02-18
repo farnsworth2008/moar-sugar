@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import moar.sugar.PropertyAccessor;
 
 public class MoarThreadTracker {
-  private static final PropertyAccessor props
-      = new PropertyAccessor(MoarThreadTracker.class);
+  private static final PropertyAccessor props = new PropertyAccessor(MoarThreadTracker.class);
   private static final long bucketSize = props.getLong("bucketSize", 1000L);
   private final String description;
   private final AtomicLong min, max, count, total;

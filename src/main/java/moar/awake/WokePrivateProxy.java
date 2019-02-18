@@ -78,8 +78,7 @@ class WokePrivateProxy
       final String name = method.getName();
       if (isProperty(name)) {
         if (!getPropertyName(name).equals("Id") || includeId) {
-          final String dbName
-              = toDbName(getPropertyName(name), getIdentifierQuoteString());
+          final String dbName = toDbName(getPropertyName(name), getIdentifierQuoteString());
           if (!columns.contains(dbName)) {
             columns.add(dbName);
           }
@@ -124,8 +123,7 @@ class WokePrivateProxy
     if (tableName == null) {
       String simpleName = clz.getSimpleName();
       if (simpleName.endsWith(ROW_INTERFACE_SUFFIX)) {
-        simpleName = simpleName.substring(0,
-            simpleName.length() - ROW_INTERFACE_SUFFIX.length());
+        simpleName = simpleName.substring(0, simpleName.length() - ROW_INTERFACE_SUFFIX.length());
       }
       tableName = toDbName(simpleName, identifierQuoteString);
     }
@@ -138,8 +136,7 @@ class WokePrivateProxy
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object invoke(final Object proxy, final Method method,
-      final Object[] args) throws Throwable {
+  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
     final String name = method.getName();
     if (args == null) {
       if (name.equals("privateProxy")) {
@@ -215,8 +212,7 @@ class WokePrivateProxy
   private boolean isProperty(final String name) {
     // try to be fast with this check!
     // get or set!
-    return name.startsWith("g")
-        || name.startsWith("s") && name.substring(1).startsWith("et");
+    return name.startsWith("g") || name.startsWith("s") && name.substring(1).startsWith("et");
   }
 
   void reset() {

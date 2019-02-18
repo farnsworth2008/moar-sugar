@@ -43,11 +43,9 @@ public class Waker<Row>
     WokenWithoutSession<Row>,
     WokenWithRow<Row> {
 
-  private static final PropertyAccessor props
-      = new PropertyAccessor(Waker.class);
+  private static final PropertyAccessor props = new PropertyAccessor(Waker.class);
   private static final int TX_TRIES = props.getInteger("txTries", 3);
-  private static final long TX_RETRY_TIME_DELAY
-      = props.getLong("txRetryDelay", 1000);
+  private static final long TX_RETRY_TIME_DELAY = props.getLong("txRetryDelay", 1000);
   private static ThreadLocal<Boolean> inInsert = withInitial(() -> false);
   private static MoarLogger LOG = new MoarLogger(Waker.class);
 
@@ -67,11 +65,9 @@ public class Waker<Row>
       String alias = proxy.getTargetClass().getSimpleName();
       final String q = proxy.getIdentifierQuoteString();
       alias = alias == null ? "" : alias + ".";
-      final List<String> columns
-          = proxy.getColumns(!(woken instanceof WakeableRow.IdColumn));
+      final List<String> columns = proxy.getColumns(!(woken instanceof WakeableRow.IdColumn));
       for (final String column : columns) {
-        final String columnAs
-            = q + alias.replace('.', '_') + column.replace(q, "") + q;
+        final String columnAs = q + alias.replace('.', '_') + column.replace(q, "") + q;
         if (mode == 0) {
           columnsSql += alias + column + " " + columnAs;
         } else if (mode == 1) {
@@ -85,8 +81,7 @@ public class Waker<Row>
       }
       if (woken instanceof WakeableRow.IdColumn) {
         final String column = "id";
-        final String columnAs
-            = q + alias.replace('.', '_') + column.replace(q, "") + q + "\n";
+        final String columnAs = q + alias.replace('.', '_') + column.replace(q, "") + q + "\n";
         if (mode == 0) {
           columnsSql += alias + column + " " + columnAs;
         } else if (mode == 1) {
@@ -121,18 +116,14 @@ public class Waker<Row>
     return (Row) Proxy.newProxyInstance(c, cc, new WokePrivateProxy(clz));
   }
 
-  static String expandColumnSplat(final Object[] woken, final String tableish,
-      final int mode) {
+  static String expandColumnSplat(final Object[] woken, final String tableish, final int mode) {
     int aliasSplatAreaStartPos = 0;
     int aliasSplatAreaEndPos = 0;
     int aliasSplatPos;
-    while ((aliasSplatPos
-        = tableish.indexOf(".[*]", aliasSplatAreaEndPos)) != -1) {
+    while ((aliasSplatPos = tableish.indexOf(".[*]", aliasSplatAreaEndPos)) != -1) {
       final int aliasSplatStart = tableish.lastIndexOf(' ', aliasSplatPos) + 1;
-      aliasSplatAreaStartPos = aliasSplatAreaStartPos == 0 ? aliasSplatStart
-          : aliasSplatAreaStartPos;
-      aliasSplatAreaEndPos
-          = tableish.indexOf(".[*]", aliasSplatStart) + ".[*]".length();
+      aliasSplatAreaStartPos = aliasSplatAreaStartPos == 0 ? aliasSplatStart : aliasSplatAreaStartPos;
+      aliasSplatAreaEndPos = tableish.indexOf(".[*]", aliasSplatStart) + ".[*]".length();
     }
 
     final int splatPos = tableish.indexOf("[*]");
@@ -147,8 +138,8 @@ public class Waker<Row>
     return expand;
   }
 
-  static void mapResultRow(final boolean hasId, final Map<String, Object> map,
-      final List<String> columns, final ResultSet rs) throws SQLException {
+  static void mapResultRow(final boolean hasId, final Map<String, Object> map, final List<String> columns,
+      final ResultSet rs) throws SQLException {
     int col = 0;
     for (final String column : columns) {
       setColumnValue(map, column, rs.getObject(++col));
@@ -158,14 +149,12 @@ public class Waker<Row>
     }
   }
 
-  public static void runWokeTransaction(final WokeSessionBase session,
-      final Consumer<WokeTxSession> tx) {
+  public static void runWokeTransaction(final WokeSessionBase session, final Consumer<WokeTxSession> tx) {
     synchronized (session) {
       require(() -> {
         try (WokeTxSession txSession = new WokeTxSession(session.reserve())) {
           try {
-            retryable(TX_TRIES, TX_RETRY_TIME_DELAY,
-                () -> tx.accept(txSession));
+            retryable(TX_TRIES, TX_RETRY_TIME_DELAY, () -> tx.accept(txSession));
           } catch (final Throwable t) {
             LOG.trace("runWokeTransaction rollback", t.getMessage(), t);
             txSession.rollback();
@@ -176,8 +165,7 @@ public class Waker<Row>
     }
   }
 
-  static void setColumnValue(final Map<String, Object> map, final String column,
-      final Object value) {
+  static void setColumnValue(final Map<String, Object> map, final String column, final Object value) {
     if (value == null) {
       map.remove(column);
     } else {
@@ -189,8 +177,7 @@ public class Waker<Row>
     return new Waker<>(clz);
   }
 
-  public static <Row> WokenWithoutSession<Row> wake(final Class<Row> clz,
-      final String tableName) {
+  public static <Row> WokenWithoutSession<Row> wake(final Class<Row> clz, final String tableName) {
     return new Waker<>(clz, tableName);
   }
 
@@ -210,8 +197,7 @@ public class Waker<Row>
     }
   }
 
-  public static <Row> List<Row> wake(final WokeResultSet<Row> iter,
-      final int limit) {
+  public static <Row> List<Row> wake(final WokeResultSet<Row> iter, final int limit) {
     final List<Row> list = new ArrayList<>();
     while (iter.next()) {
       list.add(iter.get());
@@ -238,8 +224,7 @@ public class Waker<Row>
     this.tableName = tableName;
   }
 
-  private List<Row> consumeResultSet(final boolean hasId,
-      final List<String> columns, final PreparedStatement ps,
+  private List<Row> consumeResultSet(final boolean hasId, final List<String> columns, final PreparedStatement ps,
       final String idQuote) throws SQLException {
     final List<Row> list = new ArrayList<>();
     try (ResultSet rs = ps.executeQuery()) {
@@ -273,9 +258,8 @@ public class Waker<Row>
     session.delete(row);
   }
 
-  private void doInsertRowWithConnection(final Row row, final boolean isUpsert,
-      final int[] identityColumn, final ConnectionHold hold)
-      throws SQLException {
+  private void doInsertRowWithConnection(final Row row, final boolean isUpsert, final int[] identityColumn,
+      final ConnectionHold hold) throws SQLException {
     final boolean hasId = row instanceof WakeableRow.IdColumn;
     final WokePrivateProxy woke = asWokeProxy(row);
     woke.setIdentifierQuoteString(hold.getIdentifierQuoteString());
@@ -317,9 +301,8 @@ public class Waker<Row>
     }
     final Connection cn = hold.get();
     final boolean useGeneratedKeys = isUpsert && hasId;
-    try (PreparedStatement ps
-        = useGeneratedKeys ? cn.prepareStatement(sql, identityColumn)
-            : cn.prepareStatement(sql)) {
+    try (
+        PreparedStatement ps = useGeneratedKeys ? cn.prepareStatement(sql, identityColumn) : cn.prepareStatement(sql)) {
       int p = 0;
       if (hasId) {
         ps.setObject(++p, map.get(idColumn));
@@ -334,8 +317,7 @@ public class Waker<Row>
       }
       try {
         final int upResult = ps.executeUpdate();
-        swallow(() -> require("0 || 1 || 2, " + upResult,
-            upResult == 0 || upResult == 1 || upResult == 2));
+        swallow(() -> require("0 || 1 || 2, " + upResult, upResult == 0 || upResult == 1 || upResult == 2));
         if (useGeneratedKeys) {
           try (ResultSet rs = ps.getGeneratedKeys()) {
             if (rs.next()) {
@@ -346,26 +328,20 @@ public class Waker<Row>
           }
         }
       } catch (final SQLSyntaxErrorException e) {
-        throw new MoarException("bad sql syntax on upsert", e.getMessage(),
-            stripTicks(q, sql));
+        throw new MoarException("bad sql syntax on upsert", e.getMessage(), stripTicks(q, sql));
       } catch (final SQLTransactionRollbackException e) {
         throw new RetryableException(e);
       } catch (final Throwable e) {
-        throw new MoarException("upsert failed", e.getMessage(),
-            stripTicks(q, sql));
+        throw new MoarException("upsert failed", e.getMessage(), stripTicks(q, sql));
       }
     }
   }
 
-  private WokeResultSet<Row> doIterator(String tableish, final Object... params)
-      throws SQLException {
+  private WokeResultSet<Row> doIterator(String tableish, final Object... params) throws SQLException {
     final Row woken = create(clz);
-    final boolean isCall
-        = tableish.startsWith("call ") || tableish.startsWith("call\n");
-    final boolean isSelect
-        = tableish.startsWith("select ") || tableish.startsWith("select\n");
-    final String simpleName
-        = asWokeProxy(woken).getTargetClass().getSimpleName();
+    final boolean isCall = tableish.startsWith("call ") || tableish.startsWith("call\n");
+    final boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
+    final String simpleName = asWokeProxy(woken).getTargetClass().getSimpleName();
     if (isSelect) {
       tableish = format("(%s) %s", tableish, simpleName);
     } else if (!isCall) {
@@ -414,8 +390,7 @@ public class Waker<Row>
         final Row row = create(clz);
         final boolean hasId = row instanceof WakeableRow.IdColumn;
         final WokePrivateProxy wokenProxy = asWokeProxy(row);
-        wokenProxy
-            .setIdentifierQuoteString(cn.get().getIdentifierQuoteString());
+        wokenProxy.setIdentifierQuoteString(cn.get().getIdentifierQuoteString());
         final Map<String, Object> map = wokenProxy.get();
         final List<String> columns = wokenProxy.getColumns(!hasId);
         require(() -> {
@@ -448,8 +423,7 @@ public class Waker<Row>
     return doTableFind(keyRow);
   }
 
-  private void doSessionInsertOp(final Row row, final Consumer<Row> updator,
-      final boolean isUpsert) {
+  private void doSessionInsertOp(final Row row, final Consumer<Row> updator, final boolean isUpsert) {
     asWokeProxy(row);
     if (key != null) {
       key.accept(row);
@@ -458,8 +432,7 @@ public class Waker<Row>
     doTableInsert(row, isUpsert);
   }
 
-  private Row doSessionInsertRow(final Row row, final Consumer<Row> updator,
-      final boolean isUpsert) {
+  private Row doSessionInsertRow(final Row row, final Consumer<Row> updator, final boolean isUpsert) {
     try {
       if (inInsert.get()) {
         throw new MoarException("reentry");
@@ -500,8 +473,7 @@ public class Waker<Row>
       try {
         try (PreparedStatement ps = cn.get().prepareStatement(sql)) {
           setupStatement(map, map.keySet(), ps);
-          return consumeResultSet(hasId, columns, ps,
-              woke.getIdentifierQuoteString());
+          return consumeResultSet(hasId, columns, ps, woke.getIdentifierQuoteString());
         }
       } catch (final SQLException e) {
         LOG.warn(e.getMessage(), sql, e);
@@ -514,16 +486,14 @@ public class Waker<Row>
     require(() -> doTableInsertSql(row, isUpsert));
   }
 
-  private void doTableInsertSql(final Row row, final boolean isUpsert)
-      throws SQLException {
+  private void doTableInsertSql(final Row row, final boolean isUpsert) throws SQLException {
     final int[] identityColumn = { 1 };
     try (ConnectionHold hold = session.reserve()) {
       doInsertRowWithConnection(row, isUpsert, identityColumn, hold);
     }
   }
 
-  private Row enterSessionInsertRow(final Row row, final Consumer<Row> updator,
-      final boolean isUpsert) {
+  private Row enterSessionInsertRow(final Row row, final Consumer<Row> updator, final boolean isUpsert) {
     LOG.trace("sessionUpsert");
     try {
       synchronized (session) {
@@ -586,8 +556,7 @@ public class Waker<Row>
   }
 
   @Override
-  public WokeResultSet<Row> iterator(final String tableish,
-      final Object... params) {
+  public WokeResultSet<Row> iterator(final String tableish, final Object... params) {
     return require(() -> doIterator(tableish, params));
   }
 
@@ -618,8 +587,7 @@ public class Waker<Row>
     return this;
   }
 
-  private void setupStatement(final Map<String, Object> map,
-      final Set<String> columns, final PreparedStatement ps)
+  private void setupStatement(final Map<String, Object> map, final Set<String> columns, final PreparedStatement ps)
       throws SQLException {
     int i = 0;
     for (final String column : columns) {

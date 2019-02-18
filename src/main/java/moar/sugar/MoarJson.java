@@ -30,10 +30,9 @@ public class MoarJson {
   /**
    * Thread instance, can be altered if a thread needs something special.
    */
-  private static ThreadLocal<MoarJson> instance
-      = ThreadLocal.withInitial(() -> {
-        return staticInstance;
-      });
+  private static ThreadLocal<MoarJson> instance = ThreadLocal.withInitial(() -> {
+    return staticInstance;
+  });
 
   /**
    * @return instance for the thread
@@ -171,8 +170,7 @@ public class MoarJson {
           safe[i] = a;
         } catch (final RuntimeException e) {
           Map<String, String> toStringMap = new HashMap<>();
-          toStringMap.put(a.getClass().getSimpleName() + ".toString()",
-              gson.toJson(a.toString()));
+          toStringMap.put(a.getClass().getSimpleName() + ".toString()", gson.toJson(a.toString()));
           safe[i] = toStringMap;
         }
       }

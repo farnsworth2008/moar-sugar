@@ -13,8 +13,7 @@ public class MoarStringUtil {
     return o == null ? null : o.toString();
   }
 
-  public static String cleanWithOnly(final CharMatcher matcher,
-      final String dirty) {
+  public static String cleanWithOnly(final CharMatcher matcher, final String dirty) {
     final StringBuilder cleanBuilder = new StringBuilder();
     for (int i = 0; i < dirty.length(); i++) {
       char c = dirty.charAt(i);

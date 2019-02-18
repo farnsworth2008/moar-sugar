@@ -22,8 +22,7 @@ import java.util.function.Consumer;
 public abstract class WokeSessionBase {
 
   private String buildSql(final String finalTableish, final Object[] woken) {
-    final boolean isCall = finalTableish.startsWith("call ")
-        || finalTableish.startsWith("call\n");
+    final boolean isCall = finalTableish.startsWith("call ") || finalTableish.startsWith("call\n");
     String sql;
     if (isCall) {
       sql = finalTableish;
@@ -70,10 +69,8 @@ public abstract class WokeSessionBase {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public WokeMappableResultSet iterator(String tableish, final Class[] classes,
-      final Object... params) {
-    final boolean isSelect
-        = tableish.startsWith("select ") || tableish.startsWith("select\n");
+  public WokeMappableResultSet iterator(String tableish, final Class[] classes, final Object... params) {
+    final boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
     if (isSelect) {
       tableish = format("(%s) tableish", tableish);
     }
@@ -121,8 +118,7 @@ public abstract class WokeSessionBase {
         for (int i = 0; i < classes.length; i++) {
           final Object rowObject = create(classes[i]);
           final WokePrivateProxy wokenProxy = asWokeProxy(rowObject);
-          wokenProxy
-              .setIdentifierQuoteString(cn.get().getIdentifierQuoteString());
+          wokenProxy.setIdentifierQuoteString(cn.get().getIdentifierQuoteString());
           final Map<String, Object> map = wokenProxy.get();
           final boolean hasId = rowObject instanceof WakeableRow.IdColumn;
           final List<String> columns = wokenProxy.getColumns(!hasId);
@@ -163,15 +159,13 @@ public abstract class WokeSessionBase {
     for (final String column : proxy.getColumns(!hasId)) {
       if (proxy.isDbDirty(column)) {
         sql += column + "=?\n";
-        setProps.add(ps -> require(
-            () -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
+        setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
       }
     }
     sql += "where\n";
     sql += proxy.getIdColumn() + "=?";
     final Object idValue = proxy.getIdValue();
-    setProps
-        .add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
+    setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
     final String finalSql = sql;
     try (ConnectionHold c = reserve()) {
       require(() -> {

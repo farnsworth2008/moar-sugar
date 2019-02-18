@@ -71,8 +71,7 @@ class StatementReader {
         return;
       }
     }
-    throw new RuntimeException(
-        "Expected closing quote of type (" + (int) quoteType + ")");
+    throw new RuntimeException("Expected closing quote of type (" + (int) quoteType + ")");
   }
 
   String readStatement() throws IOException {

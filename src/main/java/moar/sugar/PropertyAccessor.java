@@ -23,8 +23,7 @@ public class PropertyAccessor {
     this(clz.getName());
   }
 
-  public PropertyAccessor(final Class<?> clz,
-      final Function<String, String> fetch) {
+  public PropertyAccessor(final Class<?> clz, final Function<String, String> fetch) {
     this(clz.getName(), fetch);
   }
 
@@ -32,8 +31,7 @@ public class PropertyAccessor {
     this(baseName, name -> null);
   }
 
-  public PropertyAccessor(final String baseName,
-      final Function<String, String> fetch) {
+  public PropertyAccessor(final String baseName, final Function<String, String> fetch) {
     this.baseName = baseName;
     this.fetch = fetch;
   }

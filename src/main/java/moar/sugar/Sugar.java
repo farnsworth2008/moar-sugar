@@ -33,8 +33,7 @@ public class Sugar {
    * Line of the caller).
    */
   public static final String codeLocationAt(final int offset) {
-    final StackTraceElement[] stackTrace
-        = Thread.currentThread().getStackTrace();
+    final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
     int pos = -1;
     for (final StackTraceElement item : stackTrace) {
       final String className = item.getClassName();
@@ -112,14 +111,13 @@ public class Sugar {
     }
   }
 
-  public static <T> T retryable(final int tries, final Callable<T> call)
-      throws Exception {
+  public static <T> T retryable(final int tries, final Callable<T> call) throws Exception {
     return retryable(tries, 1000, call);
   }
 
   @SuppressWarnings("null")
-  public static <T> T retryable(final int triesAllowed, final long retryWaitMs,
-      final Callable<T> call) throws Exception {
+  public static <T> T retryable(final int triesAllowed, final long retryWaitMs, final Callable<T> call)
+      throws Exception {
     Exception last = null;
     int tries = 0;
     while (tries++ < triesAllowed) {
@@ -137,8 +135,7 @@ public class Sugar {
     throw last;
   }
 
-  public static void retryable(final int tries, final long retryWaitMs,
-      final Runnable run) {
+  public static void retryable(final int tries, final long retryWaitMs, final Runnable run) {
     require(() -> {
       retryable(tries, retryWaitMs, () -> {
         run.run();
@@ -191,7 +188,6 @@ public class Sugar {
   }
 
   public static Date toUtilDate(LocalDate birthDate) {
-    return Date
-        .from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    return Date.from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
   }
 }
