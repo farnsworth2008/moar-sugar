@@ -41,7 +41,7 @@ Stuff to make Java sweet!
 
 ## Example #2, database CRUD
 
-```
+```java
   void exampleDb(PrintStream out) {
     out.println("Example: DB");
 
