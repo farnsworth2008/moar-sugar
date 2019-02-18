@@ -10,18 +10,22 @@ Stuff to make Java sweet!
     AsyncService service = $(4);
     try {
       Vector<Future<String>> futures = $(String.class);
+
       for (int i = 0; i < 3; i++) {
         String message = "async " + i;
         $(service, futures, () -> methodOne(out, message));
       }
+
       for (int i = 0; i < 3; i++) {
         String message = "async " + i;
         $(service, futures, () -> methodTwo(out, message));
       }
+
       for (int i = 0; i < 3; i++) {
         String message = "async " + i;
         $(service, futures, () -> methodThatThrows(out, message));
       }
+
       out.println("  async work started");
       swallow(() -> $(futures));
       out.println("  async work complete");
@@ -30,8 +34,9 @@ Stuff to make Java sweet!
       for (Future<String> future : futures) {
         SafeResult<String> result = safely(() -> future.get());
         String displayValue = result.thrown() == null ? result.get() : result.thrown().getMessage();
-        out.println(format("  futures ++i, displayValue));
+        out.println(format("  futures[%d]: %s", ++i, displayValue));
       }
+
     } finally {
       service.shutdown();
     }
