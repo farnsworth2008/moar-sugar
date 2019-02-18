@@ -208,12 +208,12 @@ public class Waker<Row>
     return list;
   }
 
-  private Class<Row> clz;
-  private String tableName;
+  private final Class<Row> clz;
+  private final String tableName;
 
-  private WokeSessionBase session;
+  private final ThreadLocal<WokeSessionBase> session = new ThreadLocal<>();
 
-  private Consumer<Row> key = null;
+  private final ThreadLocal<Consumer<Row>> key = new ThreadLocal<>();
 
   public Waker(Class<Row> clz) {
     this(clz, null);
@@ -255,7 +255,7 @@ public class Waker<Row>
 
   @Override
   public void delete(Row row) {
-    session.delete(row);
+    session.get().delete(row);
   }
 
   private void doInsertRowWithConnection(Row row, boolean isUpsert, int[] identityColumn, ConnectionHold hold)
@@ -353,7 +353,7 @@ public class Waker<Row>
     AtomicReference<ConnectionHold> cn = new AtomicReference<>();
     AtomicReference<PreparedStatement> ps = new AtomicReference<>();
     AtomicReference<ResultSet> rs = new AtomicReference<>();
-    cn.set(session.reserve());
+    cn.set(session.get().reserve());
     String q = cn.get().getIdentifierQuoteString();
     asWokeProxy(woken).setIdentifierQuoteString(q);
     String sql;
@@ -422,14 +422,14 @@ public class Waker<Row>
   private List<Row> doSessionFindOp() {
     Row keyRow = create(clz);
     asWokeProxy(keyRow);
-    key.accept(keyRow);
+    key.get().accept(keyRow);
     return doTableFind(keyRow);
   }
 
   private void doSessionInsertOp(Row row, Consumer<Row> updator, boolean isUpsert) {
     asWokeProxy(row);
-    if (key != null) {
-      key.accept(row);
+    if (key.get() != null) {
+      key.get().accept(row);
     }
     updator.accept(row);
     doTableInsert(row, isUpsert);
@@ -447,7 +447,7 @@ public class Waker<Row>
         inInsert.set(false);
       }
     } finally {
-      key = r -> {};
+      key.set(r -> {});
     }
   }
 
@@ -456,7 +456,7 @@ public class Waker<Row>
   }
 
   private List<Row> doTableFindSql(Row row) throws SQLException {
-    try (ConnectionHold cn = session.reserve()) {
+    try (ConnectionHold cn = session.get().reserve()) {
       boolean hasId = row instanceof WakeableRow.IdColumn;
       WokePrivateProxy woke = asWokeProxy(row);
       woke.setIdentifierQuoteString(cn.getIdentifierQuoteString());
@@ -491,7 +491,7 @@ public class Waker<Row>
 
   private void doTableInsertSql(Row row, boolean isUpsert) throws SQLException {
     int[] identityColumn = { 1 };
-    try (ConnectionHold hold = session.reserve()) {
+    try (ConnectionHold hold = session.get().reserve()) {
       doInsertRowWithConnection(row, isUpsert, identityColumn, hold);
     }
   }
@@ -554,7 +554,7 @@ public class Waker<Row>
 
   @Override
   public Row insert(Row row) {
-    key = r -> {};
+    key.set(r -> {});
     return doSessionInsertRow(row, r -> {}, false);
   }
 
@@ -565,7 +565,7 @@ public class Waker<Row>
 
   @Override
   public WokenWithRow<Row> key(Consumer<Row> r) {
-    this.key = r;
+    this.key.set(r);
     return this;
   }
 
@@ -585,8 +585,8 @@ public class Waker<Row>
   }
 
   @Override
-  public WokenWithSession<Row> of(WokeSessionBase cu) {
-    this.session = cu;
+  public WokenWithSession<Row> of(WokeSessionBase session) {
+    this.session.set(session);
     return this;
   }
 
@@ -603,7 +603,7 @@ public class Waker<Row>
 
   @Override
   public void update(Row row) {
-    session.update(row);
+    session.get().update(row);
   }
 
   @Override
@@ -618,7 +618,7 @@ public class Waker<Row>
 
   @Override
   public Row upsert(Row row) {
-    key = r -> {};
+    key.set(r -> {});
     return doSessionInsertRow(row, r -> {}, true);
   }
 }
