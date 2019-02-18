@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 public abstract class WokeSession
     extends
     WokeSessionBase {
-  public void run(final Consumer<WokeTxSession> tx) {
+  public void run(Consumer<WokeTxSession> tx) {
     runWokeTransaction(this, tx);
   }
 }

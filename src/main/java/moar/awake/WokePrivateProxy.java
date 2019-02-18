@@ -21,28 +21,28 @@ class WokePrivateProxy
     implements
     WokeProxy,
     InvocationHandler {
-  private static final String ROW_INTERFACE_SUFFIX = "Row";
+  private static String ROW_INTERFACE_SUFFIX = "Row";
 
-  private static String toDbName(final String string, final String q) {
+  private static String toDbName(String string, String q) {
     return q + toSnakeCase(string) + q;
   }
 
-  final Map<String, Object> setMap = new ConcurrentHashMap<>();
-  final Map<String, Object> map = new ConcurrentHashMap<>();
-  final Class<?> clz;
+  Map<String, Object> setMap = new ConcurrentHashMap<>();
+  Map<String, Object> map = new ConcurrentHashMap<>();
+  Class<?> clz;
   private String identifierQuoteString = "";
   private String tableName;
 
-  WokePrivateProxy(final Class<?> clz) {
+  WokePrivateProxy(Class<?> clz) {
     this.clz = clz;
   }
 
-  String fromDbName(final String key) {
+  String fromDbName(String key) {
     try {
-      final StringBuilder s = new StringBuilder();
+      StringBuilder s = new StringBuilder();
       boolean upper = true;
-      final char qChar = identifierQuoteString.charAt(0);
-      for (final char c : key.toCharArray()) {
+      char qChar = identifierQuoteString.charAt(0);
+      for (char c : key.toCharArray()) {
         if (c == qChar) {
           // ignore
         } else if (c != '_') {
@@ -58,27 +58,27 @@ class WokePrivateProxy
         }
       }
       return s.toString();
-    } catch (final RuntimeException e) {
+    } catch (RuntimeException e) {
       throw new RuntimeException(key, e);
     }
   }
 
   Map<String, Object> get() {
-    final Map<String, Object> dbMap = new ConcurrentHashMap<>();
-    for (final String key : map.keySet()) {
-      final String dbName = toDbName(key, getIdentifierQuoteString());
+    Map<String, Object> dbMap = new ConcurrentHashMap<>();
+    for (String key : map.keySet()) {
+      String dbName = toDbName(key, getIdentifierQuoteString());
       dbMap.put(dbName, map.get(key));
     }
     return dbMap;
   }
 
-  List<String> getColumns(final boolean includeId) {
-    final List<String> columns = new ArrayList<>();
-    for (final Method method : clz.getMethods()) {
-      final String name = method.getName();
+  List<String> getColumns(boolean includeId) {
+    List<String> columns = new ArrayList<>();
+    for (Method method : clz.getMethods()) {
+      String name = method.getName();
       if (isProperty(name)) {
         if (!getPropertyName(name).equals("Id") || includeId) {
-          final String dbName = toDbName(getPropertyName(name), getIdentifierQuoteString());
+          String dbName = toDbName(getPropertyName(name), getIdentifierQuoteString());
           if (!columns.contains(dbName)) {
             columns.add(dbName);
           }
@@ -89,9 +89,9 @@ class WokePrivateProxy
     return columns;
   }
 
-  Object getDbValue(final String column) {
-    final String propName = fromDbName(column);
-    final Object value = map.get(propName);
+  Object getDbValue(String column) {
+    String propName = fromDbName(column);
+    Object value = map.get(propName);
     if (value instanceof Date) {
       return new java.sql.Timestamp(((Date) value).getTime());
     }
@@ -99,7 +99,7 @@ class WokePrivateProxy
   }
 
   String getIdColumn() {
-    final String q = identifierQuoteString;
+    String q = identifierQuoteString;
     return q + "id" + q;
   }
 
@@ -111,11 +111,11 @@ class WokePrivateProxy
     return map.get("Id");
   }
 
-  private Object getProperty(final String name) {
+  private Object getProperty(String name) {
     return map.get(getPropertyName(name));
   }
 
-  private String getPropertyName(final String name) {
+  private String getPropertyName(String name) {
     return name.substring("get".length());
   }
 
@@ -136,8 +136,8 @@ class WokePrivateProxy
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-    final String name = method.getName();
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    String name = method.getName();
     if (args == null) {
       if (name.equals("privateProxy")) {
         return this;
@@ -145,10 +145,10 @@ class WokePrivateProxy
         return toString();
       } else {
         if (isProperty(name)) {
-          final Object value = getProperty(name);
+          Object value = getProperty(name);
           if (value instanceof Number) {
-            final Number number = (Number) value;
-            final Class<?> returnType = method.getReturnType();
+            Number number = (Number) value;
+            Class<?> returnType = method.getReturnType();
             if (returnType == Double.class) {
               return number.doubleValue();
             } else if (returnType == Long.class) {
@@ -185,10 +185,10 @@ class WokePrivateProxy
     throw new MoarException(name, " is not supported by this proxy");
   }
 
-  boolean isDbDirty(final String column) {
-    final String propName = fromDbName(column);
-    final Object mapValue = map.get(propName);
-    final Object setValue = setMap.get(propName);
+  boolean isDbDirty(String column) {
+    String propName = fromDbName(column);
+    Object mapValue = map.get(propName);
+    Object setValue = setMap.get(propName);
     if (setValue == mapValue) {
       return false;
     }
@@ -201,7 +201,7 @@ class WokePrivateProxy
 
   @Override
   public boolean isDirty() {
-    for (final String column : getColumns(true)) {
+    for (String column : getColumns(true)) {
       if (isDbDirty(column)) {
         return true;
       }
@@ -209,7 +209,7 @@ class WokePrivateProxy
     return false;
   }
 
-  private boolean isProperty(final String name) {
+  private boolean isProperty(String name) {
     // try to be fast with this check!
     // get or set!
     return name.startsWith("g") || name.startsWith("s") && name.substring(1).startsWith("et");
@@ -217,27 +217,27 @@ class WokePrivateProxy
 
   void reset() {
     map.clear();
-    for (final String key : setMap.keySet()) {
+    for (String key : setMap.keySet()) {
       map.put(key, setMap.get(key));
     }
   }
 
-  void set(final Map<String, Object> dbMap) {
+  void set(Map<String, Object> dbMap) {
     setMap.clear();
     map.clear();
-    for (final String key : dbMap.keySet()) {
-      final String propName = fromDbName(key);
-      final Object dbValue = dbMap.get(key);
+    for (String key : dbMap.keySet()) {
+      String propName = fromDbName(key);
+      Object dbValue = dbMap.get(key);
       setMap.put(propName, dbValue);
       map.put(propName, dbValue);
     }
   }
 
-  void setIdentifierQuoteString(final String value) {
+  void setIdentifierQuoteString(String value) {
     identifierQuoteString = value;
   }
 
-  private void setProperty(final String name, final Object arg) {
+  private void setProperty(String name, Object arg) {
     if (arg == null) {
       map.remove(name);
     } else {
@@ -245,7 +245,7 @@ class WokePrivateProxy
     }
   }
 
-  void setTableName(final String tableish) {
+  void setTableName(String tableish) {
     tableName = tableish;
   }
 

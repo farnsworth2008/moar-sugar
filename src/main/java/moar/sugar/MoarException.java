@@ -18,7 +18,7 @@ public class MoarException
    * @param args
    *   Objects of interest.
    */
-  public MoarException(final Object... args) {
+  public MoarException(Object... args) {
     super(moarJson.toJsonSafely(args));
   }
 
@@ -32,7 +32,7 @@ public class MoarException
    * @param args
    *   Objects of interest.
    */
-  public MoarException(final Throwable cause, final Object... args) {
+  public MoarException(Throwable cause, Object... args) {
     super(moarJson.toJsonSafely(args), cause);
   }
 

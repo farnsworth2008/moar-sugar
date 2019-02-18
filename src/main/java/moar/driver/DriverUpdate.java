@@ -17,11 +17,11 @@ import moar.sugar.MoarLogger;
 
 public class DriverUpdate {
 
-  private final static MoarLogger LOG = new MoarLogger(DriverUpdate.class);
+  private static MoarLogger LOG = new MoarLogger(DriverUpdate.class);
   private static Class<?> loader = DriverUpdate.class;
-  private static final long timeoutMillis = getDriverProps().getLong("timeoutMillis", 1000 * 60 * 5L);
+  private static long timeoutMillis = getDriverProps().getLong("timeoutMillis", 1000 * 60 * 5L);
 
-  public static void setLoader(final Class<?> loader) {
+  public static void setLoader(Class<?> loader) {
     DriverUpdate.loader = loader;
   }
 
@@ -35,11 +35,11 @@ public class DriverUpdate {
   private final String instance = UUID.randomUUID().toString();
   private final String trackTableName;
 
-  DriverUpdate(final String config, final String url, final Connection connection) throws SQLException {
+  DriverUpdate(String config, String url, Connection connection) throws SQLException {
     q = url.startsWith("jdbc:mysql://") ? "`" : "\"";
     this.connection = connection;
     startMillis = currentTimeMillis();
-    final String[] param = config.split(";");
+    String[] param = config.split(";");
     int i = 0;
     String trackConfig = i < param.length ? param[i++] : "default";
     trackConfig = trackConfig.replace('.', '/');
@@ -47,13 +47,13 @@ public class DriverUpdate {
     trackTableName = "moar_track_" + toSnakeCase(track.replace('/', '_'));
   }
 
-  private void execute(final PreparedStatement find, final PreparedStatement register, final Statement statement,
-      final PreparedStatement record) throws SQLException, IOException {
+  private void execute(PreparedStatement find, PreparedStatement register, Statement statement,
+      PreparedStatement record) throws SQLException, IOException {
     try {
-      final List<Integer> scriptsRun = new ArrayList<>();
+      List<Integer> scriptsRun = new ArrayList<>();
       int id;
       while (-1 != (id = find(find, register, statement, record))) {
-        final int scriptId = id;
+        int scriptId = id;
         if (!run(register, statement, record, scriptId)) {
           LOG.warn("unable to run (will retry)", id);
           rest(scriptId);
@@ -63,23 +63,23 @@ public class DriverUpdate {
       if (!scriptsRun.isEmpty()) {
         LOG.trace("DB Update", scriptsRun, connection.getCatalog());
       }
-    } catch (final RuntimeException e) {
+    } catch (RuntimeException e) {
       throw e;
-    } catch (final Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private int find(final PreparedStatement find, final PreparedStatement register, final Statement statement,
-      final PreparedStatement record) throws SQLException, IOException {
+  private int find(PreparedStatement find, PreparedStatement register, Statement statement, PreparedStatement record)
+      throws SQLException, IOException {
     int id;
     try {
-      try (final ResultSet r = find.executeQuery()) {
+      try (ResultSet r = find.executeQuery()) {
         id = r.next() ? r.getInt(1) + 1 : 1000;
       }
-    } catch (final SQLException ex) {
-      final int errorCode = ex.getErrorCode();
-      final String sqlState = ex.getSQLState();
+    } catch (SQLException ex) {
+      int errorCode = ex.getErrorCode();
+      String sqlState = ex.getSQLState();
       if (sqlState.equals("42P01") || tableDoesNotExistErrorCode == errorCode) {
         String sql = "CREATE TABLE " + q + "%s" + q + " (" + q + "id" + q + " BIGINT, " + q + "instance" + q
             + " VARCHAR(255)," + q + "run_event" + q + " VARCHAR(255),";
@@ -98,8 +98,8 @@ public class DriverUpdate {
     return -1;
   }
 
-  private InputStream getResource(final int id) {
-    final String resource = String.format("/%s/%d.sql", track, id);
+  private InputStream getResource(int id) {
+    String resource = String.format("/%s/%d.sql", track, id);
     InputStream stream = loader.getResourceAsStream(resource);
     return stream;
   }
@@ -114,7 +114,7 @@ public class DriverUpdate {
             + "created" + q + ", " + q + "run_event" + q + ") values (?, ?, CURRENT_TIMESTAMP, ?)";
         registerSql = String.format(registerSql, trackTableName);
         try (PreparedStatement register = connection.prepareStatement(registerSql)) {
-          final String recordSql
+          String recordSql
               = String.format("update " + q + "%s" + q + " set completed=CURRENT_TIMESTAMP WHERE id=?", trackTableName);
           try (PreparedStatement record = connection.prepareStatement(recordSql)) {
             try (Statement statement = connection.createStatement()) {
@@ -122,18 +122,18 @@ public class DriverUpdate {
             }
           }
         }
-      } catch (final IOException e) {
+      } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
   }
 
-  private void record(final PreparedStatement record, final int id) throws SQLException {
+  private void record(PreparedStatement record, int id) throws SQLException {
     record.setInt(1, id);
     record.execute();
   }
 
-  private void register(final PreparedStatement register, final int id, final String runEvent) throws SQLException {
+  private void register(PreparedStatement register, int id, String runEvent) throws SQLException {
     int i = 0;
     register.setInt(++i, id);
     register.setString(++i, instance);
@@ -158,14 +158,14 @@ public class DriverUpdate {
    * This occurs under conditions where multiple drivers attempt to start
    * migrations at the same time.
    */
-  private void rest(final int id) throws SQLException {
+  private void rest(int id) throws SQLException {
     try {
       Thread.sleep(restPeriod);
-    } catch (final InterruptedException e) {
+    } catch (InterruptedException e) {
       LOG.warn(e.getMessage());
     }
     if (currentTimeMillis() - startMillis > timeoutMillis) {
-      final String msg = "Timeout while waiting on script " + id;
+      String msg = "Timeout while waiting on script " + id;
       throw new SQLException(msg);
     }
   }
@@ -181,16 +181,16 @@ public class DriverUpdate {
    * Regardless of environment only one process can succeed in the race to
    * register a script due to the database primary key restriction.
    */
-  private boolean run(final PreparedStatement register, final Statement statement, final PreparedStatement record,
-      final int id) throws Exception {
-    final String runEvent = UUID.randomUUID().toString();
+  private boolean run(PreparedStatement register, Statement statement, PreparedStatement record, int id)
+      throws Exception {
+    String runEvent = UUID.randomUUID().toString();
     try {
       register(register, id, runEvent);
-    } catch (final SQLException ex) {
+    } catch (SQLException ex) {
       LOG.warn("unable to register script", id, ex.getErrorCode(), ex.getSQLState(), ex.getMessage());
       return false;
     }
-    final StatementReader stream = new StatementReader(getResource(id));
+    StatementReader stream = new StatementReader(getResource(id));
     String sql;
     long statementNumber = 0;
     while (null != (sql = stream.readStatement())) {
@@ -200,7 +200,7 @@ public class DriverUpdate {
           statement.execute(sql);
         }
         statementNumber++;
-      } catch (final SQLException e) {
+      } catch (SQLException e) {
         throw new MoarException("script failed", id, statementNumber, instance, runEvent);
       }
     }

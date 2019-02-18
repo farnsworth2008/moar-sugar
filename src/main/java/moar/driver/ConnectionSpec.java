@@ -13,7 +13,7 @@ class ConnectionSpec {
   private final AtomicLong validCheck = new AtomicLong();
   private DatabaseMetaData metaData;
 
-  ConnectionSpec(final String backendUrl, final Properties props, final String config) {
+  ConnectionSpec(String backendUrl, Properties props, String config) {
     this.backendUrl = backendUrl;
     this.props = props;
     this.config = config;
@@ -44,7 +44,7 @@ class ConnectionSpec {
     return validCheck;
   }
 
-  public void setMetaData(final DatabaseMetaData metaData) {
+  public void setMetaData(DatabaseMetaData metaData) {
     this.metaData = metaData;
   }
 

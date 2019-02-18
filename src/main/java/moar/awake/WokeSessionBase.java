@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 
 public abstract class WokeSessionBase {
 
-  private String buildSql(final String finalTableish, final Object[] woken) {
-    final boolean isCall = finalTableish.startsWith("call ") || finalTableish.startsWith("call\n");
+  private String buildSql(String finalTableish, Object[] woken) {
+    boolean isCall = finalTableish.startsWith("call ") || finalTableish.startsWith("call\n");
     String sql;
     if (isCall) {
       sql = finalTableish;
@@ -33,33 +33,33 @@ public abstract class WokeSessionBase {
     return sql;
   }
 
-  public void delete(final Object row) {
+  public void delete(Object row) {
     if (row == null) {
       return;
     }
-    final WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
+    WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
     String sql = "delete from \n";
     sql += proxy.getTableName() + "\n";
     sql += "where\n";
     sql += proxy.getIdColumn() + "=?";
-    final String finalSql = sql;
+    String finalSql = sql;
     try (ConnectionHold c = reserve()) {
       require(() -> {
         try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
           ps.setObject(1, proxy.getIdValue());
-          final int result = ps.executeUpdate();
+          int result = ps.executeUpdate();
           require("1 || 0, " + result, 1 == result || 0 == result);
         }
       });
     }
   }
 
-  public void executeSql(final String sql, final Object... args) {
+  public void executeSql(String sql, Object... args) {
     try (ConnectionHold c = reserve()) {
       require(() -> {
         try (PreparedStatement ps = c.get().prepareStatement(sql)) {
           int i = 0;
-          for (final Object arg : args) {
+          for (Object arg : args) {
             ps.setObject(++i, arg);
           }
           return ps.executeUpdate();
@@ -69,39 +69,39 @@ public abstract class WokeSessionBase {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public WokeMappableResultSet iterator(String tableish, final Class[] classes, final Object... params) {
-    final boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
+  public WokeMappableResultSet iterator(String tableish, Class[] classes, Object... params) {
+    boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
     if (isSelect) {
       tableish = format("(%s) tableish", tableish);
     }
-    final String finalTableish = tableish;
-    final AtomicReference<ConnectionHold> cn = new AtomicReference<>();
-    final AtomicReference<PreparedStatement> ps = new AtomicReference<>();
-    final AtomicReference<ResultSet> rs = new AtomicReference<>();
+    String finalTableish = tableish;
+    AtomicReference<ConnectionHold> cn = new AtomicReference<>();
+    AtomicReference<PreparedStatement> ps = new AtomicReference<>();
+    AtomicReference<ResultSet> rs = new AtomicReference<>();
     cn.set(reserve());
-    final String q = cn.get().getIdentifierQuoteString();
-    final Object[] woken = new Object[classes.length];
+    String q = cn.get().getIdentifierQuoteString();
+    Object[] woken = new Object[classes.length];
     for (int i = 0; i < woken.length; i++) {
       woken[i] = create(classes[i]);
       asWokeProxy(woken[i]).setIdentifierQuoteString(q);
     }
 
-    final String sql = buildSql(finalTableish, woken);
+    String sql = buildSql(finalTableish, woken);
     try {
       ps.set(cn.get().get().prepareStatement(sql));
       try {
         for (int i = 0; i < params.length; i++) {
           ps.get().setObject(i + 1, params[i]);
         }
-      } catch (final Throwable t) {
+      } catch (Throwable t) {
         swallow(() -> ps.get().close());
         throw asRuntimeException(t);
       }
-    } catch (final Throwable t) {
+    } catch (Throwable t) {
       swallow(() -> cn.get().close());
       throw asRuntimeException(t);
     }
-    final ResultSet resultSet = require(() -> ps.get().executeQuery());
+    ResultSet resultSet = require(() -> ps.get().executeQuery());
     rs.set(resultSet);
 
     return new WokeMappableResultSet() {
@@ -114,14 +114,14 @@ public abstract class WokeSessionBase {
 
       @Override
       public WokeMappableRow get() {
-        final Object[] rowObjects = new Object[classes.length];
+        Object[] rowObjects = new Object[classes.length];
         for (int i = 0; i < classes.length; i++) {
-          final Object rowObject = create(classes[i]);
-          final WokePrivateProxy wokenProxy = asWokeProxy(rowObject);
+          Object rowObject = create(classes[i]);
+          WokePrivateProxy wokenProxy = asWokeProxy(rowObject);
           wokenProxy.setIdentifierQuoteString(cn.get().getIdentifierQuoteString());
-          final Map<String, Object> map = wokenProxy.get();
-          final boolean hasId = rowObject instanceof WakeableRow.IdColumn;
-          final List<String> columns = wokenProxy.getColumns(!hasId);
+          Map<String, Object> map = wokenProxy.get();
+          boolean hasId = rowObject instanceof WakeableRow.IdColumn;
+          List<String> columns = wokenProxy.getColumns(!hasId);
           require(() -> {
             mapResultRow(hasId, map, columns, rs.get());
           });
@@ -143,20 +143,20 @@ public abstract class WokeSessionBase {
   /**
    * Reset an object to the state it had when it was loaded.
    */
-  public void reset(final Object woke) {
-    final WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
+  public void reset(Object woke) {
+    WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
     proxy.reset();
   }
 
-  public final void update(final Object row) {
-    final WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
+  public void update(Object row) {
+    WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
     String sql = "update\n";
     sql += proxy.getTableName() + "\n";
     sql += "set\n";
-    final AtomicInteger i = new AtomicInteger();
-    final List<Consumer<PreparedStatement>> setProps = new ArrayList<>();
-    final boolean hasId = row instanceof WakeableRow.IdColumn;
-    for (final String column : proxy.getColumns(!hasId)) {
+    AtomicInteger i = new AtomicInteger();
+    List<Consumer<PreparedStatement>> setProps = new ArrayList<>();
+    boolean hasId = row instanceof WakeableRow.IdColumn;
+    for (String column : proxy.getColumns(!hasId)) {
       if (proxy.isDbDirty(column)) {
         sql += column + "=?\n";
         setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
@@ -164,24 +164,24 @@ public abstract class WokeSessionBase {
     }
     sql += "where\n";
     sql += proxy.getIdColumn() + "=?";
-    final Object idValue = proxy.getIdValue();
+    Object idValue = proxy.getIdValue();
     setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
-    final String finalSql = sql;
+    String finalSql = sql;
     try (ConnectionHold c = reserve()) {
       require(() -> {
         try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
-          for (final Consumer<PreparedStatement> item : setProps) {
+          for (Consumer<PreparedStatement> item : setProps) {
             item.accept(ps);
           }
-          final int result = ps.executeUpdate();
+          int result = ps.executeUpdate();
           require("1, " + result, 1 == result);
         }
       });
     }
   }
 
-  public final void update(final String tableish, final Object woke) {
-    final WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
+  public void update(String tableish, Object woke) {
+    WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
     proxy.setTableName(tableish);
     update(woke);
   }

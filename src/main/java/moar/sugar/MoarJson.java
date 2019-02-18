@@ -70,10 +70,10 @@ public class MoarJson {
    *   Input stream.
    * @return Content (or null)
    */
-  public JsonElement fromJson(final InputStream stream) {
+  public JsonElement fromJson(InputStream stream) {
     return swallow(() -> {
       try (InputStreamReader isr = new InputStreamReader(stream)) {
-        final JsonElement o = jsonParser.parse(isr);
+        JsonElement o = jsonParser.parse(isr);
         return o;
       }
     });
@@ -87,7 +87,7 @@ public class MoarJson {
    * @return Content or null.
    */
   @SuppressWarnings("unchecked")
-  public <T extends JsonElement> T fromJson(final String json) {
+  public <T extends JsonElement> T fromJson(String json) {
     return swallow(() -> {
       return (T) jsonParser.parse(json);
     });
@@ -125,20 +125,20 @@ public class MoarJson {
    *   Some objects
    * @return Pretty JSON.
    */
-  public String prettyJson(final Object... args) {
+  public String prettyJson(Object... args) {
     try {
-      final Object[] safe = new Object[args.length];
+      Object[] safe = new Object[args.length];
       for (int i = 0; i < args.length; i++) {
-        final Object a = args[i];
+        Object a = args[i];
         try {
           gsonPretty.toJson(a);
           safe[i] = a;
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
           safe[i] = gsonPretty.toJson(a.toString());
         }
       }
       return gsonPretty.toJson(safe);
-    } catch (final RuntimeException e) {
+    } catch (RuntimeException e) {
       return null;
     }
   }
@@ -148,7 +148,7 @@ public class MoarJson {
    *   Some ugly json
    * @return Some pretty json
    */
-  public String prettyJson(final String ugly) {
+  public String prettyJson(String ugly) {
     return ugly == null ? null : swallow(() -> prettyJson(fromJson(ugly)));
   }
 
@@ -160,15 +160,15 @@ public class MoarJson {
    *   Objects.
    * @return JSON string.
    */
-  public String toJsonSafely(final Object... args) {
+  public String toJsonSafely(Object... args) {
     return swallow(() -> {
-      final Object[] safe = new Object[args.length];
+      Object[] safe = new Object[args.length];
       for (int i = 0; i < args.length; i++) {
-        final Object a = args[i];
+        Object a = args[i];
         try {
           gson.toJson(a);
           safe[i] = a;
-        } catch (final RuntimeException e) {
+        } catch (RuntimeException e) {
           Map<String, String> toStringMap = new HashMap<>();
           toStringMap.put(a.getClass().getSimpleName() + ".toString()", gson.toJson(a.toString()));
           safe[i] = toStringMap;
