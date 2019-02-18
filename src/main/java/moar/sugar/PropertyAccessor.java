@@ -19,54 +19,52 @@ public class PropertyAccessor {
     this("");
   }
 
-  public PropertyAccessor(final Class<?> clz) {
+  public PropertyAccessor(Class<?> clz) {
     this(clz.getName());
   }
 
-  public PropertyAccessor(final Class<?> clz,
-      final Function<String, String> fetch) {
+  public PropertyAccessor(Class<?> clz, Function<String, String> fetch) {
     this(clz.getName(), fetch);
   }
 
-  public PropertyAccessor(final String baseName) {
+  public PropertyAccessor(String baseName) {
     this(baseName, name -> null);
   }
 
-  public PropertyAccessor(final String baseName,
-      final Function<String, String> fetch) {
+  public PropertyAccessor(String baseName, Function<String, String> fetch) {
     this.baseName = baseName;
     this.fetch = fetch;
   }
 
-  public boolean getBoolean(final String name, final Boolean defaultValue) {
+  public boolean getBoolean(String name, Boolean defaultValue) {
     return Boolean.valueOf(getString(name, defaultValue.toString()));
   }
 
-  public Double getDouble(final String name, final Double defaultValue) {
+  public Double getDouble(String name, Double defaultValue) {
     return Double.valueOf(getString(name, defaultValue.toString()));
   }
 
-  public Double getDouble(final String name, final Float defaultValue) {
+  public Double getDouble(String name, Float defaultValue) {
     return getDouble(name, defaultValue.doubleValue());
   }
 
-  public Double getDouble(final String name, final Integer defaultValue) {
+  public Double getDouble(String name, Integer defaultValue) {
     return getDouble(name, defaultValue.doubleValue());
   }
 
-  private String getEnvName(final String key) {
+  private String getEnvName(String key) {
     return key.toUpperCase().replace('.', '_');
   }
 
-  public Integer getInteger(final String name, final Integer defaultValue) {
+  public Integer getInteger(String name, Integer defaultValue) {
     return Integer.valueOf(getString(name, defaultValue.toString()));
   }
 
-  public Long getLong(final String name, final Integer i) {
+  public Long getLong(String name, Integer i) {
     return getLong(name, i.longValue());
   }
 
-  public Long getLong(final String name, final Long defaultValue) {
+  public Long getLong(String name, Long defaultValue) {
     return Long.valueOf(getString(name, defaultValue.toString()));
   }
 
@@ -74,15 +72,15 @@ public class PropertyAccessor {
     return getString(name, null);
   }
 
-  public String getString(final String name, final String defaultValue) {
-    final String key = baseName + "." + name;
-    final String envName = getEnvName(key);
-    final String envValue = System.getenv(envName);
+  public String getString(String name, String defaultValue) {
+    String key = baseName + "." + name;
+    String envName = getEnvName(key);
+    String envValue = System.getenv(envName);
     String downStreamValue = null;
     if (envValue != null) {
       downStreamValue = envValue;
     }
-    final String fetchedValue = fetch.apply(key);
+    String fetchedValue = fetch.apply(key);
     if (fetchedValue != null) {
       downStreamValue = fetchedValue;
     }

@@ -31,7 +31,7 @@ public interface WokenWithSession<Row> {
 
   WokenWithRow<Row> key(Consumer<Row> row);
 
-  List<Row> list(String tableish, final Object... params);
+  List<Row> list(String tableish, Object... params);
 
   void update(Row row);
 

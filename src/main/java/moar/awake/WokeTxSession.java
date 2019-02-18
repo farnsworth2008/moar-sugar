@@ -12,10 +12,10 @@ public class WokeTxSession
     AutoCloseable {
   private final ConnectionHold connectionHold;
 
-  WokeTxSession(final ConnectionHold connectionHold) {
+  WokeTxSession(ConnectionHold connectionHold) {
     this.connectionHold = connectionHold;
     require(() -> {
-      final Connection cn = connectionHold.get();
+      Connection cn = connectionHold.get();
       cn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
       cn.setAutoCommit(false);
     });
@@ -23,7 +23,7 @@ public class WokeTxSession
 
   @Override
   public void close() throws Exception {
-    final Throwable e = safely(() -> connectionHold.get().setAutoCommit(true));
+    Throwable e = safely(() -> connectionHold.get().setAutoCommit(true));
     connectionHold.close();
     if (e != null) {
       throw asRuntimeException(e);

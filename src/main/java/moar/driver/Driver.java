@@ -36,26 +36,22 @@ import moar.sugar.Sugar;
 public class Driver
     implements
     java.sql.Driver {
-  private static final RateLimiter retryRateLimiter = RateLimiter.create(10);
-  private static final PropertyAccessor props
-      = new PropertyAccessor(Driver.class.getName());
-  private static final int CONNECTION_RETRY_LIMIT
-      = getDriverProps().getInteger("connectionRetryLimit", 100);
-  private static final ClassLoader classLoader = Driver.class.getClassLoader();
-  private static Map<String, Callable<Connection>> connectionSource
-      = new HashMap<>();
-  private final static MoarLogger LOG = new MoarLogger(Driver.class);
+  private static RateLimiter retryRateLimiter = RateLimiter.create(10);
+  private static PropertyAccessor props = new PropertyAccessor(Driver.class.getName());
+  private static int CONNECTION_RETRY_LIMIT = getDriverProps().getInteger("connectionRetryLimit", 100);
+  private static ClassLoader classLoader = Driver.class.getClassLoader();
+  private static Map<String, Callable<Connection>> connectionSource = new HashMap<>();
+  private static MoarLogger LOG = new MoarLogger(Driver.class);
   static {
     try {
       registerDriver(new Driver());
-    } catch (final SQLException e) {
+    } catch (SQLException e) {
       throw new RuntimeException("failure static init " + Driver.class, e);
     }
   }
-  private static final java.util.logging.Logger javaLogger
-      = java.util.logging.Logger.getLogger(Driver.class.getName());
-  private static final String PREFIX = "moar:";
-  private static final long VALID_CHECK_MILLIS = 1000 * 60;
+  private static java.util.logging.Logger javaLogger = java.util.logging.Logger.getLogger(Driver.class.getName());
+  private static String PREFIX = "moar:";
+  private static long VALID_CHECK_MILLIS = 1000 * 60;
 
   public static PropertyAccessor getDriverProps() {
     return props;
@@ -76,22 +72,21 @@ public class Driver
 
     @Override
     public void run() {
-      final Iterator<ConnectionSpec> i = failFast.values().iterator();
+      Iterator<ConnectionSpec> i = failFast.values().iterator();
       while (i.hasNext()) {
-        final ConnectionSpec item = i.next();
-        if (currentTimeMillis()
-            - item.createdMillis() > failFastRecoveryLimit) {
+        ConnectionSpec item = i.next();
+        if (currentTimeMillis() - item.createdMillis() > failFastRecoveryLimit) {
           failFast.remove(item.toString());
         } else {
           try {
             doConnect(item).close();
-          } catch (final SQLException e) {
+          } catch (SQLException e) {
             LOG.warn("doConnect", e.getMessage(), e);
           }
         }
       }
       if (failFast.size() == 0) {
-        final Timer removed = recovery;
+        Timer removed = recovery;
         recovery = null;
         removed.cancel();
       }
@@ -99,13 +94,12 @@ public class Driver
   };
 
   @Override
-  public boolean acceptsURL(final String url) throws SQLException {
-    final boolean startsWith = url.startsWith(PREFIX);
+  public boolean acceptsURL(String url) throws SQLException {
+    boolean startsWith = url.startsWith(PREFIX);
     return startsWith;
   }
 
-  private Connection checkConnection(final String caller,
-      final AtomicReference<Connection> connection, final ConnectionSpec cs)
+  private Connection checkConnection(String caller, AtomicReference<Connection> connection, ConnectionSpec cs)
       throws SQLException {
     if (currentTimeMillis() - cs.getValidCheck().get() > VALID_CHECK_MILLIS) {
       ensureConnectionIsValid(caller, cs, connection);
@@ -114,127 +108,98 @@ public class Driver
   }
 
   @Override
-  public Connection connect(final String url, final Properties props)
-      throws SQLException {
+  public Connection connect(String url, Properties props) throws SQLException {
     if (!acceptsURL(url)) {
       return null;
     }
-    final int pLen = PREFIX.length();
-    final int p = url.indexOf(":", pLen);
-    final String config = url.substring(pLen, p);
-    final String backendUrl = url.substring(p + 1);
-    final ConnectionSpec cs = new ConnectionSpec(backendUrl, props, config);
-    final ConnectionSpec fcs = failFast.get(cs.toString());
+    int pLen = PREFIX.length();
+    int p = url.indexOf(":", pLen);
+    String config = url.substring(pLen, p);
+    String backendUrl = url.substring(p + 1);
+    ConnectionSpec cs = new ConnectionSpec(backendUrl, props, config);
+    ConnectionSpec fcs = failFast.get(cs.toString());
     if (null != fcs) {
-      final String msg
-          = "The connection specification is in fail fast mode and has not yet recovered.";
+      String msg = "The connection specification is in fail fast mode and has not yet recovered.";
       throw new SQLException(msg);
     }
     try {
       return doConnect(cs);
-    } catch (final SQLException e) {
+    } catch (SQLException e) {
       failFast.put(cs.toString(), cs);
       startRecovery();
       throw e;
     }
   }
 
-  private PreparedStatement createPreparedStatement1(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s = c.prepareStatement(sql);
+  private PreparedStatement createPreparedStatement1(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql);
     return s;
   }
 
-  private PreparedStatement createPreparedStatement2(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql, final int i1) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s = c.prepareStatement(sql, i1);
+  private PreparedStatement createPreparedStatement2(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql, int i1) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql, i1);
     return s;
   }
 
-  private PreparedStatement createPreparedStatement3(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql, final int resultSetType, final int resultSetConcurrency)
-      throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s
-        = c.prepareStatement(sql, resultSetType, resultSetConcurrency);
+  private PreparedStatement createPreparedStatement3(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql, resultSetType, resultSetConcurrency);
     return s;
   }
 
-  private PreparedStatement createPreparedStatement4(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql, final int resultSetType, final int resultSetConcurrency,
-      final int resultSetHoldability) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s = c.prepareStatement(sql, resultSetType,
-        resultSetConcurrency, resultSetHoldability);
+  private PreparedStatement createPreparedStatement4(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     return s;
   }
 
-  private PreparedStatement createPreparedStatement5(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql, final int[] i1) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s = c.prepareStatement(sql, i1);
+  private PreparedStatement createPreparedStatement5(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql, int[] i1) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql, i1);
     return s;
   }
 
-  private PreparedStatement createPreparedStatement6(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final String sql, final String[] p1) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final PreparedStatement s = c.prepareStatement(sql, p1);
+  private PreparedStatement createPreparedStatement6(AtomicReference<Connection> connection, ConnectionSpec cs,
+      String sql, String[] p1) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    PreparedStatement s = c.prepareStatement(sql, p1);
     return s;
   }
 
-  private Statement createStatement(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs)
-      throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final Statement s = c.createStatement();
+  private Statement createStatement(AtomicReference<Connection> connection, ConnectionSpec cs) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    Statement s = c.createStatement();
     return s;
   }
 
-  private Statement createStatement(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final int resultSetType, final int resultSetConcurrency)
-      throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final Statement s = c.createStatement(resultSetType, resultSetConcurrency);
+  private Statement createStatement(AtomicReference<Connection> connection, ConnectionSpec cs, int resultSetType,
+      int resultSetConcurrency) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    Statement s = c.createStatement(resultSetType, resultSetConcurrency);
     return s;
   }
 
-  private Statement createStatement(
-      final AtomicReference<Connection> connection, final ConnectionSpec cs,
-      final int resultSetType, final int resultSetConcurrency,
-      final int resultSetHoldability) throws SQLException {
-    final Connection c
-        = checkConnection(Sugar.codeLocationAt(2), connection, cs);
-    final Statement s = c.createStatement(resultSetType, resultSetConcurrency,
-        resultSetHoldability);
+  private Statement createStatement(AtomicReference<Connection> connection, ConnectionSpec cs, int resultSetType,
+      int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    Connection c = checkConnection(Sugar.codeLocationAt(2), connection, cs);
+    Statement s = c.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
     return s;
   }
 
-  private Connection doConnect(final ConnectionSpec cs) throws SQLException {
+  private Connection doConnect(ConnectionSpec cs) throws SQLException {
     init(cs);
     failFast.remove(cs.getUrl());
     return proxy(cs);
   }
 
-  private void ensureConnectionIsValid(final String caller,
-      final ConnectionSpec cs, final AtomicReference<Connection> connection)
+  private void ensureConnectionIsValid(String caller, ConnectionSpec cs, AtomicReference<Connection> connection)
       throws SQLException {
     if (isAutoCommit(connection)) {
       // Don't mess with a transactional connection!
@@ -245,7 +210,7 @@ public class Driver
       retryRateLimiter.acquire();
       try {
         connection.get().close();
-      } catch (final SQLException e) {
+      } catch (SQLException e) {
         LOG.warn("unable to close");
       }
       connection.set(getConnectionFromSource(cs));
@@ -253,23 +218,23 @@ public class Driver
     cs.getValidCheck().set(currentTimeMillis());
   }
 
-  private Connection getConnectionFromSource(final ConnectionSpec cs) {
+  private Connection getConnectionFromSource(ConnectionSpec cs) {
     Connection c = null;
     while (c == null) {
       try {
         synchronized (connectionSource) {
           c = connectionSource.get(cs.getUrl()).call();
         }
-      } catch (final InterruptedException e) {
+      } catch (InterruptedException e) {
         LOG.warn("getConnectionFromSource", e.getMessage());
-      } catch (final ExecutionException e) {
+      } catch (ExecutionException e) {
         if (e.getCause() instanceof RuntimeException) {
           throw (RuntimeException) e.getCause();
         }
         throw new RuntimeException(e);
-      } catch (final RuntimeException e) {
+      } catch (RuntimeException e) {
         throw e;
-      } catch (final Exception e) {
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -287,24 +252,21 @@ public class Driver
   }
 
   @Override
-  public java.util.logging.Logger getParentLogger()
-      throws SQLFeatureNotSupportedException {
+  public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
     return javaLogger;
   }
 
   @Override
-  public DriverPropertyInfo[] getPropertyInfo(final String arg0,
-      final Properties arg1) throws SQLException {
+  public DriverPropertyInfo[] getPropertyInfo(String arg0, Properties arg1) throws SQLException {
     return driverProps;
   }
 
-  private Connection getRealConnection(final ConnectionSpec cs)
-      throws SQLException {
-    final String url = cs.getUrl();
-    final Properties props = cs.getProps();
+  private Connection getRealConnection(ConnectionSpec cs) throws SQLException {
+    String url = cs.getUrl();
+    Properties props = cs.getProps();
     try {
       return retryable(CONNECTION_RETRY_LIMIT, () -> {
-        final Connection realCn = DriverManager.getConnection(url, props);
+        Connection realCn = DriverManager.getConnection(url, props);
         return realCn;
       });
     } catch (SQLException e) {
@@ -314,8 +276,8 @@ public class Driver
     }
   }
 
-  private void init(final ConnectionSpec cs) throws SQLException {
-    final String url = cs.getUrl();
+  private void init(ConnectionSpec cs) throws SQLException {
+    String url = cs.getUrl();
     if (!connectionSource.containsKey(url)) {
       try (Connection cn = getRealConnection(cs)) {
         new DriverUpdate(cs.getConfig(), cs.getUrl(), cn).init();
@@ -324,51 +286,45 @@ public class Driver
     }
   }
 
-  private boolean isAutoCommit(final AtomicReference<Connection> connection)
-      throws SQLException {
+  private boolean isAutoCommit(AtomicReference<Connection> connection) throws SQLException {
     return connection.get().getAutoCommit() == false;
   }
 
-  private boolean isPrimativeInt(final Object o) {
+  private boolean isPrimativeInt(Object o) {
     if (o == null) {
       return false;
     }
-    final Class<? extends Object> clz = o.getClass();
-    final Class<?> componentType = clz.getComponentType();
+    Class<? extends Object> clz = o.getClass();
+    Class<?> componentType = clz.getComponentType();
     if (componentType == null) {
       return false;
     }
-    final boolean isArray = clz.isArray();
-    final String name = componentType.getName();
+    boolean isArray = clz.isArray();
+    String name = componentType.getName();
     return componentType.isPrimitive() && !isArray && name.equals("int");
   }
 
-  private boolean isPrimativeIntArray(final Object o) {
-    final Class<? extends Object> clz = o.getClass();
-    final Class<?> componentType = clz.getComponentType();
+  private boolean isPrimativeIntArray(Object o) {
+    Class<? extends Object> clz = o.getClass();
+    Class<?> componentType = clz.getComponentType();
     if (componentType == null) {
       return false;
     }
-    final boolean isArray = clz.isArray();
-    return componentType.isPrimitive() && isArray
-        && componentType.getName().equals("int");
+    boolean isArray = clz.isArray();
+    return componentType.isPrimitive() && isArray && componentType.getName().equals("int");
   }
 
-  private boolean isValid(final String caller, final ConnectionSpec cs,
-      final AtomicReference<Connection> connection) {
-    final Connection cn = connection.get();
+  private boolean isValid(String caller, ConnectionSpec cs, AtomicReference<Connection> connection) {
+    Connection cn = connection.get();
     try {
       return cn.isValid(1000);
-    } catch (final SQLException e) {
+    } catch (SQLException e) {
       String desc = e.getMessage();
-      final String timeoutMsg
-          = "The last packet successfully received from the server was";
+      String timeoutMsg = "The last packet successfully received from the server was";
       if (desc.startsWith(timeoutMsg)) {
-        desc = desc.substring(timeoutMsg.length(),
-            desc.indexOf("milliseconds ago.")) + "ms";
+        desc = desc.substring(timeoutMsg.length(), desc.indexOf("milliseconds ago.")) + "ms";
       }
-      LOG.warn("!isValid", caller, e.getErrorCode(), e.getSQLState(), desc,
-          cs.getUrl());
+      LOG.warn("!isValid", caller, e.getErrorCode(), e.getSQLState(), desc, cs.getUrl());
       return false;
     }
   }
@@ -378,77 +334,65 @@ public class Driver
     return true;
   }
 
-  private Connection proxy(final ConnectionSpec cs) throws SQLException {
-    final AtomicReference<Connection> connection = new AtomicReference<>();
+  private Connection proxy(ConnectionSpec cs) throws SQLException {
+    AtomicReference<Connection> connection = new AtomicReference<>();
     connection.set(getConnectionFromSource(cs));
-    return (Connection) newProxyInstance(classLoader,
-        new Class<?>[] { Connection.class }, (proxy, method, a) -> {
-          try {
-            final String methodName = method.getName();
-            if (methodName.equals("close")) {
-              if (connection.get() != null) {
-                LOG.trace("close", cs.getUrl());
-                connection.get().close();
-                connection.set(null);
-              }
-              return null;
-            } else if (methodName.equals("createStatement")) {
-              if (a == null || a.length == 0) {
-                return createStatement(connection, cs);
-              } else if (a.length == 2) {
-                return createStatement(connection, cs, (Integer) a[0],
-                    (Integer) a[1]);
-              } else {
-                return createStatement(connection, cs, (Integer) a[0],
-                    (Integer) a[1], (Integer) a[2]);
-              }
-            } else if (methodName.equals("prepareStatement")) {
-              if (a.length == 1) {
-                return createPreparedStatement1(connection, cs, (String) a[0]);
-              } else if (a.length == 2 && a[1] instanceof Integer) {
-                return createPreparedStatement2(connection, cs, (String) a[0],
-                    ((Integer) a[1]).intValue());
-              } else if (a.length == 2 && isPrimativeInt(a[1])) {
-                return createPreparedStatement2(connection, cs, (String) a[0],
-                    (int) a[1]);
-              } else if (a.length == 2 && isPrimativeIntArray(a[1])) {
-                return createPreparedStatement5(connection, cs, (String) a[0],
-                    (int[]) a[1]);
-              } else if (a.length == 2 && a[1] instanceof String[]) {
-                return createPreparedStatement6(connection, cs, (String) a[0],
-                    (String[]) a[1]);
-              } else if (a.length == 3) {
-                return createPreparedStatement3(connection, cs, (String) a[0],
-                    (int) a[1], (int) a[2]);
-              } else if (a.length == 4) {
-                return createPreparedStatement4(connection, cs, (String) a[0],
-                    (int) a[1], (int) a[2], (int) a[3]);
-              } else {
-                throw new MoarException("Not supported: ",
-                    method.getParameterCount(), a);
-              }
-            } else if (methodName.equals("prepareStatement") && a.length == 1) {
-              return createPreparedStatement1(connection, cs, (String) a[0]);
-            } else if (cs.getMetaData() != null
-                && methodName.equals("getMetaData")) {
-              return cs.getMetaData();
-            } else if (methodName.equals("isValid") && a.length == 1) {
-              final Connection c = connection.get();
-              final Object result = method.invoke(c, a);
-              return result;
-            } else {
-              final Connection c
-                  = checkConnection(Sugar.codeLocationAt(1), connection, cs);
-              final Object result = method.invoke(c, a);
-              if (methodName.equals("getMetaData")) {
-                cs.setMetaData((DatabaseMetaData) result);
-              }
-              return result;
-            }
-          } catch (InvocationTargetException | UndeclaredThrowableException e) {
-            throw e.getCause();
+    return (Connection) newProxyInstance(classLoader, new Class<?>[] { Connection.class }, (proxy, method, a) -> {
+      try {
+        String methodName = method.getName();
+        if (methodName.equals("close")) {
+          if (connection.get() != null) {
+            LOG.trace("close", cs.getUrl());
+            connection.get().close();
+            connection.set(null);
           }
-        });
+          return null;
+        } else if (methodName.equals("createStatement")) {
+          if (a == null || a.length == 0) {
+            return createStatement(connection, cs);
+          } else if (a.length == 2) {
+            return createStatement(connection, cs, (Integer) a[0], (Integer) a[1]);
+          } else {
+            return createStatement(connection, cs, (Integer) a[0], (Integer) a[1], (Integer) a[2]);
+          }
+        } else if (methodName.equals("prepareStatement")) {
+          if (a.length == 1) {
+            return createPreparedStatement1(connection, cs, (String) a[0]);
+          } else if (a.length == 2 && a[1] instanceof Integer) {
+            return createPreparedStatement2(connection, cs, (String) a[0], ((Integer) a[1]).intValue());
+          } else if (a.length == 2 && isPrimativeInt(a[1])) {
+            return createPreparedStatement2(connection, cs, (String) a[0], (int) a[1]);
+          } else if (a.length == 2 && isPrimativeIntArray(a[1])) {
+            return createPreparedStatement5(connection, cs, (String) a[0], (int[]) a[1]);
+          } else if (a.length == 2 && a[1] instanceof String[]) {
+            return createPreparedStatement6(connection, cs, (String) a[0], (String[]) a[1]);
+          } else if (a.length == 3) {
+            return createPreparedStatement3(connection, cs, (String) a[0], (int) a[1], (int) a[2]);
+          } else if (a.length == 4) {
+            return createPreparedStatement4(connection, cs, (String) a[0], (int) a[1], (int) a[2], (int) a[3]);
+          } else {
+            throw new MoarException("Not supported: ", method.getParameterCount(), a);
+          }
+        } else if (methodName.equals("prepareStatement") && a.length == 1) {
+          return createPreparedStatement1(connection, cs, (String) a[0]);
+        } else if (cs.getMetaData() != null && methodName.equals("getMetaData")) {
+          return cs.getMetaData();
+        } else if (methodName.equals("isValid") && a.length == 1) {
+          Connection c = connection.get();
+          Object result = method.invoke(c, a);
+          return result;
+        } else {
+          Connection c = checkConnection(Sugar.codeLocationAt(1), connection, cs);
+          Object result = method.invoke(c, a);
+          if (methodName.equals("getMetaData")) {
+            cs.setMetaData((DatabaseMetaData) result);
+          }
+          return result;
+        }
+      } catch (InvocationTargetException | UndeclaredThrowableException e) {
+        throw e.getCause();
+      }
+    });
 
   }
 

@@ -11,10 +11,10 @@ class StatementReader {
   private final StringBuilder text = new StringBuilder();
   private final InputStream stream;
 
-  StatementReader(final InputStream s) throws IOException {
-    final ByteArrayOutputStream bo = new ByteArrayOutputStream();
-    try (final InputStreamReader r = new InputStreamReader(s)) {
-      final BufferedReader br = new BufferedReader(r);
+  StatementReader(InputStream s) throws IOException {
+    ByteArrayOutputStream bo = new ByteArrayOutputStream();
+    try (InputStreamReader r = new InputStreamReader(s)) {
+      BufferedReader br = new BufferedReader(r);
       boolean delimiterMode = false;
       String line;
       while (null != (line = br.readLine())) {
@@ -33,11 +33,11 @@ class StatementReader {
         }
       }
     }
-    final byte[] b = bo.toByteArray();
+    byte[] b = bo.toByteArray();
     stream = new ByteArrayInputStream(b);
   }
 
-  private void readQuotedString(final char quoteType) throws IOException {
+  private void readQuotedString(char quoteType) throws IOException {
     int c;
     while (-1 != (c = stream.read())) {
       char ch = (char) c;
@@ -71,17 +71,16 @@ class StatementReader {
         return;
       }
     }
-    throw new RuntimeException(
-        "Expected closing quote of type (" + (int) quoteType + ")");
+    throw new RuntimeException("Expected closing quote of type (" + (int) quoteType + ")");
   }
 
   String readStatement() throws IOException {
     text.setLength(0);
     int c;
-    final char quote = '\'';
-    final char doubleQuote = '"';
+    char quote = '\'';
+    char doubleQuote = '"';
     while (-1 != (c = stream.read())) {
-      final char ch = (char) c;
+      char ch = (char) c;
       if (ch == ';') {
         break;
       } else if (ch == quote) {
@@ -100,7 +99,7 @@ class StatementReader {
         text.append(ch);
       }
     }
-    final String trim = text.toString().trim();
+    String trim = text.toString().trim();
     return trim.equals("") ? null : trim;
   }
 }

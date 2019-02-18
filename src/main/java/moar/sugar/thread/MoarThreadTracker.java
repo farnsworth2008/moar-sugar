@@ -7,14 +7,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import moar.sugar.PropertyAccessor;
 
 public class MoarThreadTracker {
-  private static final PropertyAccessor props
-      = new PropertyAccessor(MoarThreadTracker.class);
-  private static final long bucketSize = props.getLong("bucketSize", 1000L);
+  private static PropertyAccessor props = new PropertyAccessor(MoarThreadTracker.class);
+  private static long bucketSize = props.getLong("bucketSize", 1000L);
   private final String description;
   private final AtomicLong min, max, count, total;
   private final Map<Long, AtomicLong> buckets = new ConcurrentHashMap<>();
 
-  public MoarThreadTracker(final String description) {
+  public MoarThreadTracker(String description) {
     count = new AtomicLong();
     min = new AtomicLong(Long.MAX_VALUE);
     max = new AtomicLong();
@@ -22,19 +21,19 @@ public class MoarThreadTracker {
     total = new AtomicLong();
   }
 
-  public void add(final Long elapsed) {
+  public void add(Long elapsed) {
     updateMin(elapsed);
     updateMax(elapsed);
     count.incrementAndGet();
     total.addAndGet(elapsed);
-    final Long key = elapsed / bucketSize;
+    Long key = elapsed / bucketSize;
     getBucket(key).incrementAndGet();
   }
 
-  private AtomicLong getBucket(final Long key) {
-    final AtomicLong bucket = getBuckets().get(key);
+  private AtomicLong getBucket(Long key) {
+    AtomicLong bucket = getBuckets().get(key);
     if (bucket == null) {
-      final AtomicLong newBucket = new AtomicLong();
+      AtomicLong newBucket = new AtomicLong();
       buckets.put(key, newBucket);
       return newBucket;
     }
@@ -65,14 +64,14 @@ public class MoarThreadTracker {
     return total.get();
   }
 
-  private void updateMax(final long elapsed) {
+  private void updateMax(long elapsed) {
     long current;
     do {
       current = max.get();
     } while (!max.compareAndSet(current, Math.max(current, elapsed)));
   }
 
-  private void updateMin(final long elapsed) {
+  private void updateMin(long elapsed) {
     long current;
     do {
       current = min.get();

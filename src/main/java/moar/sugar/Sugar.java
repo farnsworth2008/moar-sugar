@@ -17,14 +17,14 @@ import java.util.concurrent.Callable;
  * @author Mark Farnsworth
  */
 public class Sugar {
-  public static RuntimeException asRuntimeException(final Throwable e) {
+  public static RuntimeException asRuntimeException(Throwable e) {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
     }
     return new RuntimeException(e);
   }
 
-  public static void closeQuietly(final AutoCloseable closeable) {
+  public static void closeQuietly(AutoCloseable closeable) {
     swallow(() -> closeable.close());
   }
 
@@ -32,18 +32,17 @@ public class Sugar {
    * Return the code location of an callstack offset (i.e. $(1) is the Class and
    * Line of the caller).
    */
-  public static final String codeLocationAt(final int offset) {
-    final StackTraceElement[] stackTrace
-        = Thread.currentThread().getStackTrace();
+  public static String codeLocationAt(int offset) {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
     int pos = -1;
-    for (final StackTraceElement item : stackTrace) {
-      final String className = item.getClassName();
+    for (StackTraceElement item : stackTrace) {
+      String className = item.getClassName();
       if (!className.startsWith("moar.")) {
-        final int dotPos = className.lastIndexOf('.');
+        int dotPos = className.lastIndexOf('.');
         if (dotPos > 0) {
           pos++;
           if (pos == offset) {
-            final int lineNumber = item.getLineNumber();
+            int lineNumber = item.getLineNumber();
             return className.substring(dotPos + 1) + ":" + lineNumber;
           }
         }
@@ -52,29 +51,29 @@ public class Sugar {
     return null;
   }
 
-  public static boolean has(final Object o) {
+  public static boolean has(Object o) {
     try {
       if (o == null || isEmptyList(o) || isEmptyString(o)) {
         return false;
       }
       return true;
-    } catch (final Exception e) {
+    } catch (Exception e) {
       return false;
     }
   }
 
   @SuppressWarnings("rawtypes")
-  public static boolean isEmptyList(final Object o) {
+  public static boolean isEmptyList(Object o) {
     return o instanceof List && ((List) o).isEmpty();
   }
 
-  public static boolean isEmptyString(final Object o) {
+  public static boolean isEmptyString(Object o) {
     return o instanceof String && ((String) o).isEmpty();
   }
 
   @SafeVarargs
-  public static <T> T nonNull(final T... args) {
-    for (final T arg : args) {
+  public static <T> T nonNull(T... args) {
+    for (T arg : args) {
       if (arg != null) {
         return arg;
       }
@@ -82,22 +81,22 @@ public class Sugar {
     throw new NullPointerException();
   }
 
-  public static final <T> T require(final Callable<T> c) {
+  public static <T> T require(Callable<T> c) {
     try {
       return c.call();
-    } catch (final Exception e) {
+    } catch (Exception e) {
       throw asRuntimeException(e);
     }
   }
 
-  public static final void require(final CallableVoid r) {
+  public static void require(CallableVoid r) {
     require(() -> {
       r.call();
       return null;
     });
   }
 
-  public static final void require(Object o) {
+  public static void require(Object o) {
     if (isEmptyList(o) || isEmptyString(o)) {
       o = null;
     }
@@ -106,27 +105,25 @@ public class Sugar {
     }
   }
 
-  public static final void require(final String message, final boolean test) {
+  public static void require(String message, boolean test) {
     if (!test) {
       throw new MoarException(message);
     }
   }
 
-  public static <T> T retryable(final int tries, final Callable<T> call)
-      throws Exception {
+  public static <T> T retryable(int tries, Callable<T> call) throws Exception {
     return retryable(tries, 1000, call);
   }
 
   @SuppressWarnings("null")
-  public static <T> T retryable(final int triesAllowed, final long retryWaitMs,
-      final Callable<T> call) throws Exception {
+  public static <T> T retryable(int triesAllowed, long retryWaitMs, Callable<T> call) throws Exception {
     Exception last = null;
     int tries = 0;
     while (tries++ < triesAllowed) {
       try {
         last = null;
         return call.call();
-      } catch (final RetryableException e) {
+      } catch (RetryableException e) {
         last = e;
         sleep(retryWaitMs + (long) (random() * retryWaitMs));
       }
@@ -137,8 +134,7 @@ public class Sugar {
     throw last;
   }
 
-  public static void retryable(final int tries, final long retryWaitMs,
-      final Runnable run) {
+  public static void retryable(int tries, long retryWaitMs, Runnable run) {
     require(() -> {
       retryable(tries, retryWaitMs, () -> {
         run.run();
@@ -147,26 +143,26 @@ public class Sugar {
     });
   }
 
-  public static void retryable(final int tries, final Runnable run) {
+  public static void retryable(int tries, Runnable run) {
     retryable(tries, 1000, run);
   }
 
-  public static <T> SafeResult<T> safely(final Callable<T> callable) {
+  public static <T> SafeResult<T> safely(Callable<T> callable) {
     try {
       return new SafeResult<>(callable.call(), null);
-    } catch (final Throwable e) {
+    } catch (Throwable e) {
       return new SafeResult<>(null, e);
     }
   }
 
-  public static Throwable safely(final CallableVoid run) {
+  public static Throwable safely(CallableVoid run) {
     return safely(() -> {
       run.call();
       return null;
     }).thrown();
   }
 
-  public static String stackTraceAsString(final Throwable thrown) {
+  public static String stackTraceAsString(Throwable thrown) {
     return require(() -> {
       try (StringWriter sw = new StringWriter()) {
         try (PrintWriter pw = new PrintWriter(sw)) {
@@ -177,12 +173,12 @@ public class Sugar {
     });
   }
 
-  public static <T> T swallow(final Callable<T> call) {
+  public static <T> T swallow(Callable<T> call) {
     SafeResult<T> result = safely(call);
     return result.get();
   }
 
-  public static void swallow(final CallableVoid run) {
+  public static void swallow(CallableVoid run) {
     safely(run);
   }
 
@@ -191,7 +187,6 @@ public class Sugar {
   }
 
   public static Date toUtilDate(LocalDate birthDate) {
-    return Date
-        .from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    return Date.from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
   }
 }

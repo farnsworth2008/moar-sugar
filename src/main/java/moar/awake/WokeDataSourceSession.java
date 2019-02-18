@@ -15,14 +15,14 @@ public class WokeDataSourceSession
 
   private final DataSource ds;
 
-  public WokeDataSourceSession(final DataSource ds) {
+  public WokeDataSourceSession(DataSource ds) {
     this.ds = ds;
   }
 
   @Override
   public ConnectionHold reserve() {
-    final Connection cn = require(() -> ds.getConnection());
-    final DatabaseMetaData md = require(() -> cn.getMetaData());
+    Connection cn = require(() -> ds.getConnection());
+    DatabaseMetaData md = require(() -> cn.getMetaData());
     return new ConnectionHold() {
 
       @Override
