@@ -33,6 +33,7 @@ import moar.sugar.Sugar;
 /**
  * Driver with the ability to run scripts and recover from connection errors
  */
+@SuppressWarnings("resource")
 public class Driver
     implements
     java.sql.Driver {
@@ -53,13 +54,15 @@ public class Driver
   private static String PREFIX = "moar:";
   private static long VALID_CHECK_MILLIS = 1000 * 60;
 
-  public static PropertyAccessor getDriverProps() {
+  static PropertyAccessor getDriverProps() {
     return props;
   }
 
-  public static void init() {
-    // Callers that call the init method force the class to be loaded.
-  }
+  /**
+   * Initialization method to ensure class is loaded.
+   */
+  public static void init() {}
+
   private final DriverPropertyInfo[] driverProps = new DriverPropertyInfo[] {};
   private final HashMap<String, ConnectionSpec> failFast = new HashMap<>();
 
@@ -334,7 +337,7 @@ public class Driver
     return true;
   }
 
-  private Connection proxy(ConnectionSpec cs) throws SQLException {
+  private Connection proxy(ConnectionSpec cs) {
     AtomicReference<Connection> connection = new AtomicReference<>();
     connection.set(getConnectionFromSource(cs));
     return (Connection) newProxyInstance(classLoader, new Class<?>[] { Connection.class }, (proxy, method, a) -> {

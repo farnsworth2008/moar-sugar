@@ -57,6 +57,13 @@ public class MoarJson {
     jsonParser = new JsonParser();
   }
 
+  /**
+   * Create Moar JSON with custom dependencies.
+   * 
+   * @param gson
+   * @param gsonPretty
+   * @param jsonParser
+   */
   public MoarJson(Gson gson, Gson gsonPretty, JsonParser jsonParser) {
     this.gson = gson;
     this.gsonPretty = gsonPretty;
@@ -107,6 +114,9 @@ public class MoarJson {
     return gson.fromJson(json, classOfT);
   }
 
+  /**
+   * @return Gson instance
+   */
   public Gson getGson() {
     return gson;
   }

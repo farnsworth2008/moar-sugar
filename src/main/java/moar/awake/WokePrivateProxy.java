@@ -194,9 +194,8 @@ class WokePrivateProxy
     }
     if (mapValue != null) {
       return !mapValue.equals(setValue);
-    } else {
-      return true;
     }
+    return true;
   }
 
   @Override

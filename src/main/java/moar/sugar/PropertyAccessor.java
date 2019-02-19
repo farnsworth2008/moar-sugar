@@ -8,6 +8,7 @@ import java.util.function.Function;
  * Properties automatically use names based the base name supplied via the
  * constructor.
  */
+@SuppressWarnings("javadoc")
 public class PropertyAccessor {
   MoarLogger LOG = new MoarLogger(PropertyAccessor.class);
 

@@ -110,6 +110,7 @@ public class Waker<Row>
     return sql;
   }
 
+  @SuppressWarnings("unchecked")
   static <Row> Row create(Class<Row> clz) {
     ClassLoader c = Waker.class.getClassLoader();
     Class<?>[] cc = { clz, WokeProxiedObject.class };
@@ -149,6 +150,12 @@ public class Waker<Row>
     }
   }
 
+  /**
+   * Run a transaction rollback on exceptions.
+   *
+   * @param session
+   * @param tx
+   */
   public static void runWokeTransaction(WokeSessionBase session, Consumer<WokeTxSession> tx) {
     synchronized (session) {
       require(() -> {
@@ -173,6 +180,10 @@ public class Waker<Row>
     }
   }
 
+  /**
+   * @param clz
+   * @return Waker configured for the class.
+   */
   public static <Row> WokenWithoutSession<Row> wake(Class<Row> clz) {
     return new Waker<>(clz);
   }
@@ -299,8 +310,10 @@ public class Waker<Row>
         commaNeeded = true;
       }
     }
-    Connection cn = hold.get();
     boolean useGeneratedKeys = isUpsert && hasId;
+
+    @SuppressWarnings("resource")
+    Connection cn = hold.get();
     try (
         PreparedStatement ps = useGeneratedKeys ? cn.prepareStatement(sql, identityColumn) : cn.prepareStatement(sql)) {
       int p = 0;
@@ -337,7 +350,7 @@ public class Waker<Row>
     }
   }
 
-  private WokeResultSet<Row> doIterator(String tableish, Object... params) throws SQLException {
+  private WokeResultSet<Row> doIterator(String tableish, Object... params) {
     Row woken = create(clz);
     boolean isCall = tableish.startsWith("call ") || tableish.startsWith("call\n");
     boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
@@ -410,7 +423,7 @@ public class Waker<Row>
     };
   }
 
-  private List<Row> doSessionFind() throws SQLException {
+  private List<Row> doSessionFind() {
     LOG.trace("sessionFind");
     try {
       return doSessionFindOp();
@@ -455,7 +468,7 @@ public class Waker<Row>
     return require(() -> doTableFindSql(row));
   }
 
-  private List<Row> doTableFindSql(Row row) throws SQLException {
+  private List<Row> doTableFindSql(Row row) {
     try (ConnectionHold cn = session.get().reserve()) {
       boolean hasId = row instanceof WakeableRow.IdColumn;
       WokePrivateProxy woke = asWokeProxy(row);

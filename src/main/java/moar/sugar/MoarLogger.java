@@ -1,5 +1,10 @@
 package moar.sugar;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 import static moar.sugar.Sugar.codeLocationAt;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -31,23 +36,46 @@ public class MoarLogger {
 
   Logger log;
 
+  /**
+   * Create logger for class.
+   * 
+   * @param clz
+   */
   public MoarLogger(Class<?> clz) {
     log = Logger.getLogger(clz.getName());
   }
 
+  /**
+   * Log a message using {@link Level#FINE}
+   * 
+   * @param args
+   *   Message
+   */
   public void debug(Object... args) {
-    log(Level.FINE, args);
+    log(FINE, args);
   }
 
+  /**
+   * Log a message using {@link Level#SEVERE}
+   * 
+   * @param args
+   *   Message
+   */
   public void error(Object... args) {
-    log(Level.SEVERE, args);
+    log(SEVERE, args);
   }
 
+  /**
+   * Log a message using {@link Level#INFO}
+   * 
+   * @param args
+   *   Message
+   */
   public void info(Object... args) {
-    log(Level.INFO, args);
+    log(INFO, args);
   }
 
-  public void log(Level level, Object... args) {
+  void log(Level level, Object... args) {
     Object lastArg = args[args.length - 1];
     if (lastArg instanceof Throwable) {
       args = Arrays.copyOf(args, args.length - 1);
@@ -58,12 +86,24 @@ public class MoarLogger {
     }
   }
 
+  /**
+   * Log a message using {@link Level#FINEST}
+   * 
+   * @param args
+   *   Message
+   */
   public void trace(Object... args) {
-    log(Level.FINEST, args);
+    log(FINEST, args);
   }
 
+  /**
+   * Log a message using {@link Level#WARNING}
+   * 
+   * @param args
+   *   Message
+   */
   public void warn(Object... args) {
-    log(Level.WARNING, args);
+    log(WARNING, args);
   }
 
 }

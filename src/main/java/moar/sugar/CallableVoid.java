@@ -1,5 +1,7 @@
 package moar.sugar;
 
+import java.util.concurrent.Callable;
+
 /**
  * A task that does not return a result and may throw an exception.
  * <p>
@@ -16,5 +18,10 @@ package moar.sugar;
  * @author Mark Farnsworth
  */
 public interface CallableVoid {
+  /**
+   * Executes a call, or throws an exception if unable to do so.
+   *
+   * @throws Exception if unable to compute a result
+   */
   void call() throws Exception;
 }

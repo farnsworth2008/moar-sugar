@@ -6,6 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import moar.sugar.PropertyAccessor;
 
+/**
+ * Thread tracker
+ *
+ * @author Mark Farnsworth
+ */
 public class MoarThreadTracker {
   private static PropertyAccessor props = new PropertyAccessor(MoarThreadTracker.class);
   private static long bucketSize = props.getLong("bucketSize", 1000L);
@@ -13,20 +18,30 @@ public class MoarThreadTracker {
   private final AtomicLong min, max, count, total;
   private final Map<Long, AtomicLong> buckets = new ConcurrentHashMap<>();
 
-  public MoarThreadTracker(String description) {
+  /**
+   * Create thread tracker
+   *
+   * @param desc
+   */
+  public MoarThreadTracker(String desc) {
     count = new AtomicLong();
     min = new AtomicLong(Long.MAX_VALUE);
     max = new AtomicLong();
-    this.description = description;
+    this.description = desc;
     total = new AtomicLong();
   }
 
-  public void add(Long elapsed) {
-    updateMin(elapsed);
-    updateMax(elapsed);
+  /**
+   * Add elapsed time
+   *
+   * @param elap
+   */
+  public void add(Long elap) {
+    updateMin(elap);
+    updateMax(elap);
     count.incrementAndGet();
-    total.addAndGet(elapsed);
-    Long key = elapsed / bucketSize;
+    total.addAndGet(elap);
+    Long key = elap / bucketSize;
     getBucket(key).incrementAndGet();
   }
 
@@ -40,26 +55,34 @@ public class MoarThreadTracker {
     return bucket;
   }
 
+  /**
+   * @return Map of buckets
+   */
   public Map<Long, AtomicLong> getBuckets() {
     return unmodifiableMap(buckets);
   }
 
+  @SuppressWarnings("javadoc")
   public Long getCount() {
     return count.get();
   }
 
+  @SuppressWarnings("javadoc")
   public String getDescription() {
     return description;
   }
 
+  @SuppressWarnings("javadoc")
   public Long getMax() {
     return max.get();
   }
 
+  @SuppressWarnings("javadoc")
   public Long getMin() {
     return min.get();
   }
 
+  @SuppressWarnings("javadoc")
   public Long getTotal() {
     return total.get();
   }

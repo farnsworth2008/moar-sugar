@@ -15,7 +15,7 @@ import java.util.UUID;
 import moar.sugar.MoarException;
 import moar.sugar.MoarLogger;
 
-public class DriverUpdate {
+class DriverUpdate {
 
   private static MoarLogger LOG = new MoarLogger(DriverUpdate.class);
   private static Class<?> loader = DriverUpdate.class;
@@ -35,7 +35,7 @@ public class DriverUpdate {
   private final String instance = UUID.randomUUID().toString();
   private final String trackTableName;
 
-  DriverUpdate(String config, String url, Connection connection) throws SQLException {
+  DriverUpdate(String config, String url, Connection connection) {
     q = url.startsWith("jdbc:mysql://") ? "`" : "\"";
     this.connection = connection;
     startMillis = currentTimeMillis();
@@ -48,7 +48,7 @@ public class DriverUpdate {
   }
 
   private void execute(PreparedStatement find, PreparedStatement register, Statement statement,
-      PreparedStatement record) throws SQLException, IOException {
+      PreparedStatement record) {
     try {
       List<Integer> scriptsRun = new ArrayList<>();
       int id;
@@ -71,7 +71,7 @@ public class DriverUpdate {
   }
 
   private int find(PreparedStatement find, PreparedStatement register, Statement statement, PreparedStatement record)
-      throws SQLException, IOException {
+      throws SQLException {
     int id;
     try {
       try (ResultSet r = find.executeQuery()) {
@@ -122,8 +122,6 @@ public class DriverUpdate {
             }
           }
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
     }
   }
