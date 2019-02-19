@@ -1,3 +1,8 @@
+/**
+ * CLI tool to convert a stream of RJSON to standard JSON.
+ */
+import {toJs, toJson} from 'really-relaxed-json';
+
 var stdin = process.stdin;
 var stdout = process.stdout;
 var chunks = [];
@@ -11,13 +16,7 @@ stdin.on('data', function(chunk) {
 
 stdin.on('end', function() {
   var input = chunks.join();
-  var rExOpenBrace = /\s*\[\s*/gi;
-  var rExCloseBrace = /\s*\]\s*/gi;
-  var rExColon = /\s*:\s*/g;
-  var rExComma = /\s*,\s*/g;
-  var output = input.replace(rExOpenBrace, '{\"');
-  output = output.replace(rExCloseBrace, '\"}');
-  output = output.replace(rExColon, '\":\"');
-  output = output.replace(rExComma, '\",\"');
-  console.log(output);
+  var object = JSON.parse(toJson(input));
+  var pretty = JSON.stringify(object);
+  console.log(pretty);
 });

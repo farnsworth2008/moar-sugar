@@ -3,6 +3,8 @@
 .gradle
 .project
 .settings
-bin
+/bin
 build
 out
+node_modules
+dist

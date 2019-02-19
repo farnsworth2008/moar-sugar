@@ -1,22 +1,32 @@
 {
-  "name": "moar-sugar",
-  "bin": {
-    "moar-json": "bin/moar-json"
-  },
-  "version": "1.0.0",
-  "description": "Stuff to make Java sweet!",
-  "main": "moar-cli.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/farnsworth2008/moar-sugar.git"
-  },
-  "author": "Mark Farnsworth",
-  "license": "UNLICENSED",
-  "bugs": {
-    "url": "https://github.com/farnsworth2008/moar-sugar/issues"
-  },
-  "homepage": "https://github.com/farnsworth2008/moar-sugar#readme"
+	"name": "moar-sugar",
+	"bin": {
+		"moar-json": "bin/moar-json"
+	},
+	"version": "1.0.0",
+	"description": "Stuff to make Java sweet!",
+	"main": "moar-json.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/farnsworth2008/moar-sugar.git"
+	},
+	"author": "Mark Farnsworth",
+	"license": "UNLICENSED",
+	"bugs": {
+		"url": "https://github.com/farnsworth2008/moar-sugar/issues"
+	},
+	"homepage": "https://github.com/farnsworth2008/moar-sugar#readme",
+	"dependencies": {
+		"really-relaxed-json": "^0.2.24"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-preset-es2015": "^6.24.1",
+		"babel-register": "^6.26.0",
+		"rimraf": "^2.6.3"
+	}
 }
