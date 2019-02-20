@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require("../dist/moar-json.js");
+require("../lib/moar-json.js");
