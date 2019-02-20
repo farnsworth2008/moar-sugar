@@ -10,11 +10,11 @@ var chunks = [];
 stdin.resume();
 stdin.setEncoding('utf8');
 
-stdin.on('data', function(chunk) {
+stdin.on('data', (chunk) => {
   chunks.push(chunk);
 });
 
-stdin.on('end', function() {
+stdin.on('end', () => {
   var input = chunks.join();
   var object = JSON.parse(toJson(input));
   var pretty = JSON.stringify(object);
