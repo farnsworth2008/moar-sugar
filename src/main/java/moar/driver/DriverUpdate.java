@@ -2,7 +2,6 @@ package moar.driver;
 import static java.lang.System.currentTimeMillis;
 import static moar.driver.Driver.getDriverProps;
 import static moar.sugar.MoarStringUtil.toSnakeCase;
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
