@@ -8,7 +8,7 @@
 	"main": "moar-json.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files"
+		"build": "npx babel src --out-dir lib"
 	},
 	"repository": {
 		"type": "git",
@@ -21,12 +21,15 @@
 	},
 	"homepage": "https://github.com/farnsworth2008/moar-sugar#readme",
 	"dependencies": {
-		"really-relaxed-json": "^0.2.24"
+		"@babel/polyfill": "^7.2.5"
 	},
 	"devDependencies": {
+		"@babel/cli": "^7.2.3",
+		"@babel/core": "^7.3.3",
+		"@babel/plugin-transform-arrow-functions": "^7.2.0",
 		"@babel/preset-env": "^7.3.1",
-		"babel-cli": "^6.26.0",
+		"babel-preset-env": "^1.7.0",
 		"babel-register": "^6.26.0",
-		"rimraf": "^2.6.3"
+		"really-relaxed-json": "^0.2.24"
 	}
 }
