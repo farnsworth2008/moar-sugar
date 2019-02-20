@@ -61,7 +61,7 @@ public class MoarStringUtil {
    * @return snake case string.
    */
   public static String toSnakeCase(String string) {
-    if(string == null) {
+    if (string == null) {
       return null;
     }
     String[] nameParts = string.split("(?=\\p{Upper})");
@@ -82,7 +82,7 @@ public class MoarStringUtil {
    * @return truncated string
    */
   public static String truncate(String string, int size) {
-    if(string == null) {
+    if (string == null) {
       return null;
     }
     return string.substring(0, min(string.length(), size));

@@ -146,6 +146,18 @@ public class Sugar {
   }
 
   /**
+   * Require a test to pass.
+   *
+   * @param message
+   * @param test
+   */
+  public static void require(String message, boolean test) {
+    if (!test) {
+      throw new MoarException(message);
+    }
+  }
+
+  /**
    * Require an object to exist
    *
    * @param object
@@ -162,18 +174,6 @@ public class Sugar {
   }
 
   /**
-   * Require a test to pass.
-   *
-   * @param message
-   * @param test
-   */
-  public static void require(String message, boolean test) {
-    if (!test) {
-      throw new MoarException(message);
-    }
-  }
-
-  /**
    * Retry a call if needed.
    *
    * @param tries
@@ -184,6 +184,16 @@ public class Sugar {
    */
   public static <T> T retryable(int tries, Callable<T> call) throws Exception {
     return retryable(tries, 1000, call);
+  }
+
+  /**
+   * Retry a call if needed.
+   *
+   * @param tries
+   * @param call
+   */
+  public static void retryable(int tries, CallableVoid call) {
+    retryable(tries, 1000, call);
   }
 
   /**
@@ -228,16 +238,6 @@ public class Sugar {
         return null;
       });
     });
-  }
-
-  /**
-   * Retry a call if needed.
-   *
-   * @param tries
-   * @param call
-   */
-  public static void retryable(int tries, CallableVoid call) {
-    retryable(tries, 1000, call);
   }
 
   /**

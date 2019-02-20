@@ -81,12 +81,12 @@ public class MoarThreadSugar {
   private static boolean trackDetailCosts = prop.getBoolean("trackDetailCosts", true);
   private static MoarAsyncProvider directAsyncProvider = new MoarAsyncProvider() {
     @Override
+    public void shutdown() {}
+
+    @Override
     public <T> Future<T> submit(Callable<T> c) {
       return directExecutorService.submit(c);
     }
-
-    @Override
-    public void shutdown() {}
   };
   private static MoarJson moarJson = MoarJson.getMoarJson();
 
@@ -95,6 +95,76 @@ public class MoarThreadSugar {
    */
   public static Vector<Future<Object>> $() {
     return $(Object.class);
+  }
+
+  /**
+   * Execute a call on the current thread with tracking.
+   *
+   * @param call
+   * @return The result
+   * @throws Exception
+   */
+  public static <T> T $(Callable<T> call) throws Exception {
+    return $(codeLocationAt(1), call);
+  }
+
+  /**
+   * Call with tracking.
+   *
+   * @param call
+   */
+  public static void $(CallableVoid call) {
+    $(codeLocationAt(1), call);
+  }
+
+  /**
+   * Create a vector of futures for a class.
+   *
+   * @param clz
+   * @return Vector of futures
+   */
+  public static <T> Vector<Future<T>> $(Class<T> clz) {
+    return new Vector<>();
+  }
+
+  /**
+   * Wrap an {@link ExecutorService} for {@link MoarThreadSugar}.
+   *
+   * @param service
+   * @return An async provider that can be used for other calls.
+   */
+  public static MoarAsyncProvider $(ExecutorService service) {
+    return new MoarAsyncProvider() {
+      @Override
+      public void shutdown() {
+        service.shutdown();
+      }
+
+      @Override
+      public <T> Future<T> submit(Callable<T> call) {
+        return service.submit(call);
+      }
+    };
+  }
+
+  /**
+   * Get result from the future
+   *
+   * @param future
+   * @return result.
+   */
+  public static <T> T $(Future<T> future) {
+    return require(() -> future.get());
+  }
+
+  /**
+   * Create a service using a fixed number of threads.
+   *
+   * @param nThreads
+   * @return Adapter for a service.
+   */
+  public static MoarAsyncProvider $(int nThreads) {
+    return $(newFixedThreadPool(nThreads));
   }
 
   /**
@@ -173,67 +243,6 @@ public class MoarThreadSugar {
   }
 
   /**
-   * Execute a call on the current thread with tracking.
-   *
-   * @param call
-   * @return The result
-   * @throws Exception
-   */
-  public static <T> T $(Callable<T> call) throws Exception {
-    return $(codeLocationAt(1), call);
-  }
-
-  /**
-   * Create a vector of futures for a class.
-   *
-   * @param clz
-   * @return Vector of futures
-   */
-  public static <T> Vector<Future<T>> $(Class<T> clz) {
-    return new Vector<>();
-  }
-
-  /**
-   * Wrap an {@link ExecutorService} for {@link MoarThreadSugar}.
-   *
-   * @param service
-   * @return An async provider that can be used for other calls.
-   */
-  public static MoarAsyncProvider $(ExecutorService service) {
-    return new MoarAsyncProvider() {
-      @Override
-      public <T> Future<T> submit(Callable<T> call) {
-        return service.submit(call);
-      }
-
-      @Override
-      public void shutdown() {
-        service.shutdown();
-      }
-    };
-  }
-
-  /**
-   * Get result from the future
-   *
-   * @param future
-   * @return result.
-   */
-  public static <T> T $(Future<T> future) {
-    return require(() -> future.get());
-  }
-
-  /**
-   * Create a service using a fixed number of threads.
-   *
-   * @param nThreads
-   * @return Adapter for a service.
-   */
-  public static MoarAsyncProvider $(int nThreads) {
-    return $(newFixedThreadPool(nThreads));
-  }
-
-  /**
    * @param log
    * @param desc
    * @param call
@@ -268,15 +277,6 @@ public class MoarThreadSugar {
   }
 
   /**
-   * Call with tracking.
-   *
-   * @param call
-   */
-  public static void $(CallableVoid call) {
-    $(codeLocationAt(1), call);
-  }
-
-  /**
    * @param desc
    * @param callable
    * @return Result
@@ -301,6 +301,25 @@ public class MoarThreadSugar {
         LOG.debug(cost, desc);
       }
     }
+  }
+
+  /**
+   * Run something
+   *
+   * @param desc
+   * @param call
+   */
+  public static void $(String desc, CallableVoid call) {
+    require(() -> {
+      if (!trackDetailCosts) {
+        call.call();
+        return;
+      }
+      $(desc, () -> {
+        call.call();
+        return null;
+      });
+    });
   }
 
   /**
@@ -348,25 +367,6 @@ public class MoarThreadSugar {
       } catch (Exception e3) {
         throw e3;
       }
-    });
-  }
-
-  /**
-   * Run something
-   *
-   * @param desc
-   * @param call
-   */
-  public static void $(String desc, CallableVoid call) {
-    require(() -> {
-      if (!trackDetailCosts) {
-        call.call();
-        return;
-      }
-      $(desc, () -> {
-        call.call();
-        return null;
-      });
     });
   }
 

@@ -10,15 +10,15 @@ import java.util.concurrent.Future;
  */
 public interface MoarAsyncProvider {
   /**
+   * Shutdown the provider
+   */
+  void shutdown();
+
+  /**
    * Contract for submitting an async request.
    *
    * @param call
    * @return A future
    */
   <T> Future<T> submit(Callable<T> call);
-
-  /**
-   * Shutdown the provider
-   */
-  void shutdown();
 }
