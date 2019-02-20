@@ -19,6 +19,7 @@ public class MoarExecutorServiceAdapter
    * Create an adapter for the supplied service.
    *
    * @param executorService
+   *   The actual executor service.
    */
   public MoarExecutorServiceAdapter(ExecutorService executorService) {
     this.executorService = executorService;

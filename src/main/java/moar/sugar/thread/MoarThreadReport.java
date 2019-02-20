@@ -17,6 +17,7 @@ public class MoarThreadReport {
    *
    * @param time
    * @param detail
+   * Detail Trackers
    */
   public MoarThreadReport(long time, List<MoarThreadTracker> detail) {
     this.time = time;

@@ -42,7 +42,7 @@ public class Driver
   private static int CONNECTION_RETRY_LIMIT = getDriverProps().getInteger("connectionRetryLimit", 100);
   private static ClassLoader classLoader = Driver.class.getClassLoader();
   private static Map<String, Callable<Connection>> connectionSource = new HashMap<>();
-  private static MoarLogger LOG = new MoarLogger(Driver.class);
+  static MoarLogger LOG = new MoarLogger(Driver.class);
   static {
     try {
       registerDriver(new Driver());
@@ -64,9 +64,9 @@ public class Driver
   public static void init() {}
 
   private final DriverPropertyInfo[] driverProps = new DriverPropertyInfo[] {};
-  private final HashMap<String, ConnectionSpec> failFast = new HashMap<>();
+  final HashMap<String, ConnectionSpec> failFast = new HashMap<>();
 
-  private Timer recovery;
+  Timer recovery;
 
   private final long restMillis = 1000;
 
@@ -196,7 +196,7 @@ public class Driver
     return s;
   }
 
-  private Connection doConnect(ConnectionSpec cs) throws SQLException {
+  Connection doConnect(ConnectionSpec cs) throws SQLException {
     init(cs);
     failFast.remove(cs.getUrl());
     return proxy(cs);

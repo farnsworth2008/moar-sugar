@@ -59,10 +59,13 @@ public class MoarJson {
 
   /**
    * Create Moar JSON with custom dependencies.
-   * 
+   *
    * @param gson
+   *   Gson instance
    * @param gsonPretty
+   *   Gson Pretty instance.
    * @param jsonParser
+   *   Json Parser.
    */
   public MoarJson(Gson gson, Gson gsonPretty, JsonParser jsonParser) {
     this.gson = gson;
@@ -101,17 +104,21 @@ public class MoarJson {
   }
 
   /**
+   * Get a class instance from a file that contains compatible JSON.
+   *
    * @param filename
-   * @param classOfT
+   *   Filename for the file.
+   * @param clz
+   *   Class for the instance.
    * @return Instance from JSON
    */
-  public <T> T fromJsonFile(String filename, Class<T> classOfT) {
+  public <T> T fromJsonFile(String filename, Class<T> clz) {
     String json = require(() -> {
       try (FileInputStream input = new FileInputStream(filename)) {
         return IOUtils.toString(input, Charset.defaultCharset());
       }
     });
-    return gson.fromJson(json, classOfT);
+    return gson.fromJson(json, clz);
   }
 
   /**
