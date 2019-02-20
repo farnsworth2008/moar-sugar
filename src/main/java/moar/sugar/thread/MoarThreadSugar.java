@@ -13,16 +13,12 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.URI;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import moar.sugar.CallableVoid;
@@ -38,55 +34,23 @@ import moar.sugar.SafeResult;
  * ability to roll up activities that involve multiple threads.
  */
 public class MoarThreadSugar {
-  private static class Activity {
-    private final Map<String, MoarThreadTracker> costMap = new ConcurrentHashMap<>();
-    private final long start = currentTimeMillis();
-    private final AtomicLong cost = new AtomicLong();
-
-    void accumulate(String description, long elapsed) {
-      synchronized (costMap) {
-        if (!costMap.containsKey(description)) {
-          costMap.put(description, new MoarThreadTracker(description));
-        }
-        MoarThreadTracker mapEntry = costMap.get(description);
-        mapEntry.add(elapsed);
-        cost.addAndGet(elapsed);
-      }
-    }
-
-    MoarThreadReport describe() {
-      long cost = currentTimeMillis() - start;
-      List<MoarThreadTracker> sortedCosts = new ArrayList<>();
-      for (String desc : costMap.keySet()) {
-        MoarThreadTracker entry = costMap.get(desc);
-        sortedCosts.add(entry);
-      }
-      Collections.sort(sortedCosts, (o1, o2) -> {
-        String o1Desc = o1.getDescription();
-        String o2Desc = o2.getDescription();
-        return o1Desc.compareTo(o2Desc);
-      });
-      return new MoarThreadReport(cost, sortedCosts);
-    }
-  }
-
   private static MoarLogger LOG = new MoarLogger(MoarThreadSugar.class);
   private static PropertyAccessor prop = new PropertyAccessor(MoarThreadSugar.class.getName());
   private static boolean asyncEnabled = prop.getBoolean("async", true);
   private static long TRACE_COST_LIMIT = prop.getLong("traceCostLimit", 10 * 1000L);
-  private static ThreadLocal<Activity> threadActivity = new ThreadLocal<>();
+  private static ThreadLocal<MoarThreadActivity> threadActivity = new ThreadLocal<>();
   private static ThreadLocal<Boolean> threadIsAsync = new ThreadLocal<>();
   private static ListeningExecutorService directExecutorService = MoreExecutors.newDirectExecutorService();
   private static boolean trackCosts = prop.getBoolean("trackCosts", true);
   private static boolean trackDetailCosts = prop.getBoolean("trackDetailCosts", true);
   private static MoarAsyncProvider directAsyncProvider = new MoarAsyncProvider() {
     @Override
+    public void shutdown() {}
+
+    @Override
     public <T> Future<T> submit(Callable<T> c) {
       return directExecutorService.submit(c);
     }
-
-    @Override
-    public void shutdown() {}
   };
   private static MoarJson moarJson = MoarJson.getMoarJson();
 
@@ -95,6 +59,76 @@ public class MoarThreadSugar {
    */
   public static Vector<Future<Object>> $() {
     return $(Object.class);
+  }
+
+  /**
+   * Execute a call on the current thread with tracking.
+   *
+   * @param call
+   * @return The result
+   * @throws Exception
+   */
+  public static <T> T $(Callable<T> call) throws Exception {
+    return $(codeLocationAt(1), call);
+  }
+
+  /**
+   * Call with tracking.
+   *
+   * @param call
+   */
+  public static void $(CallableVoid call) {
+    $(codeLocationAt(1), call);
+  }
+
+  /**
+   * Create a vector of futures for a class.
+   *
+   * @param clz
+   * @return Vector of futures
+   */
+  public static <T> Vector<Future<T>> $(Class<T> clz) {
+    return new Vector<>();
+  }
+
+  /**
+   * Wrap an {@link ExecutorService} for {@link MoarThreadSugar}.
+   *
+   * @param service
+   * @return An async provider that can be used for other calls.
+   */
+  public static MoarAsyncProvider $(ExecutorService service) {
+    return new MoarAsyncProvider() {
+      @Override
+      public void shutdown() {
+        service.shutdown();
+      }
+
+      @Override
+      public <T> Future<T> submit(Callable<T> call) {
+        return service.submit(call);
+      }
+    };
+  }
+
+  /**
+   * Get result from the future
+   *
+   * @param future
+   * @return result.
+   */
+  public static <T> T $(Future<T> future) {
+    return require(() -> future.get());
+  }
+
+  /**
+   * Create a service using a fixed number of threads.
+   *
+   * @param nThreads
+   * @return Adapter for a service.
+   */
+  public static MoarAsyncProvider $(int nThreads) {
+    return $(newFixedThreadPool(nThreads));
   }
 
   /**
@@ -152,11 +186,11 @@ public class MoarThreadSugar {
     if (futures == null) {
       throw new NullPointerException("futures");
     }
-    Activity parentActivity = threadActivity.get();
+    MoarThreadActivity parentActivity = threadActivity.get();
     try {
       Future<T> future = resolve(provider).submit(() -> {
         threadIsAsync.set(true);
-        Activity priorActivity = threadActivity.get();
+        MoarThreadActivity priorActivity = threadActivity.get();
         try {
           threadActivity.set(parentActivity);
           return call.call();
@@ -173,125 +207,26 @@ public class MoarThreadSugar {
   }
 
   /**
-   * Execute a call on the current thread with tracking.
+   * Track a call.
    *
-   * @param call
-   * @return The result
-   * @throws Exception
-   */
-  public static <T> T $(Callable<T> call) throws Exception {
-    return $(codeLocationAt(1), call);
-  }
-
-  /**
-   * Create a vector of futures for a class.
-   *
-   * @param clz
-   * @return Vector of futures
-   */
-  public static <T> Vector<Future<T>> $(Class<T> clz) {
-    return new Vector<>();
-  }
-
-  /**
-   * Wrap an {@link ExecutorService} for {@link MoarThreadSugar}.
-   *
-   * @param service
-   * @return An async provider that can be used for other calls.
-   */
-  public static MoarAsyncProvider $(ExecutorService service) {
-    return new MoarAsyncProvider() {
-      @Override
-      public <T> Future<T> submit(Callable<T> call) {
-        return service.submit(call);
-      }
-
-      @Override
-      public void shutdown() {
-        service.shutdown();
-      }
-    };
-  }
-
-  /**
-   * Get result from the future
-   *
-   * @param future
-   * @return result.
-   */
-  public static <T> T $(Future<T> future) {
-    return require(() -> future.get());
-  }
-
-  /**
-   * Create a service using a fixed number of threads.
-   *
-   * @param nThreads
-   * @return Adapter for a service.
-   */
-  public static MoarAsyncProvider $(int nThreads) {
-    return $(newFixedThreadPool(nThreads));
-  }
-
-  /**
-   * @param log
    * @param desc
+   *   Description for the call.
    * @param call
-   * @return result
-   * @throws Exception
-   * @deprecated
-   */
-  @Deprecated
-  public static <T> T $(MoarLogger log, String desc, Callable<T> call) throws Exception {
-    long start = currentTimeMillis();
-    try {
-      log.debug(desc);
-      return call.call();
-    } finally {
-      log.debug(currentTimeMillis() - start, desc);
-    }
-  }
-
-  /**
-   * @param log
-   * @param desc
-   * @param call
-   * @throws Exception
-   * @deprecated
-   */
-  @Deprecated
-  public static void $(MoarLogger log, String desc, CallableVoid call) throws Exception {
-    $(log, desc, () -> {
-      call.call();
-      return null;
-    });
-  }
-
-  /**
-   * Call with tracking.
-   *
-   * @param call
-   */
-  public static void $(CallableVoid call) {
-    $(codeLocationAt(1), call);
-  }
-
-  /**
-   * @param desc
-   * @param callable
+   *   The call
    * @return Result
    * @throws Exception
+   *   Exception thrown by the call.
    */
-  public static <T> T $(String desc, Callable<T> callable) throws Exception {
+  public static <T> T $(String desc, Callable<T> call) throws Exception {
     if (!trackDetailCosts) {
-      return callable.call();
+      return call.call();
     }
     if (threadActivity.get() == null) {
-      return callable.call();
+      return call.call();
     }
     long clock = currentTimeMillis();
     try {
-      return callable.call();
+      return call.call();
     } finally {
       long cost = currentTimeMillis() - clock;
       accumulate(desc, cost);
@@ -301,6 +236,25 @@ public class MoarThreadSugar {
         LOG.debug(cost, desc);
       }
     }
+  }
+
+  /**
+   * Run something
+   *
+   * @param desc
+   * @param call
+   */
+  public static void $(String desc, CallableVoid call) {
+    require(() -> {
+      if (!trackDetailCosts) {
+        call.call();
+        return;
+      }
+      $(desc, () -> {
+        call.call();
+        return null;
+      });
+    });
   }
 
   /**
@@ -352,25 +306,6 @@ public class MoarThreadSugar {
   }
 
   /**
-   * Run something
-   *
-   * @param desc
-   * @param call
-   */
-  public static void $(String desc, CallableVoid call) {
-    require(() -> {
-      if (!trackDetailCosts) {
-        call.call();
-        return;
-      }
-      $(desc, () -> {
-        call.call();
-        return null;
-      });
-    });
-  }
-
-  /**
    * Complete a batch of futures
    * <p>
    * Wait for all the futures to return. If any futures have exceptions a single
@@ -418,8 +353,8 @@ public class MoarThreadSugar {
         call.call();
         return new MoarThreadReport(0, emptyList());
       }
-      Activity priorActity = threadActivity.get();
-      Activity activity = new Activity();
+      MoarThreadActivity priorActity = threadActivity.get();
+      MoarThreadActivity activity = new MoarThreadActivity();
       try {
         threadActivity.set(activity);
         call.call();
@@ -434,7 +369,7 @@ public class MoarThreadSugar {
    * Accumulate costs based on description
    */
   private static void accumulate(String description, long elapsed) {
-    Activity activity = threadActivity.get();
+    MoarThreadActivity activity = threadActivity.get();
     if (activity != null) {
       activity.accumulate(description, elapsed);
     }

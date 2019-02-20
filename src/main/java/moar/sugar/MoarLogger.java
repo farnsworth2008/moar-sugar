@@ -38,8 +38,9 @@ public class MoarLogger {
 
   /**
    * Create logger for class.
-   * 
+   *
    * @param clz
+   *   Class used to name the logger.
    */
   public MoarLogger(Class<?> clz) {
     log = Logger.getLogger(clz.getName());
@@ -47,7 +48,7 @@ public class MoarLogger {
 
   /**
    * Log a message using {@link Level#FINE}
-   * 
+   *
    * @param args
    *   Message
    */
@@ -57,7 +58,7 @@ public class MoarLogger {
 
   /**
    * Log a message using {@link Level#SEVERE}
-   * 
+   *
    * @param args
    *   Message
    */
@@ -67,7 +68,7 @@ public class MoarLogger {
 
   /**
    * Log a message using {@link Level#INFO}
-   * 
+   *
    * @param args
    *   Message
    */
@@ -88,7 +89,7 @@ public class MoarLogger {
 
   /**
    * Log a message using {@link Level#FINEST}
-   * 
+   *
    * @param args
    *   Message
    */
@@ -98,7 +99,7 @@ public class MoarLogger {
 
   /**
    * Log a message using {@link Level#WARNING}
-   * 
+   *
    * @param args
    *   Message
    */

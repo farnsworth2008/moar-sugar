@@ -21,7 +21,8 @@ public interface CallableVoid {
   /**
    * Executes a call, or throws an exception if unable to do so.
    *
-   * @throws Exception if unable to compute a result
+   * @throws Exception
+   *   if unable to compute a result
    */
   void call() throws Exception;
 }

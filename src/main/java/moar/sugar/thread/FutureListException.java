@@ -5,7 +5,7 @@ import moar.sugar.MoarLogger;
 import moar.sugar.SafeResult;
 
 /**
- * Exception to signal an issue that occured when running async code.
+ * Exception to signal an issue that occurred when running async code.
  * 
  * @author Mark Farnsworth
  */

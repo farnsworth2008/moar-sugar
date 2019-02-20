@@ -27,7 +27,7 @@ public class MoarThreadTracker {
     count = new AtomicLong();
     min = new AtomicLong(Long.MAX_VALUE);
     max = new AtomicLong();
-    this.description = desc;
+    description = desc;
     total = new AtomicLong();
   }
 

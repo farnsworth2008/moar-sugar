@@ -20,36 +20,56 @@ public class MoarStringUtil {
    * Replace targeted characters with blanks.
    *
    * @param matcher
+   *   Matcher for characters that should be replaced with space.
    * @param dirty
    *   Input string that may have content that matches the matcher.
    * @return String with characters that match the matcher replaced with space.
    */
   public static String cleanWithOnly(CharMatcher matcher, String dirty) {
+    return replaceChars(matcher, dirty, ' ');
+  }
+
+  /**
+   * Replace targeted characters with blanks.
+   *
+   * @param matcher
+   *   Matcher for characters that should be replaced with space.
+   * @param dirty
+   *   Input string that may have content that matches the matcher.
+   * @param replacement
+   *   Replacement character.
+   * @return String with characters that match the matcher replaced with space.
+   */
+  private static String replaceChars(CharMatcher matcher, String string, char replacement) {
+    if (string == null) {
+      return null;
+    }
     StringBuilder cleanBuilder = new StringBuilder();
-    for (int i = 0; i < dirty.length(); i++) {
-      char c = dirty.charAt(i);
+    for (int i = 0; i < string.length(); i++) {
+      char c = string.charAt(i);
       if (matcher.matches(c)) {
         cleanBuilder.append(c);
       } else {
-        c = ' ';
+        c = replacement;
       }
     }
-    String clean = cleanBuilder.toString();
-    return clean;
+    return cleanBuilder.toString();
   }
 
   /**
    * Clean a string so it only contains ASCII chars.
    *
-   * @param dirty
+   * @param string
+   *   String of content to be cleaned.
    * @return string
    */
-  public static String cleanWithOnlyAscii(String dirty) {
-    return cleanWithOnly(CharMatcher.ascii(), dirty);
+  public static String cleanWithOnlyAscii(String string) {
+    return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
   /**
    * @param string
+   *   String of content for toLowerCase
    * @return lower case string.
    */
   public static String toLowerCase(String string) {
@@ -57,11 +77,14 @@ public class MoarStringUtil {
   }
 
   /**
+   * Convert a string to snake case (i.e. snake_case)
+   *
    * @param string
+   *   String to be processed.
    * @return snake case string.
    */
   public static String toSnakeCase(String string) {
-    if(string == null) {
+    if (string == null) {
       return null;
     }
     String[] nameParts = string.split("(?=\\p{Upper})");
@@ -69,7 +92,10 @@ public class MoarStringUtil {
   }
 
   /**
+   * To lower case (or null).
+   *
    * @param string
+   *   String to be processed.
    * @return upper case string.
    */
   public static String toUpperCase(String string) {
@@ -78,11 +104,13 @@ public class MoarStringUtil {
 
   /**
    * @param string
+   *   String to be processed.
    * @param size
+   *   Size.
    * @return truncated string
    */
   public static String truncate(String string, int size) {
-    if(string == null) {
+    if (string == null) {
       return null;
     }
     return string.substring(0, min(string.length(), size));
