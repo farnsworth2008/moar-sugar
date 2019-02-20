@@ -17,6 +17,14 @@ import java.util.concurrent.Callable;
  * @author Mark Farnsworth
  */
 public class Sugar {
+
+  /**
+   * Get a RuntimeException from an Exception.
+   *
+   * @param e
+   *   an exception that *might* be a runtime exception.
+   * @return A RuntimeException
+   */
   public static RuntimeException asRuntimeException(Throwable e) {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
@@ -24,6 +32,11 @@ public class Sugar {
     return new RuntimeException(e);
   }
 
+  /**
+   * Close with swallowing.
+   *
+   * @param closeable
+   */
   public static void closeQuietly(AutoCloseable closeable) {
     swallow(() -> closeable.close());
   }
@@ -31,6 +44,9 @@ public class Sugar {
   /**
    * Return the code location of an callstack offset (i.e. $(1) is the Class and
    * Line of the caller).
+   *
+   * @param offset
+   * @return code location as class name with line number.
    */
   public static String codeLocationAt(int offset) {
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -51,9 +67,15 @@ public class Sugar {
     return null;
   }
 
-  public static boolean has(Object o) {
+  /**
+   * Truthy test
+   *
+   * @param object
+   * @return True for a value that is truthy
+   */
+  public static boolean has(Object object) {
     try {
-      if (o == null || isEmptyList(o) || isEmptyString(o)) {
+      if (object == null || isEmptyList(object) || isEmptyString(object)) {
         return false;
       }
       return true;
@@ -62,15 +84,27 @@ public class Sugar {
     }
   }
 
+  /**
+   * @param object
+   * @return true if the object is an empty list
+   */
   @SuppressWarnings("rawtypes")
-  public static boolean isEmptyList(Object o) {
-    return o instanceof List && ((List) o).isEmpty();
+  public static boolean isEmptyList(Object object) {
+    return object instanceof List && ((List) object).isEmpty();
   }
 
-  public static boolean isEmptyString(Object o) {
-    return o instanceof String && ((String) o).isEmpty();
+  /**
+   * @param object
+   * @return true if object is an empty string
+   */
+  public static boolean isEmptyString(Object object) {
+    return object instanceof String && ((String) object).isEmpty();
   }
 
+  /**
+   * @param args
+   * @return first non null argument
+   */
   @SafeVarargs
   public static <T> T nonNull(T... args) {
     for (T arg : args) {
@@ -81,40 +115,86 @@ public class Sugar {
     throw new NullPointerException();
   }
 
-  public static <T> T require(Callable<T> c) {
+  /**
+   * Require a call to succeed.
+   *
+   * @param call
+   * @return result
+   * @throws RuntimeException
+   *   if call fails.
+   */
+  public static <T> T require(Callable<T> call) {
     try {
-      return c.call();
+      return call.call();
     } catch (Exception e) {
       throw asRuntimeException(e);
     }
   }
 
-  public static void require(CallableVoid r) {
+  /**
+   * Require a call to succeed.
+   *
+   * @param call
+   * @throws RuntimeException
+   *   if call fails.
+   */
+  public static void require(CallableVoid call) {
     require(() -> {
-      r.call();
+      call.call();
       return null;
     });
   }
 
-  public static void require(Object o) {
-    if (isEmptyList(o) || isEmptyString(o)) {
-      o = null;
+  /**
+   * Require an object to exist
+   *
+   * @param object
+   * @return object
+   */
+  public static <T> T require(T object) {
+    if (isEmptyList(object) || isEmptyString(object)) {
+      object = null;
     }
-    if (o == null) {
+    if (object == null) {
       throw new NullPointerException();
     }
+    return object;
   }
 
+  /**
+   * Require a test to pass.
+   *
+   * @param message
+   * @param test
+   */
   public static void require(String message, boolean test) {
     if (!test) {
       throw new MoarException(message);
     }
   }
 
+  /**
+   * Retry a call if needed.
+   *
+   * @param tries
+   *   number of tries
+   * @param call
+   * @return result
+   * @throws Exception
+   */
   public static <T> T retryable(int tries, Callable<T> call) throws Exception {
     return retryable(tries, 1000, call);
   }
 
+  /**
+   * Retry a call if needed.
+   *
+   * @param triesAllowed
+   * @param retryWaitMs
+   * @param call
+   * @return result
+   * @throws Exception
+   */
   @SuppressWarnings("null")
   public static <T> T retryable(int triesAllowed, long retryWaitMs, Callable<T> call) throws Exception {
     Exception last = null;
@@ -134,34 +214,65 @@ public class Sugar {
     throw last;
   }
 
-  public static void retryable(int tries, long retryWaitMs, Runnable run) {
+  /**
+   * Retry a call if needed.
+   *
+   * @param tries
+   * @param retryWaitMs
+   * @param call
+   */
+  public static void retryable(int tries, long retryWaitMs, CallableVoid call) {
     require(() -> {
       retryable(tries, retryWaitMs, () -> {
-        run.run();
+        call.call();
         return null;
       });
     });
   }
 
-  public static void retryable(int tries, Runnable run) {
-    retryable(tries, 1000, run);
+  /**
+   * Retry a call if needed.
+   *
+   * @param tries
+   * @param call
+   */
+  public static void retryable(int tries, CallableVoid call) {
+    retryable(tries, 1000, call);
   }
 
-  public static <T> SafeResult<T> safely(Callable<T> callable) {
+  /**
+   * Execute a call without throwing an exception.
+   *
+   * @param call
+   * @return safe result
+   */
+  public static <T> SafeResult<T> safely(Callable<T> call) {
     try {
-      return new SafeResult<>(callable.call(), null);
+      return new SafeResult<>(call.call(), null);
     } catch (Throwable e) {
       return new SafeResult<>(null, e);
     }
   }
 
-  public static Throwable safely(CallableVoid run) {
+  /**
+   * Execute a call without throwing an exception.
+   *
+   * @param call
+   * @return safe result
+   */
+  public static Throwable safely(CallableVoid call) {
     return safely(() -> {
-      run.call();
+      call.call();
       return null;
     }).thrown();
   }
 
+  /**
+   * Get a string representation for a stack trace.
+   *
+   * @param thrown
+   * @return string of stack trace
+   */
   public static String stackTraceAsString(Throwable thrown) {
     return require(() -> {
       try (StringWriter sw = new StringWriter()) {
@@ -173,20 +284,45 @@ public class Sugar {
     });
   }
 
+  /**
+   * Execute a call return null on exceptions.
+   *
+   * @param call
+   * @return result or null
+   */
   public static <T> T swallow(Callable<T> call) {
     SafeResult<T> result = safely(call);
     return result.get();
   }
 
-  public static void swallow(CallableVoid run) {
-    safely(run);
+  /**
+   * Execute a call, do not throw exceptions.
+   *
+   * @param call
+   */
+  public static void swallow(CallableVoid call) {
+    safely(call);
   }
 
+  /**
+   * Create a date using three ints.
+   *
+   * @param year
+   * @param month
+   * @param dayOfMonth
+   * @return date
+   */
   public static Date toUtilDate(int year, int month, int dayOfMonth) {
     return toUtilDate(LocalDate.of(year, month, dayOfMonth));
   }
 
-  public static Date toUtilDate(LocalDate birthDate) {
-    return Date.from(birthDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+  /**
+   * Create a date from a local date without a ton of cruf.
+   *
+   * @param localDate
+   * @return date
+   */
+  public static Date toUtilDate(LocalDate localDate) {
+    return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
   }
 }

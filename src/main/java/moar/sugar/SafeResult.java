@@ -5,8 +5,8 @@ package moar.sugar;
  * <p>
  * The result of {@link Sugar#safely}
  * <p>
- * On a safe result, any throwable is simply captured and stored for retrival
- * via {@link SafeResult#getThrowable}
+ * On a safe result, any throwable is simply captured and stored for retrieval
+ * via {@link SafeResult#thrown}
  *
  * @author Mark Farnsworth
  * @param <T>
@@ -14,26 +14,30 @@ package moar.sugar;
  */
 public class SafeResult<T> {
 
-  private T result;
-  private Throwable throwable;
+  private final T result;
+  private final Throwable throwable;
 
+  /**
+   * Create a safe result.
+   * 
+   * @param result
+   * @param throwable
+   */
   public SafeResult(T result, Throwable throwable) {
-    this.setResult(result);
-    this.setThrowable(throwable);
+    this.result = result;
+    this.throwable = throwable;
   }
 
+  /**
+   * @return result
+   */
   public T get() {
     return result;
   }
 
-  public void setResult(T result) {
-    this.result = result;
-  }
-
-  public void setThrowable(Throwable throwable) {
-    this.throwable = throwable;
-  }
-
+  /**
+   * @return Exception or null
+   */
   public Throwable thrown() {
     return throwable;
   }

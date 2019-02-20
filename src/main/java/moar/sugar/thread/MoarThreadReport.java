@@ -2,20 +2,40 @@ package moar.sugar.thread;
 
 import java.util.List;
 
+/**
+ * Report of activity that was tracked in a thread.
+ *
+ * @author Mark Farnsworth
+ */
 public class MoarThreadReport {
 
-  private long time;
-  private List<MoarThreadTracker> trackerList;
+  private final long time;
+  private final List<MoarThreadTracker> trackerList;
 
+  /**
+   * Create Report
+   *
+   * @param time
+   * @param detail
+   */
   public MoarThreadReport(long time, List<MoarThreadTracker> detail) {
-    setTime(time);
-    setTrackers(detail);
+    this.time = time;
+    trackerList = detail;
   }
 
+  /**
+   * @return Total time in milliseconds
+   */
   public long getTime() {
     return time;
   }
 
+  /**
+   * Get the tracker for a description
+   *
+   * @param desc
+   * @return Tracker for the description
+   */
   public MoarThreadTracker getTracker(String desc) {
     for (MoarThreadTracker tracker : trackerList) {
       if (tracker.getDescription().equals(desc)) {
@@ -25,16 +45,11 @@ public class MoarThreadReport {
     return null;
   }
 
+  /**
+   * @return List of Trackers
+   */
   public List<MoarThreadTracker> getTrackers() {
     return trackerList;
-  }
-
-  public void setTime(long time) {
-    this.time = time;
-  }
-
-  public void setTrackers(List<MoarThreadTracker> detail) {
-    trackerList = detail;
   }
 
 }

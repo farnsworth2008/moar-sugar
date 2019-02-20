@@ -68,7 +68,7 @@ public abstract class WokeSessionBase {
     }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes", "unchecked", "resource" })
   public WokeMappableResultSet iterator(String tableish, Class[] classes, Object... params) {
     boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
     if (isSelect) {
@@ -142,9 +142,11 @@ public abstract class WokeSessionBase {
 
   /**
    * Reset an object to the state it had when it was loaded.
+   *
+   * @param object
    */
-  public void reset(Object woke) {
-    WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
+  public void reset(Object object) {
+    WokePrivateProxy proxy = ((WokeProxiedObject) object).privateProxy();
     proxy.reset();
   }
 

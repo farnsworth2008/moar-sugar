@@ -6,5 +6,8 @@ package moar.sugar;
  * @author Mark Farnsworth
  */
 public interface GetString {
+  /**
+   * @return value
+   */
   String getString();
 }

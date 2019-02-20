@@ -9,6 +9,7 @@ import java.util.UUID;
  *
  * @author Mark Farnsworth
  */
+@SuppressWarnings("javadoc")
 public interface WakeableRow {
   interface IdColumn
       extends
@@ -22,7 +23,6 @@ public interface WakeableRow {
       extends
       WakeableRow.IdColumn {
     Long getId();
-
     void setId(Long id);
   }
 
@@ -30,7 +30,6 @@ public interface WakeableRow {
       extends
       WakeableRow.IdColumn {
     String getId();
-
     void setId(String id);
   }
 
@@ -38,7 +37,6 @@ public interface WakeableRow {
       extends
       IdColumn {
     UUID getId();
-
     void setId(UUID id);
   }
 
