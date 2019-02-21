@@ -2,14 +2,15 @@ package moar.driver;
 
 import static java.lang.System.currentTimeMillis;
 import static java.lang.reflect.Proxy.newProxyInstance;
+import static java.sql.DriverManager.getConnection;
 import static java.sql.DriverManager.registerDriver;
-import static moar.sugar.Sugar.asRuntimeException;
+import static moar.sugar.Sugar.require;
+import static moar.sugar.Sugar.retry;
 import static moar.sugar.Sugar.retryable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -264,19 +265,14 @@ public class Driver
     return driverProps;
   }
 
-  private Connection getRealConnection(ConnectionSpec cs) throws SQLException {
+  private Connection getRealConnection(ConnectionSpec cs) {
     String url = cs.getUrl();
     Properties props = cs.getProps();
-    try {
-      return retryable(CONNECTION_RETRY_LIMIT, () -> {
-        Connection realCn = DriverManager.getConnection(url, props);
-        return realCn;
+    return require(() -> {
+      return retry(CONNECTION_RETRY_LIMIT, () -> {
+        return retryable(() -> getConnection(url, props));
       });
-    } catch (SQLException e) {
-      throw e;
-    } catch (Exception e) {
-      throw asRuntimeException(e);
-    }
+    });
   }
 
   private void init(ConnectionSpec cs) throws SQLException {

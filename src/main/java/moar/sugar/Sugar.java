@@ -182,8 +182,8 @@ public class Sugar {
    * @return result
    * @throws Exception
    */
-  public static <T> T retryable(int tries, Callable<T> call) throws Exception {
-    return retryable(tries, 1000, call);
+  public static <T> T retry(int tries, Callable<T> call) throws Exception {
+    return retry(tries, 1000, call);
   }
 
   /**
@@ -192,8 +192,8 @@ public class Sugar {
    * @param tries
    * @param call
    */
-  public static void retryable(int tries, CallableVoid call) {
-    retryable(tries, 1000, call);
+  public static void retry(int tries, CallableVoid call) {
+    retry(tries, 1000, call);
   }
 
   /**
@@ -206,7 +206,7 @@ public class Sugar {
    * @throws Exception
    */
   @SuppressWarnings("null")
-  public static <T> T retryable(int triesAllowed, long retryWaitMs, Callable<T> call) throws Exception {
+  public static <T> T retry(int triesAllowed, long retryWaitMs, Callable<T> call) throws Exception {
     Exception last = null;
     int tries = 0;
     while (tries++ < triesAllowed) {
@@ -231,12 +231,46 @@ public class Sugar {
    * @param retryWaitMs
    * @param call
    */
-  public static void retryable(int tries, long retryWaitMs, CallableVoid call) {
+  public static void retry(int tries, long retryWaitMs, CallableVoid call) {
     require(() -> {
-      retryable(tries, retryWaitMs, () -> {
+      retry(tries, retryWaitMs, () -> {
         call.call();
         return null;
       });
+    });
+  }
+
+  /**
+   * Make any exception thrown from the call retryable.
+   *
+   * @param call
+   *   Call to make.
+   * @return result
+   * @throws RetryableException
+   *   Exception from the call as a {@link RetryableException}.
+   */
+  public static <T> T retryable(Callable<T> call) throws RetryableException {
+    try {
+      return call.call();
+    } catch (RetryableException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RetryableException(e);
+    }
+  }
+
+  /**
+   * Make any exception thrown from the call retryable.
+   *
+   * @param call
+   *   Call to make.
+   * @throws RetryableException
+   *   Exception from the call as a {@link RetryableException}.
+   */
+  public static void retryable(CallableVoid call) throws RetryableException {
+    retryable(() -> {
+      call.call();
+      return null;
     });
   }
 

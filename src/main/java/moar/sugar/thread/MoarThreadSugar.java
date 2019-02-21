@@ -161,9 +161,11 @@ public class MoarThreadSugar {
    * Schedule the call for the future.
    *
    * @param provider
+   *   Provider for async functionality.
    * @param futures
    *   Vector of futures.
    * @param call
+   *   Call to make.
    */
   public static void $(MoarAsyncProvider provider, Vector<Future<Object>> futures, CallableVoid call) {
     $(provider, futures, () -> {
