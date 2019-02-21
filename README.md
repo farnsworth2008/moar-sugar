@@ -5,35 +5,36 @@ Stuff to make Java sweet!
 ## Example #1, async methods
 
 ```java
-  void exampleAsyncSugar(PrintStream out) {
-    out.println("  ASYNC METHODS WITH MOAR SUGAR");
-    AsyncService service = $(4);
+  @Override
+  public void run() {
+    out.println("Example: Async Execution");
+    var service = $(4);
     try {
-      Vector<Future<String>> futures = $(String.class);
+      var futures = $(String.class);
 
-      for (int i = 0; i < 3; i++) {
-        String message = "async " + i;
-        $(service, futures, () -> methodOne(out, message));
+      for (var i = 0; i < 3; i++) {
+        var message = "async " + i;
+        $(service, futures, () -> methodOne(message));
       }
 
-      for (int i = 0; i < 3; i++) {
-        String message = "async " + i;
-        $(service, futures, () -> methodTwo(out, message));
+      for (var i = 0; i < 3; i++) {
+        var message = "async " + i;
+        $(service, futures, () -> methodTwo(message));
       }
 
-      for (int i = 0; i < 3; i++) {
-        String message = "async " + i;
-        $(service, futures, () -> methodThatThrows(out, message));
+      for (var i = 0; i < 3; i++) {
+        var message = "async " + i;
+        $(service, futures, () -> methodWithRetryableException(message));
       }
 
       out.println("  async work started");
       swallow(() -> $(futures));
       out.println("  async work complete");
 
-      int i = 0;
-      for (Future<String> future : futures) {
-        SafeResult<String> result = safely(() -> future.get());
-        String displayValue = result.thrown() == null ? result.get() : result.thrown().getMessage();
+      var i = 0;
+      for (var future : futures) {
+        var result = safely(() -> future.get());
+        var displayValue = result.thrown() == null ? result.get() : result.thrown().getMessage();
         out.println(format("  futures[%d]: %s", ++i, displayValue));
       }
 
@@ -47,13 +48,17 @@ Stuff to make Java sweet!
 ## Example #2, database CRUD
 
 ```java
-  void exampleDb(PrintStream out) {
+  @Override
+  public void run() {
+    var ds = getDataSource();
+
     out.println("Example: DB");
 
+    // simple way to executeSql against a DataSource
     wake(ds).executeSql("delete from pet");
 
-    //style 1: Upsert using a fully fluent style
-    PetRow pet1 = wake(PetRow.class).of(ds).upsert(row -> {
+    // style 1: Upsert using a fully fluent style
+    var pet1 = wake(PetRow.class).of(ds).upsert(row -> {
       row.setName("Donut");
       row.setOwner("Mark");
       row.setSex("F");
@@ -62,8 +67,8 @@ Stuff to make Java sweet!
     });
     out.println("  upsert pet #1: " + pet1.getId() + ", " + pet1.getName());
 
-    //style 2: Upsert using style where we hold the repository reference.
-    WokenWithSession<PetRow> repo = wake(PetRow.class).of(ds);
+    // style 2: Upsert using style where we hold the repository reference.
+    var repo = wake(PetRow.class).of(ds);
     PetRow pet2 = repo.define();
     pet2.setName("Tig");
     pet2.setOwner("None");
@@ -75,7 +80,7 @@ Stuff to make Java sweet!
     Long pet2Id = pet2.getId();
 
     // Find with ID and update
-    PetRow foundPet = repo.id(pet2Id).find();
+    var foundPet = repo.id(pet2Id).find();
     out.println("  found: " + foundPet.getName());
     foundPet.setOwner("Mark");
     repo.update(foundPet);
@@ -90,6 +95,7 @@ Stuff to make Java sweet!
     // Delete
     repo.delete(foundPet);
 
+    // Upsert to add row for query
     repo.upsert(row -> {
       row.setName("Twyla");
       row.setOwner("Kendra");
@@ -98,6 +104,7 @@ Stuff to make Java sweet!
       row.setBirth(toUtilDate(2012, 6, 5));
     });
 
+    // Upsert to add row for query
     repo.upsert(row -> {
       row.setName("Jasper");
       row.setOwner("Kendra");
@@ -106,12 +113,12 @@ Stuff to make Java sweet!
       row.setBirth(toUtilDate(2012, 9, 1));
     });
 
-    // Find with a query
-    List<PetRow> petList
-        = repo.list("select [*] from pet as PetRow where species=?", "Cat");
+    // Find with a where clause
+    var petList = repo.list("where species=?", "Cat");
     for (PetRow petItem : petList) {
       out.println("  found: " + petItem.getName() + ", " + petItem.getOwner());
     }
+    out.println();
   }
 ```
 

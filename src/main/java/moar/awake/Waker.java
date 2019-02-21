@@ -7,7 +7,7 @@ import static moar.sugar.Sugar.asRuntimeException;
 import static moar.sugar.Sugar.closeQuietly;
 import static moar.sugar.Sugar.nonNull;
 import static moar.sugar.Sugar.require;
-import static moar.sugar.Sugar.retryable;
+import static moar.sugar.Sugar.retry;
 import static moar.sugar.Sugar.swallow;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -151,7 +151,7 @@ public class Waker<Row>
   }
 
   /**
-   * Run a transaction rollback on exceptions.
+   * Run a transaction with retry, rollback on exceptions.
    *
    * @param session
    * @param tx
@@ -161,7 +161,7 @@ public class Waker<Row>
       require(() -> {
         try (WokeTxSession txSession = new WokeTxSession(session.reserve())) {
           try {
-            retryable(TX_TRIES, TX_RETRY_TIME_DELAY, () -> tx.accept(txSession));
+            retry(TX_TRIES, TX_RETRY_TIME_DELAY, () -> tx.accept(txSession));
           } catch (Throwable t) {
             LOG.trace("runWokeTransaction rollback", t.getMessage(), t);
             txSession.rollback();
