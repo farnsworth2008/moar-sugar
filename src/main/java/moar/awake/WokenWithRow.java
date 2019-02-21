@@ -22,5 +22,5 @@ public interface WokenWithRow<Row> {
 
   Row upsert();
 
-  Row upsert(Consumer<Row> r);
+  Row upsert(Consumer<Row> row);
 }

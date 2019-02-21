@@ -8,7 +8,9 @@ import java.util.concurrent.Future;
  *
  * @author Mark Farnsworth
  */
-public interface MoarAsyncProvider {
+public interface MoarAsyncProvider
+    extends
+    AutoCloseable {
   /**
    * Shutdown the provider
    */

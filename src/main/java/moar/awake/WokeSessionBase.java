@@ -33,24 +33,28 @@ public abstract class WokeSessionBase {
     return sql;
   }
 
-  public void delete(Object row) {
-    if (row == null) {
+  public void delete(Object... rows) {
+    if (rows == null) {
       return;
     }
-    WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
-    String sql = "delete from \n";
-    sql += proxy.getTableName() + "\n";
-    sql += "where\n";
-    sql += proxy.getIdColumn() + "=?";
-    String finalSql = sql;
-    try (ConnectionHold c = reserve()) {
-      require(() -> {
-        try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
-          ps.setObject(1, proxy.getIdValue());
-          int result = ps.executeUpdate();
-          require("1 || 0, " + result, 1 == result || 0 == result);
+    for (Object row : rows) {
+      if (row != null) {
+        WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
+        String sql = "delete from \n";
+        sql += proxy.getTableName() + "\n";
+        sql += "where\n";
+        sql += proxy.getIdColumn() + "=?";
+        String finalSql = sql;
+        try (ConnectionHold c = reserve()) {
+          require(() -> {
+            try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
+              ps.setObject(1, proxy.getIdValue());
+              int result = ps.executeUpdate();
+              require("1 || 0, " + result, 1 == result || 0 == result);
+            }
+          });
         }
-      });
+      }
     }
   }
 
@@ -143,49 +147,56 @@ public abstract class WokeSessionBase {
   /**
    * Reset an object to the state it had when it was loaded.
    *
-   * @param object
+   * @param objects
+   *   Objects that need to be reset.
    */
-  public void reset(Object object) {
-    WokePrivateProxy proxy = ((WokeProxiedObject) object).privateProxy();
-    proxy.reset();
+  public void reset(Object... objects) {
+    for (Object object : objects) {
+      WokePrivateProxy proxy = ((WokeProxiedObject) object).privateProxy();
+      proxy.reset();
+    }
   }
 
-  public void update(Object row) {
-    WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
-    String sql = "update\n";
-    sql += proxy.getTableName() + "\n";
-    sql += "set\n";
-    AtomicInteger i = new AtomicInteger();
-    List<Consumer<PreparedStatement>> setProps = new ArrayList<>();
-    boolean hasId = row instanceof WakeableRow.IdColumn;
-    for (String column : proxy.getColumns(!hasId)) {
-      if (proxy.isDbDirty(column)) {
-        sql += column + "=?\n";
-        setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
+  public void update(Object... rows) {
+    for (Object row : rows) {
+      WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
+      String sql = "update\n";
+      sql += proxy.getTableName() + "\n";
+      sql += "set\n";
+      AtomicInteger i = new AtomicInteger();
+      List<Consumer<PreparedStatement>> setProps = new ArrayList<>();
+      boolean hasId = row instanceof WakeableRow.IdColumn;
+      for (String column : proxy.getColumns(!hasId)) {
+        if (proxy.isDbDirty(column)) {
+          sql += column + "=?\n";
+          setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
+        }
+      }
+      sql += "where\n";
+      sql += proxy.getIdColumn() + "=?";
+      Object idValue = proxy.getIdValue();
+      setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
+      String finalSql = sql;
+      try (ConnectionHold c = reserve()) {
+        require(() -> {
+          try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
+            for (Consumer<PreparedStatement> item : setProps) {
+              item.accept(ps);
+            }
+            int result = ps.executeUpdate();
+            require("1, " + result, 1 == result);
+          }
+        });
       }
     }
-    sql += "where\n";
-    sql += proxy.getIdColumn() + "=?";
-    Object idValue = proxy.getIdValue();
-    setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
-    String finalSql = sql;
-    try (ConnectionHold c = reserve()) {
-      require(() -> {
-        try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
-          for (Consumer<PreparedStatement> item : setProps) {
-            item.accept(ps);
-          }
-          int result = ps.executeUpdate();
-          require("1, " + result, 1 == result);
-        }
-      });
-    }
   }
 
-  public void update(String tableish, Object woke) {
-    WokePrivateProxy proxy = ((WokeProxiedObject) woke).privateProxy();
-    proxy.setTableName(tableish);
-    update(woke);
+  public void update(String tableish, Object... rows) {
+    for (Object row : rows) {
+      WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
+      proxy.setTableName(tableish);
+      update(row);
+    }
   }
 
 }

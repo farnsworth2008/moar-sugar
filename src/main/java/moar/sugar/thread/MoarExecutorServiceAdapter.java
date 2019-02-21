@@ -25,6 +25,11 @@ public class MoarExecutorServiceAdapter
     this.executorService = executorService;
   }
 
+  @Override
+  public void close() throws Exception {
+    shutdown();
+  }
+
   /**
    * Shutdown.
    */

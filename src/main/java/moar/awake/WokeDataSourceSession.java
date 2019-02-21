@@ -2,6 +2,7 @@ package moar.awake;
 import static moar.sugar.Sugar.require;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 /**
@@ -15,7 +16,7 @@ public class WokeDataSourceSession
 
   private final DataSource ds;
 
-  public WokeDataSourceSession(DataSource ds) {
+  WokeDataSourceSession(DataSource ds) {
     this.ds = ds;
   }
 
@@ -40,6 +41,22 @@ public class WokeDataSourceSession
         return require(() -> md.getIdentifierQuoteString());
       }
     };
+  }
+
+  /**
+   * Upsert multiples.
+   *
+   * @param clz
+   *   Class for entity.
+   * @param updators
+   *   One or more updators
+   */
+  @SafeVarargs
+  public final <T> void upsert(Class<T> clz, Consumer<T>... updators) {
+    WokenWithSession<T> repo = Waker.wake(clz).of(ds);
+    for (Consumer<T> updator : updators) {
+      repo.upsert(updator);
+    }
   }
 
 }
