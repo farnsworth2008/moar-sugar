@@ -3,15 +3,13 @@
 Stuff to make Java sweet!
 
 ## Overview
-The idea of Moar *(pronounced like Roar)* is to make Java coding techniques a bit more modern.  The Moar Sugar project currently supports both Java 1.8 and Java 1.11.
+The idea of Moar is to make Java coding techniques a bit more modern.
 
-Support for Java 1.8 will be dropped in early 2020.
+Much of Moar Sugar, is *syntactical sugar* to make common coding patterns more concise and easier to understand.  Static methods such as `safely( () -> {} ) of ` of `moar.sugar.Sugar` replace verbose boilerplate that often gets in the way of expressing ideas.
 
-Much of Moar Sugar creates *syntactical sugar* with the aim of making verbose Java coding patterns more concise or mapping common patterns to ideas that are easier to understand.  Static methods such as `safely( () -> {} ) of ` of `moar.sugar.Sugar` replace more verbose boilerplate code that is often needed.
+Scheduling and obtaining asynchronous execution is an area where Java is especially verbose.  With *Moar Sugar*, various `$()` functions provide a concise yet powerful syntax.
 
-Scheduling and obtaining asynchronous execution is an area where java is especially verbose.  With *Moar Sugar* various `$` functions provide an more concise way to schedule futures and safely get the results.
-
-The [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)) framework is popular for Java products but I find it to be quite frustrating.  Often the *magic* repositories, *lazy loading*, and *attached or detached* states produce defects that are hard to debug.  Moar Sugar provides the `Waker` class and `wake(T.class) method  for working in the context of *non-magical* JDBC while also interface driven data mapping.
+The [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)) framework is a popular but often frustrating.  The *magic* JPA repositories, *lazy loading*, and *hidden data connections* produce defects that are often hard to debug.  Moar Sugar provides the `Waker` class and `wake(T.class) method  for working in the context of *non-magical* JDBC while also interface driven data mapping.
 
 ## Example #1, Safely Invoke Method
 ```java
@@ -29,8 +27,9 @@ if (has(result.thrown())) {
 ```java
 out.println("Example: Async Execution");
 
-/* [require] shorthand to require everything in the block to complete
- * without exception. */
+/* [require( () -> {} )] shorthand makes sure everything if anything in the
+ * block fails an requires exception is thrown. It's a non magic version of
+ * Lombok's @SneakyThrows idea. */
 require(() -> {
 
   /* $ shorthand for a service using 4 threads. */
