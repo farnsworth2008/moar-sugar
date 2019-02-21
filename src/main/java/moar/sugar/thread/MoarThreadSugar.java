@@ -6,6 +6,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static moar.sugar.Sugar.codeLocationAt;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.safely;
+import static moar.sugar.Sugar.swallow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -257,28 +258,15 @@ public class MoarThreadSugar {
    * @return list of results
    * @throws Exception
    */
-  public static <T> List<T> $(Vector<Future<T>> futures) throws Exception {
-    return $("futures " + codeLocationAt(1), () -> {
-      List<T> resultList = new ArrayList<>();
-      List<SafeResult<Object>> resultWithExceptions = new ArrayList<>();
-      Exception exception = null;
+  public static <T> List<SafeResult<T>> $(Vector<Future<T>> futures) {
+    return swallow(() -> $("futures " + codeLocationAt(1), () -> {
+      List<SafeResult<T>> resultList = new ArrayList<>();
       for (Future<T> future : futures) {
-        T result;
-        try {
-          result = future.get();
-          exception = null;
-        } catch (Exception e) {
-          exception = e;
-          result = null;
-        }
+        SafeResult<T> result = $(future);
         resultList.add(result);
-        resultWithExceptions.add(new SafeResult<>(result, exception));
-      }
-      if (exception != null) {
-        throw new FutureListException(resultWithExceptions);
       }
       return resultList;
-    });
+    }));
   }
 
   /**
