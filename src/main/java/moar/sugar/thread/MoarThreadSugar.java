@@ -146,7 +146,9 @@ public class MoarThreadSugar {
    * Schedule the call for the future.
    *
    * @param provider
+   *   Async provider.
    * @param call
+   *   Call to schedule.
    * @return A future
    */
   public static Future<Object> $(MoarAsyncProvider provider, CallableVoid call) {
