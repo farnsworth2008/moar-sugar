@@ -27,8 +27,9 @@ if (has(result.thrown())) {
 ```java
 out.println("Example: Async Execution");
 
-/* [require( () -> {} )] shorthand makes sure everything if anything in the
- * block fails an requires exception is thrown. It's a non magic version of
+/* The 'require( () -> {} )' method makes sure that if anything in the
+ * block fails an exception is thrown (with RuntimeException wrapping for
+ * checked exceptions). It's a non magic version of the also very useful
  * Lombok's @SneakyThrows idea. */
 require(() -> {
 
