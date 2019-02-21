@@ -13,7 +13,6 @@ The [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)) framework i
 
 ## Example #1, Safely Invoke Method
 ```java
-out.println("Example: Safely invoke a method that may throw");
 var result = safely(() -> methodWithException("two"));
 if (has(result.thrown())) {
   out.println("we got: " + result.thrown().getMessage());
