@@ -30,6 +30,17 @@ public class MoarStringUtil {
   }
 
   /**
+   * Clean a string so it only contains ASCII chars.
+   *
+   * @param string
+   *   String of content to be cleaned.
+   * @return string
+   */
+  public static String cleanWithOnlyAscii(String string) {
+    return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
+  }
+
+  /**
    * Replace targeted characters with blanks.
    *
    * @param matcher
@@ -54,17 +65,6 @@ public class MoarStringUtil {
       }
     }
     return cleanBuilder.toString();
-  }
-
-  /**
-   * Clean a string so it only contains ASCII chars.
-   *
-   * @param string
-   *   String of content to be cleaned.
-   * @return string
-   */
-  public static String cleanWithOnlyAscii(String string) {
-    return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
   /**
