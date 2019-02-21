@@ -25,8 +25,6 @@ if (has(result.thrown())) {
 ## Example #2, Async Operations
 
 ```java
-out.println("Example: Async Execution");
-
 /* The 'require( () -> {} )' method makes sure that if anything in the
  * block fails an exception is thrown (with RuntimeException wrapping for
  * checked exceptions). It's a non magic version of the also very useful
@@ -44,19 +42,25 @@ require(() -> {
       var message1 = format("async One [%d]", i);
       var message2 = format("async Two [%d]", i);
       var message3 = format("async Three [%d]", i);
+
+      // schedule one at at time.
       $(service, futures, () -> methodOne(message1));
-      $(service, futures, () -> methodTwo(message2), () -> methodTwo(message3));
+
+      // varargs also allows multiple methods to be scheduled.
+      $(service, futures,
+         () -> methodTwo(message2),
+         () -> methodWithException(message3)
+       );
     }
 
-    /* $ shorthand to wait for all futures to complete */
+    /* $ shorthand to wait for all futures to *safely* complete */
     out.println("  async work started");
-    swallow(() -> $(futures));
+    List<SafeResult<String>> results = $(futures);
     out.println("  async work complete");
 
-    /* $ shorthand to get a safe result from a future */
+    /* easily to walk the result list without fear of exceptions */
     var i = 0;
-    for (var future : futures) {
-      var result = $(future);
+    for (var result : results) {
       var futureThrew = result.thrown() == null;
       var displayValue = futureThrew ? result.get() : result.thrown().getMessage();
       out.println(format("  futures[%d]: %s", ++i, displayValue));
@@ -86,8 +90,6 @@ public interface PetRow
 ```java
 /* Works with standard javax.sql.DataSource */
 var ds = getDataSource();
-
-out.println("Example: DB");
 
 /* Simple way to executeSql with connection open and close handled
  * automatically */
