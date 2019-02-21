@@ -3,13 +3,12 @@
 Stuff to make Java sweet!
 
 ## Overview
-The idea of Moar is to make Java coding techniques a bit more modern.
 
-Much of Moar Sugar, is *syntactical sugar* to make common coding patterns more concise and easier to understand.  Static methods such as `safely( () -> {} ) of ` of `moar.sugar.Sugar` replace verbose boilerplate that often gets in the way of expressing ideas.
+Much of Moar Sugar, is *syntactical sugar* that makes coding more concise and easier to understand.  Static methods such as `safely( () -> {} )` replace verbose boilerplate that often gets in the way of expressing ideas.
 
-Scheduling and obtaining asynchronous execution is an area where Java is especially verbose.  With *Moar Sugar*, various `$()` functions provide a concise yet powerful syntax.
+Asynchronous execution is an area where Java is especially verbose.  With *Moar Sugar*, various `$()` functions provide a concise yet powerful syntax.
 
-The [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)) framework is a popular but often frustrating.  The *magic* JPA repositories, *lazy loading*, and *hidden data connections* produce defects that are often hard to debug.  Moar Sugar provides the `Waker` class and `wake(T.class) method  for working in the context of *non-magical* JDBC while also interface driven data mapping.
+The [Hibernate](https://en.wikipedia.org/wiki/Hibernate_(framework)) framework is a popular but often frustrating.  The *magic JPA repositories, byte code tricks, lazy loading, and hidden data connections* produce defects that are often hard to debug.  Moar Sugar provides the `Waker` class and `wake(T.class) method for working with *non-magical* JDBC.  The interface driven data approach in Moar Sugar is similar to Hibernate style POJOs but less verbose and easier to define.
 
 ## Example #1, Safely Invoke Method
 ```java
