@@ -54,7 +54,7 @@ require(() -> {
 
     /* $ shorthand to wait for all futures to *safely* complete */
     out.println("  async work started");
-    List<SafeResult<String>> results = $(futures);
+    var results = $(futures);
     out.println("  async work complete");
 
     /* easily to walk the result list without fear of exceptions */
