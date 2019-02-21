@@ -19,8 +19,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import moar.sugar.CallableVoid;
 import moar.sugar.MoarJson;
 import moar.sugar.MoarLogger;
@@ -40,18 +38,9 @@ public class MoarThreadSugar {
   private static long TRACE_COST_LIMIT = prop.getLong("traceCostLimit", 10 * 1000L);
   private static ThreadLocal<MoarThreadActivity> threadActivity = new ThreadLocal<>();
   private static ThreadLocal<Boolean> threadIsAsync = new ThreadLocal<>();
-  private static ListeningExecutorService directExecutorService = MoreExecutors.newDirectExecutorService();
   private static boolean trackCosts = prop.getBoolean("trackCosts", true);
   private static boolean trackDetailCosts = prop.getBoolean("trackDetailCosts", true);
-  private static MoarAsyncProvider directAsyncProvider = new MoarAsyncProvider() {
-    @Override
-    public void shutdown() {}
-
-    @Override
-    public <T> Future<T> submit(Callable<T> c) {
-      return directExecutorService.submit(c);
-    }
-  };
+  private static MoarAsyncProvider directAsyncProvider = new MoarDirectAsyncProvider();
   private static MoarJson moarJson = MoarJson.getMoarJson();
 
   /**
@@ -65,8 +54,10 @@ public class MoarThreadSugar {
    * Execute a call on the current thread with tracking.
    *
    * @param call
+   *   Call to execute
    * @return The result
    * @throws Exception
+   *   Exception thrown in call
    */
   public static <T> T $(Callable<T> call) throws Exception {
     return $(codeLocationAt(1), call);
@@ -76,6 +67,7 @@ public class MoarThreadSugar {
    * Call with tracking.
    *
    * @param call
+   *   Call to execute
    */
   public static void $(CallableVoid call) {
     $(codeLocationAt(1), call);
@@ -85,6 +77,7 @@ public class MoarThreadSugar {
    * Create a vector of futures for a class.
    *
    * @param clz
+   *   Class for future results.
    * @return Vector of futures
    */
   public static <T> Vector<Future<T>> $(Class<T> clz) {
@@ -95,6 +88,7 @@ public class MoarThreadSugar {
    * Wrap an {@link ExecutorService} for {@link MoarThreadSugar}.
    *
    * @param service
+   *   Service used for async tasks.
    * @return An async provider that can be used for other calls.
    */
   public static MoarAsyncProvider $(ExecutorService service) {
@@ -115,6 +109,7 @@ public class MoarThreadSugar {
    * Get result from the future
    *
    * @param future
+   *   Future.
    * @return result.
    */
   public static <T> T $(Future<T> future) {
@@ -124,11 +119,12 @@ public class MoarThreadSugar {
   /**
    * Create a service using a fixed number of threads.
    *
-   * @param nThreads
+   * @param threads
+   *   Number of threads to use.
    * @return Adapter for a service.
    */
-  public static MoarAsyncProvider $(int nThreads) {
-    return $(newFixedThreadPool(nThreads));
+  public static MoarAsyncProvider $(int threads) {
+    return $(newFixedThreadPool(threads));
   }
 
   /**

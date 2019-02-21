@@ -16,8 +16,9 @@ public class MoarThreadReport {
    * Create Report
    *
    * @param time
+   *   Total time covered by the report.
    * @param detail
-   * Detail Trackers
+   *   Detail Trackers
    */
   public MoarThreadReport(long time, List<MoarThreadTracker> detail) {
     this.time = time;
@@ -35,6 +36,7 @@ public class MoarThreadReport {
    * Get the tracker for a description
    *
    * @param desc
+   *   Description
    * @return Tracker for the description
    */
   public MoarThreadTracker getTracker(String desc) {
