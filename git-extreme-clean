@@ -1,1 +1,2 @@
+git clean -fdx > /dev/null
 git clean -fdx | sed 's/Skipping repository /rm -rf /' | sh
