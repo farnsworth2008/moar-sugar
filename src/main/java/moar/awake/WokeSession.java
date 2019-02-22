@@ -3,12 +3,24 @@ package moar.awake;
 import static moar.awake.Waker.runWokeTransaction;
 import java.util.function.Consumer;
 
+/**
+ * A session for running Woke transactions.
+ *
+ * @author Mark Farnsworth
+ */
 public abstract class WokeSession
     extends
     WokeSessionBase {
+
+  /**
+   * @param transactions
+   *   Transaction(s) to run.
+   */
+  @SuppressWarnings("unchecked")
   public void run(Consumer<WokeTxSession>... transactions) {
     for (Consumer<WokeTxSession> transaction : transactions) {
       runWokeTransaction(this, transaction);
     }
   }
+
 }
