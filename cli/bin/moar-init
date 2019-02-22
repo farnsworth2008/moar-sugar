@@ -1,0 +1,38 @@
+# Initalization script moar projects
+#
+# This script should be run once on each 'clean' enviornment to fetch required
+# non-gradle project dependencies and initalize the environment
+# -----------------------------------------------------------------------------
+set -e
+
+dir=`pwd`
+
+if ! [ -d 'moar-modules' ]; then 
+  exit 0
+fi
+
+# Check to make sure the workspace is clean
+if ! [ -z "$(git status --porcelain)" ]; then
+  echo 'Please clean'
+  exit 1
+fi
+
+# Make sure dependencies are really gone
+# These will be reobtained when we init
+if ! [ -z "$(git clean -fdx)" ]; then
+  echo 'Please clean everything'
+  exit 2
+fi
+
+moar-clone-modules
+
+if [ -d 'moar-sugar' ]; then
+  cp -r moar-sugar/gradle moar-sugar/gradlew .
+fi
+
+# Perform an initial build
+moar-build
+
+if [ -d 'moar-setup.sh' ]; then
+  ./moar-setup.sh
+fi

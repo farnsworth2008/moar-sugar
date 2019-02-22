@@ -1,0 +1,9 @@
+set -e
+
+dir=`pwd`
+init=`cat "moar-modules/init-$1"`
+git clone `cat "moar-modules/git-$1"`
+cd $1
+git reset --hard $init
+moar-init
+cd $dir

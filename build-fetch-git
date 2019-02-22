@@ -1,1 +1,0 @@
-ls -1 moar-projects/git-* | grep -v moar-sugar | sed 's/^moar-projects\/git-/moar-sugar\/fetch-git /'

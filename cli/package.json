@@ -1,7 +1,12 @@
 {
 	"name": "moar-sugar",
 	"bin": {
-		"moar-json": "bin/moar-json"
+		"moar-init": "bin/moar-init",
+		"moar-build": "bin/moar-build",
+		"moar-json": "bin/moar-json",
+		"moar-clean": "bin/moar-clean",
+		"moar-clone": "bin/moar-clone",
+		"moar-clone-modules": "bin/moar-clone-modules"
 	},
 	"version": "1.0.0",
 	"description": "Stuff to make Java sweet!",

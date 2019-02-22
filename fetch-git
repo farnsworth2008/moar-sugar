@@ -1,8 +1,0 @@
-set -e
-
-dir=`pwd`
-build=`cat "moar-projects/init-$1"`
-git clone `cat "moar-projects/git-$1"`
-cd $1
-git checkout -b build $build
-cd $dir

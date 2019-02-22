@@ -1,0 +1,1 @@
+ls -1 moar-modules/git-* | sed 's/^moar-modules\/git-/moar-clone /' | sh
