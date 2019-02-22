@@ -19,9 +19,11 @@ public class SafeResult<T> {
 
   /**
    * Create a safe result.
-   * 
+   *
    * @param result
+   *   The result.
    * @param throwable
+   *   Something that was thrown.
    */
   public SafeResult(T result, Throwable throwable) {
     this.result = result;

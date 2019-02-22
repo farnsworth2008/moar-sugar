@@ -1,5 +1,7 @@
 package moar.sugar;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
 import static java.lang.Thread.sleep;
 import java.io.PrintWriter;
@@ -36,6 +38,7 @@ public class Sugar {
    * Close with swallowing.
    *
    * @param closeable
+   *   Something that will be closed.
    */
   public static void closeQuietly(AutoCloseable closeable) {
     swallow(() -> closeable.close());
@@ -46,6 +49,7 @@ public class Sugar {
    * Line of the caller).
    *
    * @param offset
+   *   The offset in terms of stack depth.
    * @return code location as class name with line number.
    */
   public static String codeLocationAt(int offset) {
@@ -71,38 +75,44 @@ public class Sugar {
    * Truthy test
    *
    * @param object
+   *   A reference that may be null, empty, false or actually something.
    * @return True for a value that is truthy
    */
-  public static boolean has(Object object) {
-    try {
-      if (object == null || isEmptyList(object) || isEmptyString(object)) {
-        return false;
+  public static Boolean has(Object object) {
+    return nonNull(safely(() -> {
+      if (null == object || FALSE == object || isEmptyList(object) || isEmptyString(object)) {
+        return FALSE;
       }
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
+      return TRUE;
+    }).get(), FALSE);
   }
 
   /**
+   * True if the object is an empty list.
+   *
    * @param object
+   *   An object that might be an empty list.
    * @return true if the object is an empty list
    */
   @SuppressWarnings("rawtypes")
-  public static boolean isEmptyList(Object object) {
+  public static Boolean isEmptyList(Object object) {
     return object instanceof List && ((List) object).isEmpty();
   }
 
   /**
    * @param object
+   *   An object that might be an empty string.
    * @return true if object is an empty string
    */
-  public static boolean isEmptyString(Object object) {
+  public static Boolean isEmptyString(Object object) {
     return object instanceof String && ((String) object).isEmpty();
   }
 
   /**
+   * Get the first non null argument.
+   *
    * @param args
+   *   Arguments
    * @return first non null argument
    */
   @SafeVarargs
@@ -116,9 +126,22 @@ public class Sugar {
   }
 
   /**
+   * Require a test to pass.
+   *
+   * @param test
+   *   test that must be true.
+   */
+  public static void require(Boolean test) {
+    if (has(test)) {
+      throw new MoarException("Required test failed");
+    }
+  }
+
+  /**
    * Require a call to succeed.
    *
    * @param call
+   *   Call to make.
    * @return result
    * @throws RuntimeException
    *   if call fails.
@@ -134,26 +157,17 @@ public class Sugar {
   /**
    * Require a call to succeed.
    *
-   * @param call
+   * @param calls
+   *   Calls to make.
    * @throws RuntimeException
    *   if call fails.
    */
-  public static void require(CallableVoid call) {
-    require(() -> {
-      call.call();
-      return null;
-    });
-  }
-
-  /**
-   * Require a test to pass.
-   *
-   * @param message
-   * @param test
-   */
-  public static void require(String message, boolean test) {
-    if (!test) {
-      throw new MoarException(message);
+  public static void require(CallableVoid... calls) {
+    for (CallableVoid call : calls) {
+      require(() -> {
+        call.call();
+        return null;
+      });
     }
   }
 
@@ -161,13 +175,11 @@ public class Sugar {
    * Require an object to exist
    *
    * @param object
+   *   An object that might exist.
    * @return object
    */
   public static <T> T require(T object) {
-    if (isEmptyList(object) || isEmptyString(object)) {
-      object = null;
-    }
-    if (object == null) {
+    if (!has(object)) {
       throw new NullPointerException();
     }
     return object;
@@ -179,8 +191,10 @@ public class Sugar {
    * @param tries
    *   number of tries
    * @param call
+   *   Call to run
    * @return result
    * @throws Exception
+   *   Exception thrown
    */
   public static <T> T retry(int tries, Callable<T> call) throws Exception {
     return retry(tries, 1000, call);
@@ -191,8 +205,9 @@ public class Sugar {
    *
    * @param tries
    * @param call
+   * @throws Exception
    */
-  public static void retry(int tries, CallableVoid call) {
+  public static void retry(int tries, CallableVoid call) throws Exception {
     retry(tries, 1000, call);
   }
 
@@ -219,7 +234,7 @@ public class Sugar {
       }
     }
     if (last instanceof RetryableException) {
-      throw asRuntimeException(last);
+      throw last;
     }
     throw last;
   }
@@ -230,13 +245,12 @@ public class Sugar {
    * @param tries
    * @param retryWaitMs
    * @param call
+   * @throws Exception
    */
-  public static void retry(int tries, long retryWaitMs, CallableVoid call) {
-    require(() -> {
-      retry(tries, retryWaitMs, () -> {
-        call.call();
-        return null;
-      });
+  public static void retry(int tries, long retryWaitMs, CallableVoid call) throws Exception {
+    retry(tries, retryWaitMs, () -> {
+      call.call();
+      return null;
     });
   }
 

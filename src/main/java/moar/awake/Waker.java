@@ -330,7 +330,7 @@ public class Waker<Row>
       }
       try {
         int upResult = ps.executeUpdate();
-        swallow(() -> require("0 || 1 || 2, " + upResult, upResult == 0 || upResult == 1 || upResult == 2));
+        swallow(() -> require(upResult == 0 || upResult == 1 || upResult == 2));
         if (useGeneratedKeys) {
           try (ResultSet rs = ps.getGeneratedKeys()) {
             if (rs.next()) {

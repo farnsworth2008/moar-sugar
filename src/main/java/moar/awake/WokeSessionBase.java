@@ -50,7 +50,7 @@ public abstract class WokeSessionBase {
             try (PreparedStatement ps = c.get().prepareStatement(finalSql)) {
               ps.setObject(1, proxy.getIdValue());
               int result = ps.executeUpdate();
-              require("1 || 0, " + result, 1 == result || 0 == result);
+              require(1 == result || 0 == result);
             }
           });
         }
@@ -184,7 +184,7 @@ public abstract class WokeSessionBase {
               item.accept(ps);
             }
             int result = ps.executeUpdate();
-            require("1, " + result, 1 == result);
+            require(1 == result);
           }
         });
       }

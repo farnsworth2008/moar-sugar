@@ -134,6 +134,23 @@ public class MoarThreadSugar {
     return $(newFixedThreadPool(threads));
   }
 
+  @SuppressWarnings("javadoc")
+  public static Future<Object> $(MoarAsyncProvider async, Callable<Object> call) {
+    Vector<Future<Object>> futures = $();
+    $(async, futures, call);
+    return futures.get(0);
+  }
+
+  @SuppressWarnings("javadoc")
+  public static Future<Object> $(MoarAsyncProvider async, CallableVoid call) {
+    Vector<Future<Object>> futures = $();
+    $(async, futures, () -> {
+      call.call();
+      return null;
+    });
+    return futures.get(0);
+  }
+
   /**
    * Schedule the calls for the future.
    *
@@ -331,5 +348,4 @@ public class MoarThreadSugar {
   public static void setTrackDetailCosts(boolean trackDetailCosts) {
     MoarThreadSugar.trackDetailCosts = trackDetailCosts;
   }
-
 }

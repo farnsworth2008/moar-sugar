@@ -15,6 +15,7 @@ public class RetryableException
    * Constructs a new exception with the specified cause.
    *
    * @param cause
+   *   What caused the exception.
    */
   public RetryableException(Throwable cause) {
     super(cause);

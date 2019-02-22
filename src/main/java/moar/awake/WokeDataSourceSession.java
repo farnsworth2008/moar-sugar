@@ -16,7 +16,7 @@ public class WokeDataSourceSession
 
   private final DataSource ds;
 
-  WokeDataSourceSession(DataSource ds) {
+  public WokeDataSourceSession(DataSource ds) {
     this.ds = ds;
   }
 
