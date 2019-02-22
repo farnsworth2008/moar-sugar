@@ -172,20 +172,6 @@ public class Sugar {
   }
 
   /**
-   * Require an object to exist
-   *
-   * @param object
-   *   An object that might exist.
-   * @return object
-   */
-  public static <T> T require(T object) {
-    if (!has(object)) {
-      throw new NullPointerException();
-    }
-    return object;
-  }
-
-  /**
    * Retry a call if needed.
    *
    * @param tries
