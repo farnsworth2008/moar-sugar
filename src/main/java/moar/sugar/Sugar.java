@@ -132,7 +132,7 @@ public class Sugar {
    *   test that must be true.
    */
   public static void require(Boolean test) {
-    if (has(test)) {
+    if (!has(test)) {
       throw new MoarException("Required test failed");
     }
   }
