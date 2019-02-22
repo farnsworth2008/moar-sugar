@@ -2,7 +2,6 @@
 	"name": "moar-sugar",
 	"bin": {
 		"moar-init": "bin/moar-init",
-		"moar-build": "bin/moar-build",
 		"moar-json": "bin/moar-json",
 		"moar-clean": "bin/moar-clean",
 		"moar-clone": "bin/moar-clone",
