@@ -38,6 +38,15 @@ public class SafeResult<T> {
   }
 
   /**
+   * Determine if an exception was thrown.
+   *
+   * @return true if the result has a thrown exception.
+   */
+  public Boolean threw() {
+    return throwable != null;
+  }
+
+  /**
    * @return Exception or null
    */
   public Throwable thrown() {
