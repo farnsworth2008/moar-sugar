@@ -1,13 +1,13 @@
-# Initalization script moar projects
+# Initialization for moar projects
 #
-# This script should be run once on each 'clean' enviornment to fetch required
-# non-gradle project dependencies and initalize the environment
+# This script should be run once on each 'clean' environment to fetch required
+# non-gradle project dependencies and initialize the environment
 # -----------------------------------------------------------------------------
 set -e
 
 dir=`pwd`
 
-if ! [ -d 'moar-modules' ]; then 
+if ! [ -d 'moar-modules' ]; then
   exit 0
 fi
 
@@ -18,7 +18,6 @@ if ! [ -z "$(git status --porcelain)" ]; then
 fi
 
 # Make sure dependencies are really gone
-# These will be reobtained when we init
 if ! [ -z "$(git clean -fdx)" ]; then
   echo 'Please clean everything'
   exit 2
@@ -30,9 +29,10 @@ if [ -d 'moar-sugar' ]; then
   cp -r moar-sugar/gradle moar-sugar/gradlew .
 fi
 
-# Perform an initial build
-moar-build
+if [ -f 'build.gradle' ]; then
+  ./gradlew build cleanEclipse eclipse
+fi
 
-if [ -d 'moar-setup.sh' ]; then
+if [ -f 'moar-setup.sh' ]; then
   ./moar-setup.sh
 fi
