@@ -13,6 +13,6 @@ for module in ~/modules/*; do
   if [ "$status" != "0" ]; then
     echo $(basename $module)
     git add -A
-    git commit -m "$1" | tail -n 1
+    git commit -m "$1" | grep 'files changed'
   fi
 done
