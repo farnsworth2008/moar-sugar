@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import moar.sugar.CallableVoid;
-import moar.sugar.MoarJson;
 import moar.sugar.MoarLogger;
 import moar.sugar.PropertyAccessor;
 import moar.sugar.SafeResult;
@@ -36,7 +35,6 @@ public class MoarThreadSugar {
   private static boolean trackCosts = prop.getBoolean("trackCosts", true);
   private static boolean trackDetailCosts = prop.getBoolean("trackDetailCosts", true);
   private static MoarAsyncProvider directAsyncProvider = new MoarDirectAsyncProvider();
-  private static MoarJson moarJson = MoarJson.getMoarJson();
 
   /**
    * @return Vector of futures.
