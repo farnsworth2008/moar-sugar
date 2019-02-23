@@ -12,9 +12,31 @@ for module in ~/modules/*; do
   branch="$(git rev-parse --abbrev-ref @{upstream} 2> /dev/null || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  branch="> $branch"
-  name="$(basename $module) [$ahead/$behind] "
-  length=$(echo -n $name$branch | wc -c)
+  status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  branch="$branch"
+
+  statusBit=""
+  if ! [ "$status" == "0" ]; then
+    statusBit="$status"
+  fi
+  if ! [ "$ahead" == "0" ]; then
+    if ! [ "$status" == "0" ]; then
+      statusBit="${statusBit},"
+    fi
+    statusBit="${statusBit}${ahead}"
+  fi
+  if ! [ "$behind" == "0" ]; then
+    if [ "$status" != "0" ] || [ "$ahead" != "0" ]; then
+      statusBit="${statusBit},"
+    fi
+    statusBit="${statusBit}${behind}"
+  fi
+  if ! [ "$statusBit" == "" ]; then
+    statusBit="($statusBit) "
+  fi
+
+  name="$(basename $module)"
+  length=$(echo -n "$name $statusBit\> $branch" | wc -c)
   if [ ${length} -gt ${max_length} ]; then
     max_length=${length}
   fi
@@ -34,10 +56,10 @@ for module in ~/modules/*; do
   branch="$(git rev-parse --abbrev-ref @{upstream} 2> /dev/null || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
   vs_master="$(git diff origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
   branch="$branch"
   name="$(basename $module) "
-  formated_name="$(basename $module) [$ahead/$behind] "
 
   if [ "$(basename $module)" == "$current" ]; then
     printf "${magenta}%s${normal}" "$name"
@@ -45,21 +67,46 @@ for module in ~/modules/*; do
     printf '%s' "$name"
   fi
 
-  printf '['
+  statusBit=""
+  if ! [ "$status" == "0" ]; then
+    statusBit="$status"
+  fi
   if ! [ "$ahead" == "0" ]; then
-    printf "${green}%s${normal}" "$ahead"
-  else
-    printf '0'
+    if ! [ "$status" == "0" ]; then
+      statusBit="${statusBit},"
+    fi
+    statusBit="${statusBit}${ahead}"
   fi
-  printf '/'
   if ! [ "$behind" == "0" ]; then
-    printf "${red}%s${normal}" "$behind"
-  else
-    printf '0'
+    if [ "$status" != "0" ] || [ "$ahead" != "0" ]; then
+      statusBit="${statusBit},"
+    fi
+    statusBit="${statusBit}${behind}"
   fi
-  printf ']'
+  if ! [ "$statusBit" == "" ]; then
+    statusBit="($statusBit) "
+    printf '('
+    if ! [ "$status" == "0" ]; then
+      printf "${blue}%s${normal}" "$status"
+    fi
+    if ! [ "$ahead" == "0" ]; then
+      if ! [ "$status" == "0" ]; then
+        printf ','
+      fi
+      printf "${green}%s${normal}" "$ahead"
+    fi
+    if ! [ "$behind" == "0" ]; then
+      if [ "$status" != "0" ] || [ "$ahead" != "0" ]; then
+        printf ','
+      fi
+      printf "${red}%s${normal}" "$behind"
+    fi
+    printf ') '
+  fi
 
-  printf '%*.*s' 0 $((padlength - ${#formated_name} - ${#branch} )) "$pad"
+  name_status="$(basename $module) $statusBit"
+
+  printf '%*.*s' 0 $((padlength - ${#name_status} - ${#branch} )) "$pad"
 
   if [ "$vs_master" == "0" ]; then
     printf '> %s' "$branch"
@@ -67,6 +114,6 @@ for module in ~/modules/*; do
     printf "> ${red}%s${normal}" "$branch"
   fi
   printf '\n'
+  echo "$status $ahead $behind" > /dev/null
 
-  git status --short
 done
