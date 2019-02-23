@@ -536,6 +536,7 @@ public class Waker<Row>
 
   @Override
   public WokenWithRow<Row> id(Long id) {
+    require(id != null);
     return this.key(r -> {
       ((WakeableRow.IdColumnAsLong) r).setId(id);
     });
