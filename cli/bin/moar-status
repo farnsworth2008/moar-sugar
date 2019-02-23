@@ -34,7 +34,7 @@ for module in ~/modules/*; do
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
   vs_master="$(git diff origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  branch="> $branch"
+  branch="$branch"
   name="$(basename $module) "
   formated_name="$(basename $module) [$ahead/$behind] "
 
@@ -61,9 +61,9 @@ for module in ~/modules/*; do
   printf '%*.*s' 0 $((padlength - ${#formated_name} - ${#branch} )) "$pad"
 
   if [ "$vs_master" == "0" ]; then
-    printf '%s' "$branch"
+    printf '> %s' "$branch"
   else
-    printf "${red}%s${normal}" "$branch"
+    printf "> ${red}%s${normal}" "$branch"
   fi
   printf '\n'
 
