@@ -16,8 +16,8 @@ public abstract class WokeSession
    * @param transactions
    *   Transaction(s) to run.
    */
-  @SuppressWarnings("unchecked")
-  public void run(Consumer<WokeTxSession>... transactions) {
+  @SafeVarargs
+  public final void run(Consumer<WokeTxSession>... transactions) {
     for (Consumer<WokeTxSession> transaction : transactions) {
       runWokeTransaction(this, transaction);
     }
