@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+max_length=0
+
+for module in ~/modules/*; do
+  cd $module
+  git remote update > /dev/null
+  moar-clone-modules
+done

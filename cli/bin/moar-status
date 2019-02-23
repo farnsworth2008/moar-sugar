@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e
+
+dir=`pwd`
+current=$(basename $dir)
+
+max_length=0
+
+for module in ~/modules/*; do
+  cd $module
+  branch="$(git rev-parse --abbrev-ref @{upstream} 2> /dev/null || true)"
+  ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  branch="> $branch"
+  name="$(basename $module) [$ahead/$behind] "
+  length=$(echo -n $name$branch | wc -c)
+  if [ ${length} -gt ${max_length} ]; then
+    max_length=${length}
+  fi
+done
+
+pad=$(printf '%0.1s' "-"{1..200})
+padlength=${max_length}
+
+magenta='\033[0;35m'
+green='\033[0;32m'
+red='\033[0;31m'
+normal='\033[0m' # No Color
+
+for module in ~/modules/*; do
+  cd $module
+  branch="$(git rev-parse --abbrev-ref @{upstream} 2> /dev/null || true)"
+  ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  vs_master="$(git diff origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  branch="> $branch"
+  name="$(basename $module) "
+  formated_name="$(basename $module) [$ahead/$behind] "
+
+  if [ "$(basename $module)" == "$current" ]; then
+    printf "${magenta}%s${normal}" "$name"
+  else
+    printf '%s' "$name"
+  fi
+
+  printf '['
+  if ! [ "$ahead" == "0" ]; then
+    printf "${green}%s${normal}" "$ahead"
+  else
+    printf '0'
+  fi
+  printf '/'
+  if ! [ "$behind" == "0" ]; then
+    printf "${red}%s${normal}" "$behind"
+  else
+    printf '0'
+  fi
+  printf ']'
+
+  printf '%*.*s' 0 $((padlength - ${#formated_name} - ${#branch} )) "$pad"
+
+  if [ "$vs_master" == "0" ]; then
+    printf '%s' "$branch"
+  else
+    printf "${red}%s${normal}" "$branch"
+  fi
+  printf '\n'
+
+  git status --short
+done

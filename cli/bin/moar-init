@@ -1,8 +1,5 @@
-# Initialization for moar projects
-#
-# This script should be run once on each 'clean' environment to fetch required
-# non-gradle project dependencies and initialize the environment
-# -----------------------------------------------------------------------------
+#!/bin/bash
+
 set -e
 
 dir=`pwd`

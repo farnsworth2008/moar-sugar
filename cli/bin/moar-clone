@@ -1,6 +1,12 @@
+#!/bin/bash
+
 set -e
 
 dir=`pwd`
+
+if [ -h $dir/$1 ]; then
+  rm $dir/$1
+fi
 
 if [ -d ~/modules/$1 ]; then
   cd ~/modules/$1
