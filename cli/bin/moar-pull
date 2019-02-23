@@ -4,6 +4,5 @@ set -e
 
 for module in ~/modules/*; do
   cd $module
-  git remote update > /dev/null
-  moar-clone-modules
+  git pull > /dev/null
 done

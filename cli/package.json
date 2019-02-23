@@ -1,41 +1,44 @@
 {
-	"name": "moar-sugar",
-	"bin": {
-		"moar-clean": "bin/moar-clean",
-		"moar-clone": "bin/moar-clone",
-		"moar-clone-modules": "bin/moar-clone-modules",
-		"moar-init": "bin/moar-init",
-		"moar-json": "bin/moar-json",
-		"moar-status": "bin/moar-status",
-		"moar-update": "bin/moar-update"
-	},
-	"version": "1.0.0",
-	"description": "Stuff to make Java sweet!",
-	"main": "moar-json.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"build": "npx babel src --out-dir lib"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/farnsworth2008/moar-sugar.git"
-	},
-	"author": "Mark Farnsworth",
-	"license": "UNLICENSED",
-	"bugs": {
-		"url": "https://github.com/farnsworth2008/moar-sugar/issues"
-	},
-	"homepage": "https://github.com/farnsworth2008/moar-sugar#readme",
-	"dependencies": {
-		"@babel/polyfill": "^7.2.5"
-	},
-	"devDependencies": {
-		"@babel/cli": "^7.2.3",
-		"@babel/core": "^7.3.3",
-		"@babel/plugin-transform-arrow-functions": "^7.2.0",
-		"@babel/preset-env": "^7.3.1",
-		"babel-preset-env": "^1.7.0",
-		"babel-register": "^6.26.0",
-		"really-relaxed-json": "^0.2.24"
-	}
+  "name": "moar-sugar",
+  "bin": {
+    "moar-clean": "bin/moar-clean",
+    "moar-clone": "bin/moar-clone",
+    "moar-clone-modules": "bin/moar-clone-modules",
+    "moar-commit": "bin/moar-commit",
+    "moar-init": "bin/moar-init",
+    "moar-json": "bin/moar-json",
+    "moar-pull": "bin/moar-pull",
+    "moar-push": "bin/moar-push",
+    "moar-status": "bin/moar-status",
+    "moar-update": "bin/moar-update"
+  },
+  "version": "1.0.0",
+  "description": "Stuff to make Java sweet!",
+  "main": "moar-json.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx babel src --out-dir lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farnsworth2008/moar-sugar.git"
+  },
+  "author": "Mark Farnsworth",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/farnsworth2008/moar-sugar/issues"
+  },
+  "homepage": "https://github.com/farnsworth2008/moar-sugar#readme",
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.3",
+    "@babel/plugin-transform-arrow-functions": "^7.2.0",
+    "@babel/preset-env": "^7.3.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "really-relaxed-json": "^0.2.24"
+  }
 }
