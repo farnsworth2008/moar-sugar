@@ -25,7 +25,7 @@ fi
 
 moar-clone-modules
 
-if [ -d 'moar-sugar' ]; then
+if [ -h 'moar-sugar' ]; then
   cp -r moar-sugar/gradle moar-sugar/gradlew .
 fi
 

@@ -1,9 +1,18 @@
 set -e
 
 dir=`pwd`
-init=`cat "moar-modules/init-$1"`
-git clone `cat "moar-modules/git-$1"`
-cd $1
-git reset --hard $init
-moar-init
-cd $dir
+
+if [ -d ~/modules/$1 ]; then
+  cd ~/modules/$1
+  git rev-parse HEAD > $dir/moar-modules/init-$1
+else
+  cd ~/modules
+  git clone `cat "$dir/moar-modules/git-$1"`
+  cd $1
+  git reset --hard `cat "$dir/moar-modules/init-$1"`
+  git rev-parse HEAD > $dir/moar-modules/init-$1
+  moar-init
+  cd $dir
+fi
+
+ln -s ~/modules/$1 $dir/$1
