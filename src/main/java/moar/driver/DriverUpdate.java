@@ -43,7 +43,7 @@ class DriverUpdate {
     String trackConfig = i < param.length ? param[i++] : "default";
     trackConfig = trackConfig.replace('.', '/');
     track = trackConfig;
-    trackTableName = "moar_track_" + toSnakeCase(track.replace('/', '_'));
+    trackTableName = "moar_" + toSnakeCase(track.replace('/', '_'));
   }
 
   private void execute(PreparedStatement find, PreparedStatement register, Statement statement,
