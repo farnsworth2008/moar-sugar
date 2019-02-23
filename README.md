@@ -1,6 +1,6 @@
 # Moar Sugar
 
-Stuff to make Java sweet!
+Stuff to make development sweet!
 
 ## Overview
 
