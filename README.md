@@ -159,4 +159,4 @@ out.println();
 Additional Examples:
 ----------
 
-See the [Moar Sugar Example App](https://github.com/farnsworth2008/moar-sugar-example/blob/master/README.md) for additional examples.
+See the [Moar Sugar Example App](https://github.com/moar-stuff/moar-sugar-example/blob/master/README.md) for additional examples.
