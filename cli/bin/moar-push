@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-moar-each 'git push &> /dev/null'
