@@ -14,9 +14,9 @@ for module in ~/modules/*; do
   status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  ahead_master="$(git log --oneline origin/master.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  behind_master="$(git log --oneline ..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  vs_master="$(git diff ..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  ahead_origin="$(git log --oneline origin/develop.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind_origin="$(git log --oneline ..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  vs_origin="$(git diff ..origin/origin 2> /dev/null | wc -l | sed 's/ //g' || true)"
 
   status_bit=""
   if ! [ "$status" == "0" ]; then
@@ -38,22 +38,22 @@ for module in ~/modules/*; do
     status_bit="($status_bit) "
   fi
 
-  status_bit_master=""
-  if ! [ "$ahead_master" == "0" ]; then
-    status_bit="${status_bit_master}${ahead_master}"
+  status_bit_origin=""
+  if ! [ "$ahead_origin" == "0" ]; then
+    status_bit="${status_bit_origin}${ahead_origin}"
   fi
-  if ! [ "$behind_master" == "0" ]; then
-    if [ "$ahead_master" != "0" ]; then
-      status_bit_master="${status_bit_master},"
+  if ! [ "$behind_origin" == "0" ]; then
+    if [ "$ahead_origin" != "0" ]; then
+      status_bit_origin="${status_bit_origin},"
     fi
-    status_bit_master="${status_bit_master}${behind_master}"
+    status_bit_origin="${status_bit_origin}${behind_origin}"
   fi
-  if ! [ "$status_bit_master" == "" ]; then
-    status_bit_master="($status_bit_master) "
+  if ! [ "$status_bit_origin" == "" ]; then
+    status_bit_origin="($status_bit_origin) "
   fi
 
   name="$(basename $module)"
-  length=$(echo -n "$name $status_bit\> $branch $status_bit_master" | wc -c)
+  length=$(echo -n "$name $status_bit\> $branch $status_bit_origin" | wc -c)
   if [ ${length} -gt ${max_length} ]; then
     max_length=${length}
   fi
@@ -75,9 +75,9 @@ for module in ~/modules/*; do
   status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  ahead_master="$(git log --oneline origin/master.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  behind_master="$(git log --oneline ..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  vs_master="$(git diff ..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  ahead_origin="$(git log --oneline origin/develop.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind_origin="$(git log --oneline ..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  vs_origin="$(git diff ..origin/origin 2> /dev/null | wc -l | sed 's/ //g' || true)"
 
   name="$(basename $module) "
 
@@ -126,44 +126,44 @@ for module in ~/modules/*; do
 
   name_status="$(basename $module) $status_bit"
 
-  status_bit_master=""
-  if ! [ "$ahead_master" == "0" ]; then
-    status_bit_master="${status_bit_master}${ahead_master}"
+  status_bit_origin=""
+  if ! [ "$ahead_origin" == "0" ]; then
+    status_bit_origin="${status_bit_origin}${ahead_origin}"
   fi
-  if ! [ "$behind_master" == "0" ]; then
-    if [ "$ahead_master" != "0" ]; then
-      status_bit_master="${status_bit_master},"
+  if ! [ "$behind_origin" == "0" ]; then
+    if [ "$ahead_origin" != "0" ]; then
+      status_bit_origin="${status_bit_origin},"
     fi
-    status_bit_master="${status_bit_master}${behind_master}"
+    status_bit_origin="${status_bit_origin}${behind_origin}"
   fi
-  if ! [ "$status_bit_master" == "" ]; then
-    status_bit_master="($status_bit_master) "
+  if ! [ "$status_bit_origin" == "" ]; then
+    status_bit_origin="($status_bit_origin) "
   fi
-  if [ "${ahead_master}${behind_master}" != "" ]; then
-    status_bit_master="${status_bit_master}()"
+  if [ "${ahead_origin}${behind_origin}" != "" ]; then
+    status_bit_origin="${status_bit_origin}()"
   fi
 
-  printf '%*.*s' 0 $((padlength - ${#name_status} - ${#branch} - ${#status_bit_master})) "$pad"
+  printf '%*.*s' 0 $((padlength - ${#name_status} - ${#branch} - ${#status_bit_origin})) "$pad"
 
-  if [ "$vs_master" == "0" ]; then
+  if [ "$vs_origin" == "0" ]; then
     printf '> %s' "$branch"
   else
     printf "> ${red}%s${normal}" "$branch"
   fi
 
-  if [ "$ahead_master" != "0" ] || [ "$behind_master" != "0" ]; then
+  if [ "$ahead_origin" != "0" ] || [ "$behind_origin" != "0" ]; then
     printf ' ('
   fi
-  if ! [ "$ahead_master" == "0" ]; then
-    printf "${green}%s${normal}" "$ahead_master"
+  if ! [ "$ahead_origin" == "0" ]; then
+    printf "${green}%s${normal}" "$ahead_origin"
   fi
-  if ! [ "$behind_master" == "0" ]; then
-    if [ "$ahead_master" != "0" ]; then
+  if ! [ "$behind_origin" == "0" ]; then
+    if [ "$ahead_origin" != "0" ]; then
       printf ','
     fi
-    printf "${red}%s${normal}" "$behind_master"
+    printf "${red}%s${normal}" "$behind_origin"
   fi
-  if [ "$ahead_master" != "0" ] || [ "$behind_master" != "0" ]; then
+  if [ "$ahead_origin" != "0" ] || [ "$behind_origin" != "0" ]; then
     printf ')'
   fi
 
