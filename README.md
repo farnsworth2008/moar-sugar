@@ -2,6 +2,10 @@
 
 Stuff to make development sweet!
 
+## Todo
+
+Move CLI stuff to moar-cli repo.
+
 ## Overview
 
 Much of Moar Sugar, is *syntactical sugar* that makes coding more concise and easier to understand.  Static methods such as `safely( () -> {} )` replace verbose boilerplate that often gets in the way of expressing ideas.
