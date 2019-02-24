@@ -62,11 +62,17 @@ done
 pad=$(printf '%0.1s' "-"{1..200})
 padlength=${max_length}
 
-magenta='\033[0;35m'
-green='\033[0;32m'
-red='\033[0;31m'
-blue='\033[0;34m'
-normal='\033[0m' # No Color
+lightBlue='\033[0;94m'
+lightCyan='\033[0;96m'
+lightGreen='\033[0;92m'
+lightMagenta='\033[0;95m'
+lightRed='\033[0;91m'
+normal='\033[0m'
+normalBlue='\033[0;34m'
+normalCyan='\033[0;36m'
+normalGreen='\033[0;32m'
+normalRed='\033[0;31m'
+normlaMagenta='\033[0;35m'
 
 for module in ~/modules/*; do
   cd $module
@@ -82,7 +88,7 @@ for module in ~/modules/*; do
   name="$(basename $module) "
 
   if [ "$(basename $module)" == "$current" ]; then
-    printf "${magenta}%s${normal}" "$name"
+    printf "${normalMagenta}%s${normal}" "$name"
   else
     printf '%s' "$name"
   fi
@@ -107,19 +113,19 @@ for module in ~/modules/*; do
     status_bit="($status_bit) "
     printf '('
     if ! [ "$status" == "0" ]; then
-      printf "${blue}%s${normal}" "$status"
+      printf "${normalBlue}%s${normal}" "$status"
     fi
     if ! [ "$ahead" == "0" ]; then
       if ! [ "$status" == "0" ]; then
         printf ','
       fi
-      printf "${green}%s${normal}" "$ahead"
+      printf "${normalGreen}%s${normal}" "$ahead"
     fi
     if ! [ "$behind" == "0" ]; then
       if [ "$status" != "0" ] || [ "$ahead" != "0" ]; then
         printf ','
       fi
-      printf "${red}%s${normal}" "$behind"
+      printf "${normalRed}%s${normal}" "$behind"
     fi
     printf ') '
   fi
@@ -148,20 +154,20 @@ for module in ~/modules/*; do
   if [ "$vs_origin_master" == "0" ]; then
     printf '> %s' "$branch"
   else
-    printf "> ${red}%s${normal}" "$branch"
+    printf "> ${normalCyan}%s${normal}" "$branch"
   fi
 
   if [ "$ahead_origin" != "0" ] || [ "$behind_origin" != "0" ]; then
     printf ' ('
   fi
   if ! [ "$ahead_origin" == "0" ]; then
-    printf "${green}%s${normal}" "$ahead_origin"
+    printf "${normalGreen}%s${normal}" "$ahead_origin"
   fi
   if ! [ "$behind_origin" == "0" ]; then
     if [ "$ahead_origin" != "0" ]; then
       printf ','
     fi
-    printf "${red}%s${normal}" "$behind_origin"
+    printf "${normalRed}%s${normal}" "$behind_origin"
   fi
   if [ "$ahead_origin" != "0" ] || [ "$behind_origin" != "0" ]; then
     printf ')'
