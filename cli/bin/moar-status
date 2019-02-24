@@ -14,9 +14,9 @@ for module in ~/modules/*; do
   status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  ahead_origin="$(git log --oneline origin/develop.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  behind_origin="$(git log --oneline ..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  vs_origin="$(git diff ..origin/origin 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  ahead_origin="$(git log --oneline origin/develop..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind_origin="$(git log --oneline $branch..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  vs_origin_master="$(git diff $branch..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
 
   status_bit=""
   if ! [ "$status" == "0" ]; then
@@ -75,9 +75,9 @@ for module in ~/modules/*; do
   status="$(git status --short 2> /dev/null | wc -l | sed 's/ //g' || true)"
   ahead="$(git log --oneline $branch.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
   behind="$(git log --oneline ..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  ahead_origin="$(git log --oneline origin/develop.. 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  behind_origin="$(git log --oneline ..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
-  vs_origin="$(git diff ..origin/origin 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  ahead_origin="$(git log --oneline origin/develop..$branch 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  behind_origin="$(git log --oneline $branch..origin/develop 2> /dev/null | wc -l | sed 's/ //g' || true)"
+  vs_origin_master="$(git diff $branch..origin/master 2> /dev/null | wc -l | sed 's/ //g' || true)"
 
   name="$(basename $module) "
 
@@ -145,7 +145,7 @@ for module in ~/modules/*; do
 
   printf '%*.*s' 0 $((padlength - ${#name_status} - ${#branch} - ${#status_bit_origin})) "$pad"
 
-  if [ "$vs_origin" == "0" ]; then
+  if [ "$vs_origin_master" == "0" ]; then
     printf '> %s' "$branch"
   else
     printf "> ${red}%s${normal}" "$branch"
