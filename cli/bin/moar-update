@@ -2,8 +2,4 @@
 
 set -e
 
-for module in ~/modules/*; do
-  cd $module
-  git remote update > /dev/null
-  moar-clone-modules
-done
+moar-each 'git remote update &> /dev/null'

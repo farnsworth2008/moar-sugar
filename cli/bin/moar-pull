@@ -2,7 +2,4 @@
 
 set -e
 
-for module in ~/modules/*; do
-  cd $module
-  git pull > /dev/null
-done
+moar-each  'git pull > /dev/null'

@@ -5,6 +5,7 @@
     "moar-clone": "bin/moar-clone",
     "moar-clone-modules": "bin/moar-clone-modules",
     "moar-commit": "bin/moar-commit",
+    "moar-each": "bin/moar-each",
     "moar-init": "bin/moar-init",
     "moar-json": "bin/moar-json",
     "moar-pull": "bin/moar-pull",
