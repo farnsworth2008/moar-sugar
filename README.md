@@ -156,7 +156,6 @@ for (PetRow petItem : petList) {
 out.println();
 ```
 
-Additional Examples:
-----------
+# Additional Examples
 
 See the [Moar Sugar Example App](https://github.com/moar-stuff/moar-sugar-example/blob/master/README.md) for additional examples.
