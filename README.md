@@ -61,7 +61,7 @@ require(() -> {
     for (var result : results) {
       var futureThrew = result.thrown() == null;
       var displayValue = futureThrew ? result.get() : result.thrown().getMessage();
-      out.println(format("  futures[%d]: %s", ++i, displayValue));
+      out.println(format("  result %d: %s", ++i, displayValue));
     }
   }
 });
