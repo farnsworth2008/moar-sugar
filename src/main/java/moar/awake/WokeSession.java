@@ -1,6 +1,6 @@
 package moar.awake;
 
-import static moar.awake.Waker.runWokeTransaction;
+import static moar.awake.WokeRepository.runWokeTransaction;
 import java.util.function.Consumer;
 
 /**

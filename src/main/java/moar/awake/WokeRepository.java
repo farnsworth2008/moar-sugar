@@ -3,6 +3,8 @@ package moar.awake;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.ThreadLocal.withInitial;
+import static moar.awake.WakeUtil.asWokeProxy;
+import static moar.awake.WakeUtil.wake;
 import static moar.sugar.Sugar.asRuntimeException;
 import static moar.sugar.Sugar.closeQuietly;
 import static moar.sugar.Sugar.nonNull;
@@ -37,21 +39,17 @@ import moar.sugar.RetryableException;
  * @param <Row>
  *   Row type
  */
-public class Waker<Row>
+public class WokeRepository<Row>
     implements
     WokenWithSession<Row>,
     WokenWithoutSession<Row>,
     WokenWithRow<Row> {
 
-  private static PropertyAccessor props = new PropertyAccessor(Waker.class);
+  private static PropertyAccessor props = new PropertyAccessor(WokeRepository.class);
   private static int TX_TRIES = props.getInteger("txTries", 3);
   private static long TX_RETRY_TIME_DELAY = props.getLong("txRetryDelay", 1000);
   private static ThreadLocal<Boolean> inInsert = withInitial(() -> false);
-  private static MoarLogger LOG = new MoarLogger(Waker.class);
-
-  static <Row> WokePrivateProxy asWokeProxy(Row row) {
-    return ((WokeProxiedObject) row).privateProxy();
-  }
+  private static MoarLogger LOG = new MoarLogger(WokeRepository.class);
 
   static String buildColumnsSql(Object[] wokens, int mode) {
     String columnsSql = "";
@@ -112,7 +110,7 @@ public class Waker<Row>
 
   @SuppressWarnings("unchecked")
   static <Row> Row create(Class<Row> clz) {
-    ClassLoader c = Waker.class.getClassLoader();
+    ClassLoader c = WokeRepository.class.getClassLoader();
     Class<?>[] cc = { clz, WokeProxiedObject.class };
     return (Row) Proxy.newProxyInstance(c, cc, new WokePrivateProxy(clz));
   }
@@ -180,45 +178,6 @@ public class Waker<Row>
     }
   }
 
-  /**
-   * @param clz
-   * @return Waker configured for the class.
-   */
-  public static <Row> WokenWithoutSession<Row> wake(Class<Row> clz) {
-    return new Waker<>(clz);
-  }
-
-  public static <Row> WokenWithoutSession<Row> wake(Class<Row> clz, String tableName) {
-    return new Waker<>(clz, tableName);
-  }
-
-  public static WokeDataSourceSession wake(DataSource ds) {
-    return new WokeDataSourceSession(ds);
-  }
-
-  public static WokeProxy wake(Object object) {
-    return asWokeProxy(object);
-  }
-
-  public static <Row> List<Row> wake(WokeResultSet<Row> iter) {
-    try {
-      return wake(iter, Integer.MAX_VALUE);
-    } finally {
-      require(() -> iter.close());
-    }
-  }
-
-  public static <Row> List<Row> wake(WokeResultSet<Row> iter, int limit) {
-    List<Row> list = new ArrayList<>();
-    while (iter.next()) {
-      list.add(iter.get());
-      if (list.size() >= limit) {
-        return list;
-      }
-    }
-    return list;
-  }
-
   private final Class<Row> clz;
   private final String tableName;
 
@@ -226,11 +185,11 @@ public class Waker<Row>
 
   private final ThreadLocal<Consumer<Row>> key = new ThreadLocal<>();
 
-  public Waker(Class<Row> clz) {
+  public WokeRepository(Class<Row> clz) {
     this(clz, null);
   }
 
-  public Waker(Class<Row> clz, String tableName) {
+  public WokeRepository(Class<Row> clz, String tableName) {
     this.clz = clz;
     this.tableName = tableName;
   }

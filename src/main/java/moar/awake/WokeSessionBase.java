@@ -1,11 +1,11 @@
 package moar.awake;
 
 import static java.lang.String.format;
-import static moar.awake.Waker.asWokeProxy;
-import static moar.awake.Waker.buildSelect;
-import static moar.awake.Waker.create;
-import static moar.awake.Waker.expandColumnSplat;
-import static moar.awake.Waker.mapResultRow;
+import static moar.awake.WakeUtil.asWokeProxy;
+import static moar.awake.WokeRepository.buildSelect;
+import static moar.awake.WokeRepository.create;
+import static moar.awake.WokeRepository.expandColumnSplat;
+import static moar.awake.WokeRepository.mapResultRow;
 import static moar.sugar.Sugar.asRuntimeException;
 import static moar.sugar.Sugar.closeQuietly;
 import static moar.sugar.Sugar.require;
