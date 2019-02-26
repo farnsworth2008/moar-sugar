@@ -82,7 +82,6 @@ public class MoarLogger {
       args = Arrays.copyOf(args, args.length - 1);
       log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)), (Throwable) lastArg);
     } else {
-      args = Arrays.copyOf(args, args.length - 1);
       log.log(level, moarJson.toJsonSafely(codeLocationAt(1), unpack(args)));
     }
   }
