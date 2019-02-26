@@ -17,6 +17,8 @@ public interface WokenWithSession<Row> {
 
   void delete(Row row);
 
+  void delete(String where, Object... params);
+
   WokenWithRow<Row> id(Long id);
 
   WokenWithRow<Row> id(String id);
@@ -27,11 +29,11 @@ public interface WokenWithSession<Row> {
 
   Row insert(Row row);
 
-  WokeResultSet<Row> iterator(String tableish, Object... params);
+  WokeResultSet<Row> iterator(String where, Object... params);
 
   WokenWithRow<Row> key(Consumer<Row> row);
 
-  List<Row> list(String tableish, Object... params);
+  List<Row> list(String where, Object... params);
 
   void update(Row row);
 

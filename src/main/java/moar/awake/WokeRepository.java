@@ -228,6 +228,18 @@ public class WokeRepository<Row>
     session.get().delete(row);
   }
 
+  @Override
+  public void delete(String where, Object... params) {
+    require(() -> {
+      /* TODO Implement delete without using iterator. */
+      try (WokeResultSet<Row> resultSet = iterator(where, params)) {
+        while (resultSet.next()) {
+          delete(resultSet.get());
+        }
+      }
+    });
+  }
+
   private void doInsertRowWithConnection(Row row, boolean isUpsert, int[] identityColumn, ConnectionHold hold)
       throws SQLException {
     boolean hasId = row instanceof WakeableRow.IdColumn;
