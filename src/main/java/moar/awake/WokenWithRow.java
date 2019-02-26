@@ -10,6 +10,8 @@ import java.util.function.Consumer;
  * @param <Row>
  */
 public interface WokenWithRow<Row> {
+  void delete();
+
   Row find();
 
   Row insert();

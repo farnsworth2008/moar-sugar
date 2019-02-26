@@ -224,6 +224,15 @@ public class WokeRepository<Row>
   }
 
   @Override
+  public void delete() {
+    //TODO: delete via SQL.
+    List<Row> list = list();
+    for (Row row : list) {
+      delete(row);
+    }
+  }
+
+  @Override
   public void delete(Row row) {
     session.get().delete(row);
   }
