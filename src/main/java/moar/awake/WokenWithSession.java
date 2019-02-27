@@ -31,8 +31,6 @@ public interface WokenWithSession<Row> {
 
   WokeResultSet<Row> iterator(String where, Object... params);
 
-  WokenWithRow<Row> key(Consumer<Row> row);
-
   List<Row> list(String where, Object... params);
 
   void update(Row row);
@@ -40,5 +38,7 @@ public interface WokenWithSession<Row> {
   Row upsert(Consumer<Row> row);
 
   Row upsert(Row row);
+
+  WokenWithRow<Row> where(Consumer<Row> row);
 
 }

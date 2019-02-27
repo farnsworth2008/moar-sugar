@@ -517,21 +517,21 @@ public class WokeRepository<Row>
   @Override
   public WokenWithRow<Row> id(Long id) {
     require(id != null);
-    return this.key(r -> {
+    return this.where(r -> {
       ((WakeableRow.IdColumnAsLong) r).setId(id);
     });
   }
 
   @Override
   public WokenWithRow<Row> id(String id) {
-    return this.key(r -> {
+    return this.where(r -> {
       ((WakeableRow.IdColumnAsString) r).setId(id);
     });
   }
 
   @Override
   public WokenWithRow<Row> id(UUID id) {
-    return this.key(r -> {
+    return this.where(r -> {
       ((WakeableRow.IdColumnAsUUID) r).setId(id);
     });
   }
@@ -555,12 +555,6 @@ public class WokeRepository<Row>
   @Override
   public WokeResultSet<Row> iterator(String tableish, Object... params) {
     return require(() -> doIterator(tableish, params));
-  }
-
-  @Override
-  public WokenWithRow<Row> key(Consumer<Row> r) {
-    this.key.set(r);
-    return this;
   }
 
   @Override
@@ -614,5 +608,11 @@ public class WokeRepository<Row>
   public Row upsert(Row row) {
     key.set(r -> {});
     return doSessionInsertRow(row, r -> {}, true);
+  }
+
+  @Override
+  public WokenWithRow<Row> where(Consumer<Row> r) {
+    this.key.set(r);
+    return this;
   }
 }

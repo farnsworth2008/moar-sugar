@@ -18,11 +18,11 @@ public interface WokenWithRow<Row> {
 
   Row insert(Consumer<Row> r);
 
-  WokenWithRow<Row> key(Consumer<Row> r);
-
   List<Row> list();
 
   Row upsert();
 
   Row upsert(Consumer<Row> row);
+
+  WokenWithRow<Row> where(Consumer<Row> r);
 }
