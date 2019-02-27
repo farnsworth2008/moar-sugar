@@ -1,5 +1,7 @@
 package moar.sugar;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.Math.min;
 import static java.lang.String.join;
 import com.google.common.base.CharMatcher;
@@ -65,6 +67,11 @@ public class MoarStringUtil {
       }
     }
     return cleanBuilder.toString();
+  }
+
+  public static String toCamelCase(String name) {
+    String camelName = UPPER_CAMEL.to(LOWER_CAMEL, name);
+    return camelName;
   }
 
   /**

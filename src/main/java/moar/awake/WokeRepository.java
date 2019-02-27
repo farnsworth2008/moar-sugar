@@ -181,7 +181,7 @@ public class WokeRepository<Row>
   private final Class<Row> clz;
   private final String tableName;
 
-  private final ThreadLocal<WokeSessionBase> session = new ThreadLocal<>();
+  private WokeSessionBase session;
 
   private final ThreadLocal<Consumer<Row>> key = new ThreadLocal<>();
 
@@ -234,7 +234,7 @@ public class WokeRepository<Row>
 
   @Override
   public void delete(Row row) {
-    session.get().delete(row);
+    session.delete(row);
   }
 
   @Override
@@ -346,7 +346,7 @@ public class WokeRepository<Row>
     AtomicReference<ConnectionHold> cn = new AtomicReference<>();
     AtomicReference<PreparedStatement> ps = new AtomicReference<>();
     AtomicReference<ResultSet> rs = new AtomicReference<>();
-    cn.set(session.get().reserve());
+    cn.set(session.reserve());
     String q = cn.get().getIdentifierQuoteString();
     asWokeProxy(woken).setIdentifierQuoteString(q);
     String sql;
@@ -449,7 +449,7 @@ public class WokeRepository<Row>
   }
 
   private List<Row> doTableFindSql(Row row) {
-    try (ConnectionHold cn = session.get().reserve()) {
+    try (ConnectionHold cn = session.reserve()) {
       boolean hasId = row instanceof WakeableRow.IdColumn;
       WokePrivateProxy woke = asWokeProxy(row);
       woke.setIdentifierQuoteString(cn.getIdentifierQuoteString());
@@ -484,7 +484,7 @@ public class WokeRepository<Row>
 
   private void doTableInsertSql(Row row, boolean isUpsert) throws SQLException {
     int[] identityColumn = { 1 };
-    try (ConnectionHold hold = session.get().reserve()) {
+    try (ConnectionHold hold = session.reserve()) {
       doInsertRowWithConnection(row, isUpsert, identityColumn, hold);
     }
   }
@@ -580,7 +580,7 @@ public class WokeRepository<Row>
 
   @Override
   public WokenWithSession<Row> of(WokeSessionBase session) {
-    this.session.set(session);
+    this.session = session;
     return this;
   }
 
@@ -597,7 +597,7 @@ public class WokeRepository<Row>
 
   @Override
   public void update(Row row) {
-    session.get().update(row);
+    session.update(row);
   }
 
   @Override

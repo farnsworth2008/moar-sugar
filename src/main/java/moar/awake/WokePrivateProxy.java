@@ -1,6 +1,7 @@
 package moar.awake;
 
 import static java.util.Collections.unmodifiableMap;
+import static moar.sugar.MoarStringUtil.toCamelCase;
 import static moar.sugar.MoarStringUtil.toSnakeCase;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -57,7 +58,7 @@ class WokePrivateProxy
           upper = true;
         }
       }
-      return s.toString();
+      return getPropertyName(s.toString());
     } catch (RuntimeException e) {
       throw new RuntimeException(key, e);
     }
@@ -77,7 +78,7 @@ class WokePrivateProxy
     for (Method method : clz.getMethods()) {
       String name = method.getName();
       if (isProperty(name)) {
-        if (!getPropertyName(name).equals("Id") || includeId) {
+        if (!getPropertyName(name).equals(getPropertyName("Id")) || includeId) {
           String dbName = toDbName(getPropertyName(name), getIdentifierQuoteString());
           if (!columns.contains(dbName)) {
             columns.add(dbName);
@@ -108,7 +109,7 @@ class WokePrivateProxy
   }
 
   Object getIdValue() {
-    return map.get("Id");
+    return map.get(getPropertyName("Id"));
   }
 
   private Object getProperty(String name) {
@@ -116,7 +117,10 @@ class WokePrivateProxy
   }
 
   private String getPropertyName(String name) {
-    return name.substring("get".length());
+    if (name.startsWith("get") || name.startsWith("set")) {
+      name = name.substring(3);
+    }
+    return toCamelCase(name);
   }
 
   String getTableName() {
@@ -209,9 +213,7 @@ class WokePrivateProxy
   }
 
   private boolean isProperty(String name) {
-    // try to be fast with this check!
-    // get or set!
-    return name.startsWith("g") || name.startsWith("s") && name.substring(1).startsWith("et");
+    return name.startsWith("get") || name.startsWith("set");
   }
 
   void reset() {
