@@ -89,12 +89,14 @@ public interface PetRow
 /* Works with standard javax.sql.DataSource */
 var ds = getDataSource();
 
+out.println("Example: DB");
+
 /* Simple way to executeSql with connection open and close handled
  * automatically */
-wake(ds).executeSql("delete from pet");
+use(ds).executeSql("delete from pet");
 
 /* Fluent syntax style without the need for a repository of each type. */
-var pet1 = wake(PetRow.class).of(ds).upsert(row -> {
+var pet1 = use(PetRow.class).of(ds).upsert(row -> {
   row.setName("Donut");
   row.setOwner("Mark");
   row.setSex("F");
@@ -104,7 +106,7 @@ var pet1 = wake(PetRow.class).of(ds).upsert(row -> {
 out.println("  upsert pet #1: " + pet1.getId() + ", " + pet1.getName());
 
 /* Repository of each type can also be passed around. */
-var repo = wake(PetRow.class).of(ds);
+var repo = use(PetRow.class).of(ds);
 PetRow pet2 = repo.define();
 pet2.setName("Tig");
 pet2.setOwner("None");
@@ -124,7 +126,7 @@ foundPet.setOwner("Mark");
 repo.update(foundPet);
 
 // Find rows using an example row to search
-foundPet = repo.key(where -> {
+foundPet = repo.where(where -> {
   where.setName("Tig");
   where.setSpecies("Dog");
 }).find();
@@ -134,7 +136,7 @@ out.println("  found: " + foundPet.getName() + ", " + foundPet.getOwner());
 repo.delete(foundPet);
 
 // Upsert multiple rows.
-wake(ds).upsert(PetRow.class, row -> {
+use(ds).upsert(PetRow.class, row -> {
   row.setName("Twyla");
   row.setOwner("Kendra");
   row.setSex("F");
@@ -148,12 +150,11 @@ wake(ds).upsert(PetRow.class, row -> {
   row.setBirth(toUtilDate(2012, 9, 1));
 });
 
-// Find with a where clause
-var petList = repo.list("where species=?", "Cat");
+// Find where species is cat
+var petList = repo.where(row -> row.setSpecies("cat")).list();
 for (PetRow petItem : petList) {
   out.println("  found: " + petItem.getName() + ", " + petItem.getOwner());
 }
-out.println();
 ```
 
 # Additional Examples
