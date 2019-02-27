@@ -14,31 +14,27 @@ public class WakeUtil {
    * @param clz
    * @return Waker configured for the class.
    */
-  public static <Row> WokenWithoutSession<Row> wake(Class<Row> clz) {
+  public static <Row> WokenWithoutSession<Row> use(Class<Row> clz) {
     return new WokeRepository<>(clz);
   }
 
-  public static <Row> WokenWithoutSession<Row> wake(Class<Row> clz, String tableName) {
+  public static <Row> WokenWithoutSession<Row> use(Class<Row> clz, String tableName) {
     return new WokeRepository<>(clz, tableName);
   }
 
-  public static WokeDataSourceSession wake(DataSource ds) {
+  public static WokeDataSourceSession use(DataSource ds) {
     return new WokeDataSourceSession(ds);
   }
 
-  public static WokeProxy wake(Object object) {
-    return asWokeProxy(object);
-  }
-
-  public static <Row> List<Row> wake(WokeResultSet<Row> iter) {
+  public static <Row> List<Row> use(WokeResultSet<Row> iter) {
     try {
-      return wake(iter, Integer.MAX_VALUE);
+      return use(iter, Integer.MAX_VALUE);
     } finally {
       require(() -> iter.close());
     }
   }
 
-  public static <Row> List<Row> wake(WokeResultSet<Row> iter, int limit) {
+  public static <Row> List<Row> use(WokeResultSet<Row> iter, int limit) {
     List<Row> list = new ArrayList<>();
     while (iter.next()) {
       list.add(iter.get());
@@ -47,5 +43,9 @@ public class WakeUtil {
       }
     }
     return list;
+  }
+
+  public static WokeProxy wake(Object object) {
+    return asWokeProxy(object);
   }
 }

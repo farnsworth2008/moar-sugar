@@ -1,5 +1,5 @@
 package moar.awake;
-import static moar.awake.WakeUtil.wake;
+import static moar.awake.WakeUtil.use;
 import static moar.sugar.Sugar.require;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -54,7 +54,7 @@ public class WokeDataSourceSession
    */
   @SafeVarargs
   public final <T> void upsert(Class<T> clz, Consumer<T>... updators) {
-    WokenWithSession<T> repo = wake(clz).of(ds);
+    WokenWithSession<T> repo = use(clz).of(ds);
     for (Consumer<T> updator : updators) {
       repo.upsert(updator);
     }
