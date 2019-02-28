@@ -71,25 +71,8 @@ out.println();
 ## Example #3, Database CRUD
 
 ```java
-/**
- * Example definition for a Row.
- */
-public interface PetRow
-    extends
-    IdColumnAsAutoLong,
-    NameColumn,
-    OwnerColumn,
-    SpeciesColumn,
-    SexColumn,
-    BirthColumn,
-    DeathColumn {}
-```
-
-```java
 /* Works with standard javax.sql.DataSource */
 var ds = getDataSource();
-
-out.println("Example: DB");
 
 /* Simple way to executeSql with connection open and close handled
  * automatically */
@@ -103,7 +86,7 @@ var pet1 = use(PetRow.class).of(ds).upsert(row -> {
   row.setSpecies("Dog");
   row.setBirth(toUtilDate(2015, 3, 15));
 });
-out.println("  upsert pet #1: " + pet1.getId() + ", " + pet1.getName());
+out.println(format("  %s: %s, %s", green("Upsert #1"), pet1.getId(), pet1.getName()));
 
 /* Repository of each type can also be passed around. */
 var repo = use(PetRow.class).of(ds);
@@ -114,12 +97,12 @@ pet2.setSex("M");
 pet2.setSpecies("Dog");
 pet2.setBirth(toUtilDate(2018, 4, 22));
 repo.upsert(pet2);
-out.println("  upsert pet #2: " + pet2.getId() + ", " + pet2.getName());
+out.println(format("  %s: %s, %s", green("Upsert #2"), pet2.getId(), pet2.getName()));
 var pet2Id = pet2.getId();
 
 /* Find based on ID is very simple */
 var foundPet = repo.id(pet2Id).find();
-out.println("  found: " + foundPet.getName());
+out.println(format("  %s: %s, %s", green("Found"), foundPet.getName(), foundPet.getOwner()));
 
 /* Update is simply provided by the repo */
 foundPet.setOwner("Mark");
@@ -130,7 +113,7 @@ foundPet = repo.where(row -> {
   row.setName("Donut");
   row.setSpecies("Dog");
 }).find();
-out.println("  found: " + foundPet.getName() + ", " + foundPet.getOwner());
+out.println(format("  %s: %s, %s", green("Found"), foundPet.getName(), foundPet.getOwner()));
 
 // Delete
 repo.delete(foundPet);
@@ -148,20 +131,25 @@ use(ds).upsert(PetRow.class, row -> {
   row.setSex("M");
   row.setSpecies("Cat");
   row.setBirth(toUtilDate(2012, 9, 1));
+}, row -> {
+  row.setName("Woody");
+  row.setOwner("Kendra");
+  row.setSex("M");
+  row.setSpecies("Dog");
+  row.setBirth(toUtilDate(2016, 3, 8));
 });
 
 // Find where species is cat
 var petList = repo.where(row -> row.setSpecies("cat")).list();
 for (PetRow petItem : petList) {
-  out.println(format("  cat: %s, %s", petItem.getName(), petItem.getOwner()));
+  out.println(format("  %s: %s, %s", green("Cat"), petItem.getName(), petItem.getOwner()));
 }
 
 // Find where direct sql
 petList = repo.list("where species !=?", "cat");
 for (PetRow petItem : petList) {
-  out.println(format("  %s: %s, %s", petItem.getSpecies(), petItem.getName(), petItem.getOwner()));
+  out.println(format("  %s: %s, %s", green(petItem.getSpecies()), petItem.getName(), petItem.getOwner()));
 }
-out.println();
 ```
 
 # Additional Examples
