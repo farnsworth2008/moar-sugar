@@ -117,7 +117,7 @@ repo.upsert(pet2);
 out.println("  upsert pet #2: " + pet2.getId() + ", " + pet2.getName());
 var pet2Id = pet2.getId();
 
-/* Find based on ID is very simple and update */
+/* Find based on ID is very simple */
 var foundPet = repo.id(pet2Id).find();
 out.println("  found: " + foundPet.getName());
 
@@ -126,9 +126,9 @@ foundPet.setOwner("Mark");
 repo.update(foundPet);
 
 // Find rows using an example row to search
-foundPet = repo.where(where -> {
-  where.setName("Tig");
-  where.setSpecies("Dog");
+foundPet = repo.where(row -> {
+  row.setName("Donut");
+  row.setSpecies("Dog");
 }).find();
 out.println("  found: " + foundPet.getName() + ", " + foundPet.getOwner());
 
@@ -153,8 +153,15 @@ use(ds).upsert(PetRow.class, row -> {
 // Find where species is cat
 var petList = repo.where(row -> row.setSpecies("cat")).list();
 for (PetRow petItem : petList) {
-  out.println("  found: " + petItem.getName() + ", " + petItem.getOwner());
+  out.println(format("  cat: %s, %s", petItem.getName(), petItem.getOwner()));
 }
+
+// Find where direct sql
+petList = repo.list("where species !=?", "cat");
+for (PetRow petItem : petList) {
+  out.println(format("  %s: %s, %s", petItem.getSpecies(), petItem.getName(), petItem.getOwner()));
+}
+out.println();
 ```
 
 # Additional Examples
