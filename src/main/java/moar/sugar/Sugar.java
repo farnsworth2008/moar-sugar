@@ -4,6 +4,10 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
 import static java.lang.Thread.sleep;
+import static org.apache.commons.io.IOUtils.copy;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -69,6 +73,25 @@ public class Sugar {
       }
     }
     return null;
+  }
+
+  public static ExecuteResult exec(String command, String input) throws IOException, InterruptedException {
+    ProcessBuilder processBuilder = new ProcessBuilder();
+    processBuilder.command("bash", "-c", command);
+    Process process = processBuilder.start();
+    try (OutputStream os = process.getOutputStream()) {
+      os.write(input.getBytes());
+    }
+    String response;
+    int exitCode;
+    try (InputStreamReader reader = new InputStreamReader(process.getInputStream())) {
+      try (StringWriter writer = new StringWriter()) {
+        copy(reader, writer);
+        exitCode = process.waitFor();
+        response = writer.toString();
+      }
+    }
+    return new ExecuteResult(exitCode, response);
   }
 
   /**
