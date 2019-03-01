@@ -1,6 +1,7 @@
 // @formatter:off
 package moar.sugar;
 
+import static java.lang.ThreadLocal.withInitial;
 import java.io.PrintStream;
 
 /**
@@ -76,15 +77,16 @@ public enum Ansi {
   CYAN_BACKGROUND_BRIGHT("\033[0;106m"),
   WHITE_BACKGROUND_BRIGHT("\033[0;107m");
 
-   private static final PropertyAccessor props = new PropertyAccessor("moar.ansi");
-  private static final Boolean enabled = props.getBoolean("enabled", false);
+  private static final PropertyAccessor props = new PropertyAccessor("moar.ansi");
 
-  public static String blue(String string) {
-    return BLUE.apply(string);
+  private static ThreadLocal<Boolean> enabled = withInitial(() -> props.getBoolean("enabled", false));
+
+  public static String blue(Object object) {
+    return BLUE.apply(object);
   }
 
   public static void clearLine(PrintStream out) {
-    if(!enabled) {
+    if(!enabled.get()) {
       return;
     }
     out.print("\033[1A");
@@ -92,28 +94,38 @@ public enum Ansi {
     out.flush();
   }
 
-  public static String cyan(String string) {
-    return CYAN.apply(string);
+  public static String cyan(Object object) {
+    return CYAN.apply(object);
   }
 
-  public static String green(String string) {
-    return GREEN.apply(string);
+  public static Boolean enabled(Boolean newValue) {
+    try {
+      return enabled.get();
+    } finally {
+      if(newValue != null) {
+        enabled.set(newValue);
+      }
+    }
   }
 
-  public static String purple(String string) {
-    return PURPLE.apply(string);
+  public static String green(Object object) {
+    return GREEN.apply(object);
   }
 
-  public static String red(String string) {
-    return RED.apply(string);
+  public static String purple(Object object) {
+    return PURPLE.apply(object);
   }
 
-  public static String white(String string) {
-    return WHITE.apply(string);
+  public static String red(Object object) {
+    return RED.apply(object);
   }
 
-  public static String yellow(String string) {
-    return YELLOW.apply(string);
+  public static String white(Object object) {
+    return WHITE.apply(object);
+  }
+
+  public static String yellow(Object object) {
+    return YELLOW.apply(object);
   }
 
   private final String RESET = "\033[0m";
@@ -124,7 +136,8 @@ public enum Ansi {
     this.code = code;
   }
 
-  public String apply(String string) {
-    return enabled ? code + string + RESET : string;
+  public String apply(Object object) {
+    Boolean isEnabled = enabled.get();
+    return isEnabled ? code + object + RESET : object.toString();
   }
 }
