@@ -5,6 +5,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
 import static java.lang.Thread.sleep;
 import static org.apache.commons.io.IOUtils.copy;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -75,10 +76,11 @@ public class Sugar {
     return null;
   }
 
-  public static ExecuteResult exec(String command, String input) throws IOException, InterruptedException {
-    ProcessBuilder processBuilder = new ProcessBuilder();
-    processBuilder.command("bash", "-c", command);
-    Process process = processBuilder.start();
+  private static ExecuteResult doExec(String command, String input, File dir) throws IOException, InterruptedException {
+    ProcessBuilder builder = new ProcessBuilder();
+    builder.directory(dir);
+    builder.command("bash", "-c", command);
+    Process process = builder.start();
     try (OutputStream os = process.getOutputStream()) {
       os.write(input.getBytes());
     }
@@ -92,6 +94,18 @@ public class Sugar {
       }
     }
     return new ExecuteResult(exitCode, response);
+  }
+
+  public static ExecuteResult exec(String command, File dir) {
+    return exec(command, "", dir);
+  }
+
+  public static ExecuteResult exec(String command, String input) {
+    return exec(command, input, null);
+  }
+
+  public static ExecuteResult exec(String command, String input, File dir) {
+    return require(() -> doExec(command, input, dir));
   }
 
   /**
