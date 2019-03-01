@@ -4,6 +4,18 @@ import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.Math.min;
 import static java.lang.String.join;
+import static moar.sugar.Sugar.require;
+import static moar.sugar.Sugar.swallow;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import org.apache.commons.io.IOUtils;
 import com.google.common.base.CharMatcher;
 
 /**
@@ -42,6 +54,14 @@ public class MoarStringUtil {
     return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
+  public static String fileContentsAsString(File ignoreFile) {
+    return require(() -> {
+      try (InputStream is = new FileInputStream(ignoreFile)) {
+        return streamToString(is);
+      }
+    });
+  }
+
   /**
    * Replace targeted characters with blanks.
    *
@@ -69,9 +89,34 @@ public class MoarStringUtil {
     return cleanBuilder.toString();
   }
 
+  public static String streamToString(InputStream is) {
+    return swallow(() -> IOUtils.toString(is, Charset.defaultCharset()));
+  }
+
   public static String toCamelCase(String name) {
     String camelName = UPPER_CAMEL.to(LOWER_CAMEL, name);
     return camelName;
+  }
+
+  public static ArrayList<String> toLineList(String statusOutput) {
+    return swallow(() -> {
+      var lineList = new ArrayList<String>();
+      try (ByteArrayInputStream in = new ByteArrayInputStream(statusOutput.getBytes())) {
+        try (Reader isr = new InputStreamReader(in)) {
+          try (BufferedReader br = new BufferedReader(isr)) {
+            String line;
+            do {
+              line = br.readLine();
+              if (line == null) {
+                break;
+              }
+              lineList.add(line);
+            } while (true);
+          }
+        }
+      }
+      return lineList;
+    });
   }
 
   /**
