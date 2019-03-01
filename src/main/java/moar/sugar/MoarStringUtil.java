@@ -168,4 +168,11 @@ public class MoarStringUtil {
     return string.substring(0, min(string.length(), size));
   }
 
+  public static String truncate(String text, int maxLen, String truncatedSuffix) {
+    if (text.length() > maxLen) {
+      text = text.substring(0, min(maxLen, text.length())) + truncatedSuffix;
+    }
+    return text;
+  }
+
 }
