@@ -1,8 +1,9 @@
 // @formatter:off
-package moar.sugar;
+package moar.ansi;
 
 import static java.lang.ThreadLocal.withInitial;
 import java.io.PrintStream;
+import moar.sugar.PropertyAccessor;
 
 /**
  * @author Mark Farnsworth
@@ -89,6 +90,7 @@ public enum Ansi {
     if(!enabled.get()) {
       return;
     }
+    out.flush();
     out.print("\033[1A");
     out.print("\033[2K");
     out.flush();
@@ -139,5 +141,9 @@ public enum Ansi {
   public String apply(Object object) {
     Boolean isEnabled = enabled.get();
     return isEnabled ? code + object + RESET : object.toString();
+  }
+
+  public static ProgressBar progress(PrintStream out, String string) {
+    return new ProgressBar(out, string);
   }
 }
