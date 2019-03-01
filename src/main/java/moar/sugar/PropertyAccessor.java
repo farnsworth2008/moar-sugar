@@ -37,7 +37,7 @@ public class PropertyAccessor {
     this.fetch = fetch;
   }
 
-  public boolean getBoolean(String name, Boolean defaultValue) {
+  public Boolean getBoolean(String name, Boolean defaultValue) {
     return Boolean.valueOf(getString(name, defaultValue.toString()));
   }
 
