@@ -100,6 +100,10 @@ public enum Ansi {
     return CYAN.apply(object);
   }
 
+  public static boolean enabled() {
+    return enabled.get();
+  }
+
   public static Boolean enabled(Boolean newValue) {
     try {
       return enabled.get();
@@ -112,6 +116,10 @@ public enum Ansi {
 
   public static String green(Object object) {
     return GREEN.apply(object);
+  }
+
+  public static ProgressBar progress(PrintStream out, String string) {
+    return new ProgressBar(out, string);
   }
 
   public static String purple(Object object) {
@@ -141,9 +149,5 @@ public enum Ansi {
   public String apply(Object object) {
     Boolean isEnabled = enabled.get();
     return isEnabled ? code + object + RESET : object.toString();
-  }
-
-  public static ProgressBar progress(PrintStream out, String string) {
-    return new ProgressBar(out, string);
   }
 }

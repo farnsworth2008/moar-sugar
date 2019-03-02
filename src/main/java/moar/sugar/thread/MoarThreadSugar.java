@@ -1,5 +1,6 @@
 package moar.sugar.thread;
 
+import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.Executors.newFixedThreadPool;
@@ -129,6 +130,9 @@ public class MoarThreadSugar {
    * @return Adapter for a service.
    */
   public static MoarAsyncProvider $(int threads) {
+    if (threads == 0) {
+      return $(newDirectExecutorService());
+    }
     return $(newFixedThreadPool(threads));
   }
 
@@ -175,33 +179,35 @@ public class MoarThreadSugar {
    *   Provider for async scheduling.
    * @param futures
    *   Vector of futures.
+   * @param call
    * @param calls
-   *   Calls to make.
+   *   Call to make.
+   * @return Future
    */
-  @SafeVarargs
-  public static <T> void $(MoarAsyncProvider provider, Vector<Future<T>> futures, Callable<T>... calls) {
+  public static <T> Future<T> $(MoarAsyncProvider provider, Vector<Future<T>> futures, Callable<T> call) {
     if (futures == null) {
       throw new NullPointerException("futures");
     }
-    for (Callable<T> call : calls) {
-      MoarThreadActivity parentActivity = threadActivity.get();
-      try {
-        Future<T> future = resolve(provider).submit(() -> {
-          threadIsAsync.set(true);
-          MoarThreadActivity priorActivity = threadActivity.get();
-          try {
-            threadActivity.set(parentActivity);
-            return call.call();
-          } finally {
-            threadActivity.set(priorActivity);
-            threadIsAsync.set(false);
-          }
-        });
-        futures.add(future);
-      } catch (Throwable t) {
-        // Ignore the exception and attempt to run on our thread.
-        futures.add(CompletableFuture.completedFuture(require(() -> call.call())));
-      }
+    MoarThreadActivity parentActivity = threadActivity.get();
+    try {
+      Future<T> future = resolve(provider).submit(() -> {
+        threadIsAsync.set(true);
+        MoarThreadActivity priorActivity = threadActivity.get();
+        try {
+          threadActivity.set(parentActivity);
+          return call.call();
+        } finally {
+          threadActivity.set(priorActivity);
+          threadIsAsync.set(false);
+        }
+      });
+      futures.add(future);
+      return future;
+    } catch (Throwable t) {
+      // Ignore the exception and attempt to run on our thread.
+      CompletableFuture<T> completedFuture = CompletableFuture.completedFuture(require(() -> call.call()));
+      futures.add(completedFuture);
+      return completedFuture;
     }
   }
 
