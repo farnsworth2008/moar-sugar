@@ -1,7 +1,8 @@
 package moar.driver;
+import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.System.currentTimeMillis;
 import static moar.driver.Driver.getDriverProps;
-import static moar.sugar.MoarStringUtil.toSnakeCase;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,7 +44,7 @@ class DriverUpdate {
     String trackConfig = i < param.length ? param[i++] : "default";
     trackConfig = trackConfig.replace('.', '/');
     track = trackConfig;
-    trackTableName = "moar_" + toSnakeCase(track.replace('/', '_'));
+    trackTableName = "moar_" + UPPER_CAMEL.to(LOWER_UNDERSCORE, track.replace('/', '_'));
   }
 
   private void execute(PreparedStatement find, PreparedStatement register, Statement statement,

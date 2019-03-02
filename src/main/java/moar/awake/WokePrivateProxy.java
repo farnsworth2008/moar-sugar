@@ -1,8 +1,9 @@
 package moar.awake;
 
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
+import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.util.Collections.unmodifiableMap;
-import static moar.sugar.MoarStringUtil.toCamelCase;
-import static moar.sugar.MoarStringUtil.toSnakeCase;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ class WokePrivateProxy
   private static String ROW_INTERFACE_SUFFIX = "Row";
 
   private static String toDbName(String string, String q) {
-    return q + toSnakeCase(string) + q;
+    return q + UPPER_CAMEL.to(LOWER_UNDERSCORE, string) + q;
   }
 
   Map<String, Object> setMap = new ConcurrentHashMap<>();
@@ -120,7 +121,7 @@ class WokePrivateProxy
     if (name.startsWith("get") || name.startsWith("set")) {
       name = name.substring(3);
     }
-    return toCamelCase(name);
+    return UPPER_CAMEL.to(LOWER_CAMEL, name);
   }
 
   String getTableName() {

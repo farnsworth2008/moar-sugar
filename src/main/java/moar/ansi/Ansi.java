@@ -86,6 +86,10 @@ public enum Ansi {
     return BLUE.apply(object);
   }
 
+  public static String bold(Object object) {
+    return BLACK_BOLD.apply(object);
+  }
+
   public static void clearLine(PrintStream out) {
     if(!enabled.get()) {
       return;
@@ -116,10 +120,6 @@ public enum Ansi {
 
   public static String green(Object object) {
     return GREEN.apply(object);
-  }
-
-  public static ProgressBar progress(PrintStream out, String string) {
-    return new ProgressBar(out, string);
   }
 
   public static String purple(Object object) {

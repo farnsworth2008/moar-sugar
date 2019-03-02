@@ -1,20 +1,19 @@
 package moar.sugar;
 
-import static com.google.common.base.CaseFormat.LOWER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 import static java.lang.Math.min;
-import static java.lang.String.join;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.io.IOUtils;
 import com.google.common.base.CharMatcher;
 
@@ -54,9 +53,9 @@ public class MoarStringUtil {
     return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
-  public static String fileContentsAsString(File ignoreFile) {
-    return require(() -> {
-      try (InputStream is = new FileInputStream(ignoreFile)) {
+  public static String readStringFromFile(File file) {
+    return swallow(() -> {
+      try (InputStream is = new FileInputStream(file)) {
         return streamToString(is);
       }
     });
@@ -93,14 +92,9 @@ public class MoarStringUtil {
     return swallow(() -> IOUtils.toString(is, Charset.defaultCharset()));
   }
 
-  public static String toCamelCase(String name) {
-    String camelName = UPPER_CAMEL.to(LOWER_CAMEL, name);
-    return camelName;
-  }
-
-  public static ArrayList<String> toLineList(String statusOutput) {
+  public static List<String> toLineList(String statusOutput) {
     return swallow(() -> {
-      var lineList = new ArrayList<String>();
+      List<String> lineList = new ArrayList<String>();
       try (ByteArrayInputStream in = new ByteArrayInputStream(statusOutput.getBytes())) {
         try (Reader isr = new InputStreamReader(in)) {
           try (BufferedReader br = new BufferedReader(isr)) {
@@ -126,21 +120,6 @@ public class MoarStringUtil {
    */
   public static String toLowerCase(String string) {
     return string == null ? null : string.toLowerCase();
-  }
-
-  /**
-   * Convert a string to snake case (i.e. snake_case)
-   *
-   * @param string
-   *   String to be processed.
-   * @return snake case string.
-   */
-  public static String toSnakeCase(String string) {
-    if (string == null) {
-      return null;
-    }
-    String[] nameParts = string.split("(?=\\p{Upper})");
-    return join("_", nameParts).toLowerCase();
   }
 
   /**
@@ -173,6 +152,14 @@ public class MoarStringUtil {
       text = text.substring(0, min(maxLen, text.length())) + truncatedSuffix;
     }
     return text;
+  }
+
+  public static void writeStringToFile(File file, String fork) {
+    require(() -> {
+      try (FileOutputStream out = new FileOutputStream(file)) {
+        out.write(fork.getBytes());
+      }
+    });
   }
 
 }
