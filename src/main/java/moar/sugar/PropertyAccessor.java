@@ -1,5 +1,6 @@
 package moar.sugar;
 
+import static java.lang.System.getenv;
 import java.util.function.Function;
 
 /**
@@ -74,9 +75,10 @@ public class PropertyAccessor {
   }
 
   public String getString(String name, String defaultValue) {
-    String key = baseName + "." + name;
+    String prefix = baseName + (baseName.isEmpty() ? "" : ".");
+    String key = prefix + name;
     String envName = getEnvName(key);
-    String envValue = System.getenv(envName);
+    String envValue = getenv(envName);
     String downStreamValue = null;
     if (envValue != null) {
       downStreamValue = envValue;
