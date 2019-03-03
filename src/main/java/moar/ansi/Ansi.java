@@ -96,8 +96,8 @@ public enum Ansi {
     out.flush();
   }
 
-  public static String cyan(Object object) {
-    return CYAN.apply(object);
+  public static String cyanBold(Object object) {
+    return CYAN_BOLD.apply(object);
   }
 
   public static boolean enabled() {
