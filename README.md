@@ -136,6 +136,27 @@ for (PetRow petItem : petList) {
 }
 ```
 
+## Example #4, ANSI Terminal Output
+
+```bash
+out.println("If you run this with -Dmoar.ansi.enabled=true you will see colors");
+out.println();
+out.println();
+out.println(format("With %s, %s, %s, and more", red("red"), green("green"), blue("blue")));
+out.println("This line will clear and rewrite in 3 seconds.");
+require(() -> sleep(1000 * 3));
+clearLine(out);
+out.print("Rewritten line");
+
+StatusLine progress = new StatusLine(out, "Demo Progress");
+for (var i = 0; i < 100; i++) {
+  swallow(() -> sleep(100));
+  var completed = i;
+  progress.set(() -> (float) completed / 100);
+}
+progress.clear();
+```
+
 # Additional Examples
 
 See the [Moar Sugar Example App](https://github.com/moar-stuff/moar-sugar-example/blob/master/README.md) for additional examples.
