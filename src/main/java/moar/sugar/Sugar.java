@@ -5,10 +5,12 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
 import static java.lang.Thread.sleep;
 import static org.apache.commons.io.IOUtils.copy;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -331,11 +333,31 @@ public class Sugar {
    * @param call
    * @return safe result
    */
-  public static Throwable safely(CallableVoid call) {
+  public static SafeResult<Void> safely(CallableVoid call) {
     return safely(() -> {
       call.call();
       return null;
-    }).thrown();
+    });
+  }
+
+  /**
+   * Make a call while suppressing System.out and System.err.
+   *
+   * @param call
+   *   Call to make while output is suppressed.
+   * @return Result
+   * @throws Exception
+   * @throws IOException
+   */
+  public static <T> SilentResult<T> silently(Callable<T> call) throws Exception, IOException {
+    System.err.flush();
+    var priorErr = System.err;
+    try (var bosErr = new ByteArrayOutputStream()) {
+      System.setErr(new PrintStream(bosErr));
+      return withRedirectedErr(call, bosErr);
+    } finally {
+      System.setErr(priorErr);
+    }
   }
 
   /**
@@ -396,4 +418,18 @@ public class Sugar {
   public static Date toUtilDate(LocalDate localDate) {
     return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
   }
+
+  private static <T> SilentResult<T> withRedirectedErr(Callable<T> call, ByteArrayOutputStream bosErr)
+      throws Exception, IOException {
+    System.out.flush();
+    var prior = System.out;
+    try (var bos = new ByteArrayOutputStream()) {
+      System.setOut(new PrintStream(bos));
+      T callResult = call.call();
+      return new SilentResult<>(callResult, bos.toByteArray(), bosErr.toByteArray());
+    } finally {
+      System.setOut(prior);
+    }
+  }
+
 }

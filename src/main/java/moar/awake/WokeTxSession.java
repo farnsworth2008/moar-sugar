@@ -24,7 +24,7 @@ public class WokeTxSession
 
   @Override
   public void close() throws Exception {
-    Throwable e = safely(() -> connectionHold.get().setAutoCommit(true));
+    Throwable e = safely(() -> connectionHold.get().setAutoCommit(true)).thrown();
     connectionHold.close();
     if (e != null) {
       throw asRuntimeException(e);
