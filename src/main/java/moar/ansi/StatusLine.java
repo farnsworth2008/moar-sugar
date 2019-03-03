@@ -2,8 +2,8 @@ package moar.ansi;
 
 import static java.lang.String.format;
 import static moar.ansi.Ansi.GREEN_BOLD;
-import static moar.ansi.Ansi.bold;
 import static moar.ansi.Ansi.clearLine;
+import static moar.ansi.Ansi.purpleBold;
 import static org.apache.commons.lang3.StringUtils.repeat;
 import java.io.PrintStream;
 import java.util.function.Supplier;
@@ -26,7 +26,7 @@ public class StatusLine {
 
   private void render() {
     if (value == 0) {
-      out.println(format("%s%s %s", GREEN_BOLD.apply("Running"), bold(":"), bold(label)));
+      out.println(format("%s%s %s", GREEN_BOLD.apply("Running"), purpleBold(":"), purpleBold(label)));
     } else {
       String percent = format("%d", (int) (100 * value)) + "%" + " ";
       if (!Ansi.enabled()) {
@@ -39,7 +39,8 @@ public class StatusLine {
       clear();
       String completeBar = repeat("=", completed);
       String remainBar = repeat("-", remaining);
-      out.println(bold("<") + GREEN_BOLD.apply(completeBar) + bold(remainBar) + bold(">" + " " + percent + label));
+      out.println(purpleBold("<") + GREEN_BOLD.apply(completeBar) + purpleBold(remainBar)
+          + purpleBold(">" + " " + percent + label));
     }
   }
 

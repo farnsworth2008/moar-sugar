@@ -154,10 +154,10 @@ public class MoarStringUtil {
     return text;
   }
 
-  public static void writeStringToFile(File file, String fork) {
+  public static void writeStringToFile(File file, String string) {
     require(() -> {
       try (FileOutputStream out = new FileOutputStream(file)) {
-        out.write(fork.getBytes());
+        out.write(string.getBytes());
       }
     });
   }
