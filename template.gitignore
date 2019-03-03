@@ -5,4 +5,5 @@
 /.gradle
 /gradle
 /gradlew
-/test-main/build
+/moar-sugar
+build
