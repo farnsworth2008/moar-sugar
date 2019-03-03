@@ -1,5 +1,6 @@
 package moar.ansi;
 
+import static java.lang.Math.min;
 import static java.lang.String.format;
 import static moar.ansi.Ansi.GREEN_BOLD;
 import static moar.ansi.Ansi.clearLine;
@@ -31,13 +32,18 @@ public class StatusLine {
     clearLine(out);
   }
 
-  public void completeOne() {
+  public void complete(int number) {
     synchronized (this) {
       if (count.get() > 0) {
-        percentDone = (float) completed.incrementAndGet() / count.get();
+        completed.addAndGet(number);
+        percentDone = min(1, (float) completed.incrementAndGet() / count.get());
         render();
       }
     }
+  }
+
+  public void completeOne() {
+    complete(1);
   }
 
   private void render() {
@@ -62,6 +68,7 @@ public class StatusLine {
 
   public void set(String value) {
     label = value;
+    render();
   }
 
   public void set(Supplier<Float> supplier) {
