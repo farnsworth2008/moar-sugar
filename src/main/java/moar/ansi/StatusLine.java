@@ -6,6 +6,7 @@ import static moar.ansi.Ansi.clearLine;
 import static moar.ansi.Ansi.purpleBold;
 import static org.apache.commons.lang3.StringUtils.repeat;
 import java.io.PrintStream;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 public class StatusLine {
@@ -13,6 +14,12 @@ public class StatusLine {
   private final PrintStream out;
   private String label;
   private float percentDone;
+  private final AtomicInteger count = new AtomicInteger();
+  private final AtomicInteger completed = new AtomicInteger();
+
+  public StatusLine(PrintStream out) {
+    this(out, "");
+  }
 
   public StatusLine(PrintStream out, String string) {
     this.out = out;
@@ -22,6 +29,15 @@ public class StatusLine {
 
   public void clear() {
     clearLine(out);
+  }
+
+  public void completeOne() {
+    synchronized (this) {
+      if (count.get() > 0) {
+        percentDone = (float) completed.incrementAndGet() / count.get();
+        render();
+      }
+    }
   }
 
   private void render() {
@@ -56,6 +72,10 @@ public class StatusLine {
         render();
       }
     }
+  }
+
+  public void setCount(int size) {
+    count.set(size);
   }
 
 }
