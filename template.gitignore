@@ -1,0 +1,8 @@
+.classpath
+.project
+.settings
+/.gradle
+/.gradle
+/gradle
+/gradlew
+/test-main/build

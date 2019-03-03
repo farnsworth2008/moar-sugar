@@ -1,0 +1,28 @@
+plugins {
+  id "application"
+}
+
+dependencies {
+  compile project(":moar-sugar")
+}
+
+application {
+  mainClassName = "Main"
+}
+
+task fatJar(type: Jar) {
+  manifest {
+    attributes(
+      "Main-Class": "Main",
+      "Specification-Title": project.name,
+      "Specification-Version": System.getProperty("build_version", "unknown"),
+    )
+  }
+  baseName = project.name + ".fat"
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+}
+
+run {
+  systemProperties System.getProperties()
+}
