@@ -48,7 +48,8 @@ public class StatusLine {
 
   public void render() {
     if (percentDone == 0) {
-      out.println(format("%s%s %s", GREEN_BOLD.apply("Running"), purpleBold(":"), purpleBold(label)));
+      clear();
+      out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label)));
     } else {
       String percent = format("%d", (int) (100 * percentDone)) + "%" + " ";
       if (!Ansi.enabled()) {
