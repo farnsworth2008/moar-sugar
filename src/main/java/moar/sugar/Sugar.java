@@ -1,9 +1,15 @@
 package moar.sugar;
 
+import static com.mashape.unirest.http.Unirest.get;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
+import static java.lang.String.format;
+import static java.lang.System.getenv;
+import static java.lang.System.setErr;
+import static java.lang.System.setOut;
 import static java.lang.Thread.sleep;
+import static moar.sugar.MoarJson.getMoarJson;
 import static org.apache.commons.io.IOUtils.copy;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -18,6 +24,8 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
+import com.google.gson.JsonObject;
+import moar.geo.GeoLocationService;
 
 /**
  * Static Methods that help reduce the code volume associated with common
@@ -26,6 +34,8 @@ import java.util.concurrent.Callable;
  * @author Mark Farnsworth
  */
 public class Sugar {
+
+  private static final String MOAR_OPEN_CAGE_API_KEY = getenv("MOAR_OPEN_CAGE_API_KEY");
 
   /**
    * Get a RuntimeException from an Exception.
@@ -39,6 +49,10 @@ public class Sugar {
       return (RuntimeException) e;
     }
     return new RuntimeException(e);
+  }
+
+  private static ByteArrayOutputStream bos() {
+    return new ByteArrayOutputStream();
   }
 
   /**
@@ -108,6 +122,27 @@ public class Sugar {
 
   public static ExecuteResult exec(String command, String input, File dir) {
     return require(() -> doExec(command, input, dir));
+  }
+
+  public static GeoLocationService getGeoLocationService() {
+    if (MOAR_OPEN_CAGE_API_KEY == null) {
+      return null;
+    }
+    return point -> swallow(() -> {
+      StringBuilder url = new StringBuilder();
+      url.append("https://api.opencagedata.com/geocode/v1/json?");
+      url.append("q=");
+      url.append(point.getLat());
+      url.append("%2C");
+      url.append(point.getLon());
+      url.append(format("&key=%s", MOAR_OPEN_CAGE_API_KEY));
+      String bodyRaw = require(() -> get(url.toString()).asString().getBody());
+      JsonObject body = getMoarJson().getJsonParser().parse(bodyRaw).getAsJsonObject();
+      JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
+      String formatted = result.get("formatted").getAsString();
+      String clean = formatted.replaceAll(", United States of America$", "");
+      return clean;
+    });
   }
 
   /**
@@ -352,11 +387,11 @@ public class Sugar {
   public static <T> SilentResult<T> silently(Callable<T> call) throws Exception, IOException {
     System.err.flush();
     PrintStream priorErr = System.err;
-    try (ByteArrayOutputStream bosErr = new ByteArrayOutputStream()) {
-      System.setErr(new PrintStream(bosErr));
+    try (ByteArrayOutputStream bosErr = bos()) {
+      setErr(new PrintStream(bosErr));
       return withRedirectedErr(call, bosErr);
     } finally {
-      System.setErr(priorErr);
+      setErr(priorErr);
     }
   }
 
@@ -423,12 +458,12 @@ public class Sugar {
       throws Exception, IOException {
     System.out.flush();
     PrintStream prior = System.out;
-    try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-      System.setOut(new PrintStream(bos));
+    try (ByteArrayOutputStream bos = bos()) {
+      setOut(new PrintStream(bos));
       T callResult = call.call();
       return new SilentResult<>(callResult, bos.toByteArray(), bosErr.toByteArray());
     } finally {
-      System.setOut(prior);
+      setOut(prior);
     }
   }
 
