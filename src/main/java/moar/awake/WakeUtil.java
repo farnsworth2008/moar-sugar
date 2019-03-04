@@ -26,6 +26,10 @@ public class WakeUtil {
     return new WokeDataSourceSession(ds);
   }
 
+  public static WokeProxy use(Object object) {
+    return asWokeProxy(object);
+  }
+
   public static <Row> List<Row> use(WokeResultSet<Row> iter) {
     try {
       return use(iter, Integer.MAX_VALUE);
@@ -43,9 +47,5 @@ public class WakeUtil {
       }
     }
     return list;
-  }
-
-  public static WokeProxy wake(Object object) {
-    return asWokeProxy(object);
   }
 }
