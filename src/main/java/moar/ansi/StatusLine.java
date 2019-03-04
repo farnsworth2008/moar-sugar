@@ -46,7 +46,7 @@ public class StatusLine {
     complete(1);
   }
 
-  private void render() {
+  public void render() {
     if (percentDone == 0) {
       out.println(format("%s%s %s", GREEN_BOLD.apply("Running"), purpleBold(":"), purpleBold(label)));
     } else {

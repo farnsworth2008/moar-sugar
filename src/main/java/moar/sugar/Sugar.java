@@ -351,8 +351,8 @@ public class Sugar {
    */
   public static <T> SilentResult<T> silently(Callable<T> call) throws Exception, IOException {
     System.err.flush();
-    var priorErr = System.err;
-    try (var bosErr = new ByteArrayOutputStream()) {
+    PrintStream priorErr = System.err;
+    try (ByteArrayOutputStream bosErr = new ByteArrayOutputStream()) {
       System.setErr(new PrintStream(bosErr));
       return withRedirectedErr(call, bosErr);
     } finally {
@@ -422,8 +422,8 @@ public class Sugar {
   private static <T> SilentResult<T> withRedirectedErr(Callable<T> call, ByteArrayOutputStream bosErr)
       throws Exception, IOException {
     System.out.flush();
-    var prior = System.out;
-    try (var bos = new ByteArrayOutputStream()) {
+    PrintStream prior = System.out;
+    try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
       System.setOut(new PrintStream(bos));
       T callResult = call.call();
       return new SilentResult<>(callResult, bos.toByteArray(), bosErr.toByteArray());
