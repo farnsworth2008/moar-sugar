@@ -2,7 +2,6 @@
 package moar.ansi;
 
 import static java.lang.ThreadLocal.withInitial;
-import java.io.PrintStream;
 import moar.sugar.PropertyAccessor;
 
 /**
@@ -86,16 +85,6 @@ public enum Ansi {
     return BLUE.apply(object);
   }
 
-  public static void clearLine(PrintStream out) {
-    if(!enabled.get()) {
-      return;
-    }
-    out.flush();
-    out.print("\033[1A");
-    out.print("\033[2K");
-    out.flush();
-  }
-
   public static String cyanBold(Object object) {
     return CYAN_BOLD.apply(object);
   }
@@ -147,7 +136,6 @@ public enum Ansi {
   }
 
   public String apply(Object object) {
-    Boolean isEnabled = enabled.get();
-    return isEnabled ? code + object + RESET : object.toString();
+    return enabled.get() ? code + object + RESET : object.toString();
   }
 }
