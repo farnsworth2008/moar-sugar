@@ -92,12 +92,17 @@ public class StatusLine {
   }
 
   public void set(Supplier<Float> supplier) {
+    set(supplier, null);
+  }
+
+  public void set(Supplier<Float> supplier, String string) {
     synchronized (this) {
       Float value = supplier.get();
-      if (percentDone != value) {
-        percentDone = value;
-        render();
+      percentDone = value;
+      if (string != null) {
+        label = string;
       }
+      render();
     }
   }
 
