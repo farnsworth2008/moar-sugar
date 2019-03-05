@@ -68,6 +68,25 @@ public class MoarStringUtil {
     return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
+  public static String leftTruncate(String text, int maxLen, String truncatedSuffix) {
+    if (text.length() > maxLen) {
+      int trimedSize = maxLen - truncatedSuffix.length();
+      text = truncatedSuffix + text.substring(text.length() - trimedSize - 1);
+    }
+    return text;
+  }
+
+  public static String middleTruncate(String text, int len1, int maxLen, String truncatedSuffix) {
+    int len = text.length();
+    if (len <= maxLen) {
+      return text;
+    }
+    int len2 = maxLen - len1;
+    String text1 = truncate(text, len1);
+    String text2 = len <= len1 ? "" : leftTruncate(text, len2, truncatedSuffix);
+    return text1 + text2;
+  }
+
   public static String readStringFromFile(File file) {
     return swallow(() -> {
       try (InputStream is = new FileInputStream(file)) {
@@ -164,7 +183,8 @@ public class MoarStringUtil {
 
   public static String truncate(String text, int maxLen, String truncatedSuffix) {
     if (text.length() > maxLen) {
-      text = text.substring(0, min(maxLen, text.length())) + truncatedSuffix;
+      int trimedSize = min(maxLen - truncatedSuffix.length(), text.length());
+      text = text.substring(0, trimedSize) + truncatedSuffix;
     }
     return text;
   }
@@ -176,5 +196,4 @@ public class MoarStringUtil {
       }
     });
   }
-
 }
