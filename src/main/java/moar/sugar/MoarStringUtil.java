@@ -8,9 +8,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,18 @@ import com.google.common.base.CharMatcher;
  * @author Mark Farnsworth
  */
 public class MoarStringUtil {
+
+  public static void appendLinesToFile(File file, String... lines) {
+    require(() -> {
+      try (Writer fw = new FileWriter(file, true)) {
+        try (PrintWriter pw = new PrintWriter(fw)) {
+          for (String line : lines) {
+            pw.println(line);
+          }
+        }
+      }
+    });
+  }
 
   @SuppressWarnings("javadoc")
   public static String asString(Object o) {

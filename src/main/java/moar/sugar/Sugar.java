@@ -51,7 +51,7 @@ public class Sugar {
     return new RuntimeException(e);
   }
 
-  private static ByteArrayOutputStream bos() {
+  public static ByteArrayOutputStream bos() {
     return new ByteArrayOutputStream();
   }
 
