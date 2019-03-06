@@ -52,9 +52,9 @@ public class StatusLine {
     complete(1);
   }
 
-  public <T> T completeOne(Callable<T> call) throws Exception {
+  public <T> T completeOne(Callable<T> call) {
     try {
-      return call.call();
+      return require(() -> call.call());
     } finally {
       completeOne();
     }
@@ -72,23 +72,23 @@ public class StatusLine {
     render();
   }
 
-  public <R> R output(Function<PrintStream, R> dispalyUpdater) {
+  public <R> R output(Function<PrintStream, R> out) {
     ByteArrayOutputStream bos = bos();
-    try (PrintStream out = new PrintStream(bos)) {
+    try (PrintStream os = new PrintStream(bos)) {
       try {
-        return dispalyUpdater.apply(out);
+        return out.apply(os);
       } finally {
-        out.flush();
+        os.flush();
         output(bos);
       }
     }
   }
 
-  public void output(FunctionVoid<PrintStream> dispalyUpdater) {
+  public void output(FunctionVoid<PrintStream> out) {
     ByteArrayOutputStream bos = bos();
-    try (PrintStream out = new PrintStream(bos)) {
-      dispalyUpdater.apply(out);
-      out.flush();
+    try (PrintStream os = new PrintStream(bos)) {
+      out.apply(os);
+      os.flush();
       output(bos);
     }
   }
