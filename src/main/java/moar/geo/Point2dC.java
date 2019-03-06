@@ -1,29 +1,20 @@
 package moar.geo;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.lang.String.format;
 
-public class GeoPoint2D
+public class Point2dC
     implements
-    GeoPoint {
-
-  public static GeoPoint2D maxGeoPoint(GeoPoint a, GeoPoint b) {
-    return new GeoPoint2D(max(a.getLat(), b.getLat()), max(a.getLon(), b.getLon()));
-  }
-  public static GeoPoint2D minGeoPoint(GeoPoint a, GeoPoint b) {
-    return new GeoPoint2D(min(a.getLat(), b.getLat()), min(a.getLon(), b.getLon()));
-  }
+    GeoPoint2 {
 
   private final float lat;
   private final float lon;
 
-  public GeoPoint2D(float lat, float lon) {
+  public Point2dC(float lat, float lon) {
     this.lat = lat;
     this.lon = lon;
   }
 
-  public GeoPoint2D(GeoPoint other) {
+  public Point2dC(GeoPoint2 other) {
     this(other.getLat(), other.getLon());
   }
 

@@ -1,15 +1,11 @@
 package moar.sugar;
 
-import static com.mashape.unirest.http.Unirest.get;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Math.random;
-import static java.lang.String.format;
-import static java.lang.System.getenv;
 import static java.lang.System.setErr;
 import static java.lang.System.setOut;
 import static java.lang.Thread.sleep;
-import static moar.sugar.MoarJson.getMoarJson;
 import static org.apache.commons.io.IOUtils.copy;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,8 +20,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
-import com.google.gson.JsonObject;
-import moar.geo.GeoLocationService;
 
 /**
  * Static Methods that help reduce the code volume associated with common
@@ -35,7 +29,8 @@ import moar.geo.GeoLocationService;
  */
 public class Sugar {
 
-  private static final String MOAR_OPEN_CAGE_API_KEY = getenv("MOAR_OPEN_CAGE_API_KEY");
+  public static final Float MIN_FLOAT = Float.MIN_VALUE;
+  public static final Float MAX_FLOAT = Float.MAX_VALUE;
 
   /**
    * Get a RuntimeException from an Exception.
@@ -122,27 +117,6 @@ public class Sugar {
 
   public static ExecuteResult exec(String command, String input, File dir) {
     return require(() -> doExec(command, input, dir));
-  }
-
-  public static GeoLocationService getGeoLocationService() {
-    if (MOAR_OPEN_CAGE_API_KEY == null) {
-      return null;
-    }
-    return point -> swallow(() -> {
-      StringBuilder url = new StringBuilder();
-      url.append("https://api.opencagedata.com/geocode/v1/json?");
-      url.append("q=");
-      url.append(point.getLat());
-      url.append("%2C");
-      url.append(point.getLon());
-      url.append(format("&key=%s", MOAR_OPEN_CAGE_API_KEY));
-      String bodyRaw = require(() -> get(url.toString()).asString().getBody());
-      JsonObject body = getMoarJson().getJsonParser().parse(bodyRaw).getAsJsonObject();
-      JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
-      String formatted = result.get("formatted").getAsString();
-      String clean = formatted.replaceAll(", United States of America$", "");
-      return clean;
-    });
   }
 
   /**
@@ -452,6 +426,10 @@ public class Sugar {
    */
   public static Date toUtilDate(LocalDate localDate) {
     return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+  }
+
+  public static Float valueOfFloat(String string) {
+    return Float.valueOf(string);
   }
 
   private static <T> SilentResult<T> withRedirectedErr(Callable<T> call, ByteArrayOutputStream bosErr)
