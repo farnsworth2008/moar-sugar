@@ -11,7 +11,7 @@ import static org.apache.commons.lang3.StringUtils.repeat;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import moar.sugar.CallableVoid;
 import moar.sugar.FunctionVoid;
@@ -21,8 +21,12 @@ public class StatusLine {
   private final PrintStream out;
   private String label = "";
   private float percentDone;
-  private final AtomicInteger count = new AtomicInteger();
-  private final AtomicInteger completed = new AtomicInteger();
+  private final AtomicLong count = new AtomicLong();
+  private final AtomicLong completed = new AtomicLong();
+
+  public StatusLine() {
+    this(System.out);
+  }
 
   public StatusLine(PrintStream out) {
     this.out = out;
@@ -39,7 +43,7 @@ public class StatusLine {
     }
   }
 
-  public void complete(int number) {
+  public void complete(long number) {
     synchronized (this) {
       if (count.get() > 0) {
         percentDone = min(1, (float) completed.addAndGet(number) / count.get());
@@ -85,11 +89,13 @@ public class StatusLine {
   }
 
   public void output(FunctionVoid<PrintStream> out) {
-    ByteArrayOutputStream bos = bos();
-    try (PrintStream os = new PrintStream(bos)) {
-      out.apply(os);
-      os.flush();
-      output(bos);
+    synchronized (this) {
+      ByteArrayOutputStream bos = bos();
+      try (PrintStream os = new PrintStream(bos)) {
+        out.apply(os);
+        os.flush();
+        output(bos);
+      }
     }
   }
 
@@ -132,14 +138,14 @@ public class StatusLine {
     render();
   }
 
-  public void setCount(int size) {
-    count.set(size);
+  public void setCount(long count) {
+    this.count.set(count);
     completed.set(0);
     percentDone = 0;
   }
 
-  public void setCount(int size, String string) {
-    setCount(size);
+  public void setCount(long count, String string) {
+    setCount(count);
     set(string);
   }
 }
