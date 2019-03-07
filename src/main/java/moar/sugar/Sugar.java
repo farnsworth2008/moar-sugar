@@ -267,9 +267,6 @@ public class Sugar {
         sleep(retryWaitMs + (long) (random() * retryWaitMs));
       }
     }
-    if (last instanceof RetryableException) {
-      throw last;
-    }
     throw last;
   }
 

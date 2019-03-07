@@ -3,8 +3,8 @@ package moar.awake;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.ThreadLocal.withInitial;
-import static moar.awake.WakeUtil.asWokeProxy;
-import static moar.awake.WakeUtil.use;
+import static moar.awake.InterfaceUtil.asWokeProxy;
+import static moar.awake.InterfaceUtil.use;
 import static moar.sugar.Sugar.asRuntimeException;
 import static moar.sugar.Sugar.closeQuietly;
 import static moar.sugar.Sugar.nonNull;
@@ -570,6 +570,13 @@ public class WokeRepository<Row>
   @Override
   public WokenWithSession<Row> of(DataSource ds) {
     return of(new WokeDataSourceSession(ds));
+  }
+
+  @Override
+  public Row of(Map<String, Object> map) {
+    Row row = define(r -> {});
+    asWokeProxy(row).set(map);
+    return row;
   }
 
   @Override

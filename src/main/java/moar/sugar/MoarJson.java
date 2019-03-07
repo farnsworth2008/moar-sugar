@@ -52,7 +52,7 @@ public class MoarJson {
    */
   public MoarJson() {
     GsonBuilder builder = new GsonBuilder().setLenient();
-    gson = builder.create();
+    gson = builder.setLenient().create();
     gsonPretty = builder.setPrettyPrinting().create();
     jsonParser = new JsonParser();
   }

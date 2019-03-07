@@ -1,5 +1,7 @@
 package moar.sugar;
 
+import static moar.sugar.Sugar.asRuntimeException;
+
 /**
  * Holds a safe result.
  * <p>
@@ -35,6 +37,13 @@ public class SafeResult<T> {
    */
   public T get() {
     return result;
+  }
+
+  public T getOrThrow() {
+    if (threw()) {
+      throw asRuntimeException(thrown());
+    }
+    return get();
   }
 
   /**

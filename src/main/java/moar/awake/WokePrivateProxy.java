@@ -32,7 +32,7 @@ class WokePrivateProxy
   Map<String, Object> setMap = new ConcurrentHashMap<>();
   Map<String, Object> map = new ConcurrentHashMap<>();
   Class<?> clz;
-  private String identifierQuoteString = "";
+  private String identifierQuoteString = "`";
   private String tableName;
 
   WokePrivateProxy(Class<?> clz) {
@@ -150,10 +150,10 @@ class WokePrivateProxy
         return toString();
       } else {
         if (isProperty(name)) {
+          Class<?> returnType = method.getReturnType();
           Object value = getProperty(name);
           if (value instanceof Number) {
             Number number = (Number) value;
-            Class<?> returnType = method.getReturnType();
             if (returnType == Double.class) {
               return number.doubleValue();
             } else if (returnType == Long.class) {
@@ -167,6 +167,8 @@ class WokePrivateProxy
             } else if (returnType == Byte.class) {
               return number.byteValue();
             }
+          } else if (returnType.isInterface()) {
+            return InterfaceUtil.use(returnType).of((Map<String, Object>) value);
           }
           return value;
         }
@@ -230,8 +232,12 @@ class WokePrivateProxy
     for (String key : dbMap.keySet()) {
       String propName = fromDbName(key);
       Object dbValue = dbMap.get(key);
-      setMap.put(propName, dbValue);
-      map.put(propName, dbValue);
+      if (dbValue == null) {
+        setMap.remove(key);
+      } else {
+        setMap.put(propName, dbValue);
+        map.put(propName, dbValue);
+      }
     }
   }
 

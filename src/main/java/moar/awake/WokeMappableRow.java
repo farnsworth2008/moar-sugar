@@ -1,6 +1,6 @@
 package moar.awake;
 
-import static moar.awake.WakeUtil.asWokeProxy;
+import static moar.awake.InterfaceUtil.asWokeProxy;
 
 /**
  * A generic row that can be mapped to specific row classes while iterating.

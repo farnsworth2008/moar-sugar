@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 
-public class WakeUtil {
+public class InterfaceUtil {
   static <Row> WokePrivateProxy asWokeProxy(Row row) {
     return ((WokeProxiedObject) row).privateProxy();
   }

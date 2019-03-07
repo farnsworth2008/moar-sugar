@@ -1,7 +1,7 @@
 package moar.awake;
 
 import static java.lang.String.format;
-import static moar.awake.WakeUtil.asWokeProxy;
+import static moar.awake.InterfaceUtil.asWokeProxy;
 import static moar.awake.WokeRepository.buildSelect;
 import static moar.awake.WokeRepository.create;
 import static moar.awake.WokeRepository.expandColumnSplat;

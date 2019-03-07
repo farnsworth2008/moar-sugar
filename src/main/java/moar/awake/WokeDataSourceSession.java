@@ -1,5 +1,5 @@
 package moar.awake;
-import static moar.awake.WakeUtil.use;
+import static moar.awake.InterfaceUtil.use;
 import static moar.sugar.Sugar.require;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
