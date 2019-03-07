@@ -10,11 +10,4 @@ subprojects {
     maven { url "https://repo.maven.apache.org/maven2" }
     mavenCentral()
   }
-
-  ext {
-    javaVersion = 1.11
-  }
-
-  sourceCompatibility = javaVersion
-  targetCompatibility = javaVersion
 }

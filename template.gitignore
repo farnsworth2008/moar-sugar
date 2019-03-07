@@ -1,4 +1,5 @@
 .classpath
+.java-version
 .project
 .settings
 /.gradle

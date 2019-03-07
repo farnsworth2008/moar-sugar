@@ -1,3 +1,3 @@
 set -e
 ./build.sh
-java -jar `find . -name \*.fat.jar` "$@"
+java -jar `find . -name \*.fat.jar` script "$@"
