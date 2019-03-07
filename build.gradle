@@ -2,6 +2,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
+  compile "joda-time:joda-time:2.10.1"
   compile "com.mashape.unirest:unirest-java:1.4.9"
   compile "com.google.code.gson:gson:2.8.5"
   compile "com.google.guava:guava:26.0-jre"
