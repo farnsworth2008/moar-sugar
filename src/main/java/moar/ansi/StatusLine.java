@@ -12,15 +12,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicReference;
+import com.google.common.util.concurrent.AtomicDouble;
 import moar.sugar.CallableVoid;
 import moar.sugar.FunctionVoid;
 
 public class StatusLine {
 
   private final PrintStream out;
-  private String label = "";
-  private float percentDone;
+  private final AtomicReference<String> label = new AtomicReference<String>("");
+  private final AtomicDouble percentDone = new AtomicDouble();
   private final AtomicLong count = new AtomicLong();
   private final AtomicLong completed = new AtomicLong();
 
@@ -46,7 +47,7 @@ public class StatusLine {
   public void complete(long number) {
     synchronized (this) {
       if (count.get() > 0) {
-        percentDone = min(1, (float) completed.addAndGet(number) / count.get());
+        percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
         render();
       }
     }
@@ -76,18 +77,6 @@ public class StatusLine {
     render();
   }
 
-  public <R> R output(Function<PrintStream, R> out) {
-    ByteArrayOutputStream bos = bos();
-    try (PrintStream os = new PrintStream(bos)) {
-      try {
-        return out.apply(os);
-      } finally {
-        os.flush();
-        output(bos);
-      }
-    }
-  }
-
   public void output(FunctionVoid<PrintStream> out) {
     synchronized (this) {
       ByteArrayOutputStream bos = bos();
@@ -102,16 +91,16 @@ public class StatusLine {
   public void render() {
     synchronized (this) {
       reset();
-      if (percentDone == 0) {
-        out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label)));
+      if (percentDone.get() == 0) {
+        out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
       } else {
-        String percent = format("%d", (int) (100 * percentDone)) + "%" + " ";
+        String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
         if (!enabled()) {
-          out.println(format("%s %s", percent, label));
+          out.println(format("%s %s", percent, label.get()));
           return;
         }
         int size = 20;
-        int completed = (int) (size * percentDone);
+        int completed = (int) (size * percentDone.get());
         int remaining = size - completed;
         String completeBar = repeat("=", completed);
         String remainBar = repeat("-", remaining);
@@ -134,14 +123,14 @@ public class StatusLine {
   }
 
   public void set(String value) {
-    label = value;
+    label.set(value);
     render();
   }
 
-  public void setCount(long count) {
-    this.count.set(count);
+  public void setCount(long value) {
+    count.set(value);
     completed.set(0);
-    percentDone = 0;
+    percentDone.set(0);
   }
 
   public void setCount(long count, String string) {

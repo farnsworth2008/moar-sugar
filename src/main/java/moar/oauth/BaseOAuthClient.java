@@ -105,13 +105,13 @@ final class BaseOAuthClient
   }
 
   @Override
-  public void setThrottle(Integer value) {
-    throttle.set(value);
-  }
-
-  @Override
   public void setThrottleRate(Double permitsPerSecond) {
     rate.set(RateLimiter.create(permitsPerSecond));
 
+  }
+
+  @Override
+  public void setThrottleWhen(Integer value) {
+    throttle.set(value);
   }
 }

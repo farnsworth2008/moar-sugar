@@ -5,20 +5,24 @@ import java.util.List;
 
 public interface GeoService {
 
-  List<GeoPoint2> decodePoly(String polyline);
+  List<GeoPoint> decode(String polyline);
 
-  String describe(GeoPoint2 point);
+  String describe(GeoPoint point);
 
-  GeoBound2 getBounds(List<GeoPoint2> points);
+  GeoBound getBounds(List<GeoPoint> points);
 
-  GeoPoint2 northEastPoint(GeoPoint2 min, GeoPoint2 point);
+  boolean inside(GeoPoint point, List<GeoPoint> points);
 
-  GeoPoint2 point(Float lat, Float lon);
+  double miles(GeoPoint p1, GeoPoint p2);
 
-  GeoPoint2 point(GeoPoint2 southWest);
+  GeoPoint northEastPoint(GeoPoint min, GeoPoint point);
 
-  List<GeoPoint2> readKml2(File kmlFile);
+  GeoPoint point(Float lat, Float lon, Float altitude);
 
-  GeoPoint2 southWestPoint(GeoPoint2 min, GeoPoint2 point);
+  GeoPoint point(GeoPoint southWest);
+
+  List<GeoPoint> readKml2(File kmlFile);
+
+  GeoPoint southWestPoint(GeoPoint min, GeoPoint point);
 
 }

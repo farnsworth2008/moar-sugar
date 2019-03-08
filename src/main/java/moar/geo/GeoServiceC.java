@@ -4,6 +4,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static java.lang.System.getenv;
+import static moar.sugar.Sugar.valueOfFloat;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -27,6 +28,8 @@ final class GeoServiceC
     GeoService {
   static final String MOAR_OPEN_CAGE_API_KEY = getenv("MOAR_OPEN_CAGE_API_KEY");
 
+  private final GeoUtil polygonUtil = new GeoUtil();
+
   /**
    * Method to decode polyline points Courtesy :
    *
@@ -35,8 +38,8 @@ final class GeoServiceC
    * Sambells</a>
    */
   @Override
-  public List<GeoPoint2> decodePoly(String encoded) {
-    List<GeoPoint2> poly = new ArrayList<GeoPoint2>();
+  public List<GeoPoint> decode(String encoded) {
+    List<GeoPoint> poly = new ArrayList<GeoPoint>();
     int index = 0, len = encoded.length();
     int lat = 0, lng = 0;
 
@@ -63,14 +66,14 @@ final class GeoServiceC
       float latitude = (float) (lat / 1E5);
       float longitude = (float) (lng / 1E5);
 
-      GeoPoint2 p = new Point2dC(latitude, longitude);
+      GeoPoint p = new GeoPointC(latitude, longitude, 0);
       poly.add(p);
     }
 
     return poly;
   }
   @Override
-  public String describe(GeoPoint2 point) {
+  public String describe(GeoPoint point) {
     return Sugar.swallow(() -> {
       StringBuilder url = new StringBuilder();
       url.append("https://api.opencagedata.com/geocode/v1/json?");
@@ -87,7 +90,7 @@ final class GeoServiceC
       return clean;
     });
   }
-  private List<GeoPoint2> doReadKml(File kmlFile) throws ParserConfigurationException, SAXException, IOException {
+  private List<GeoPoint> doReadKml(File kmlFile) throws ParserConfigurationException, SAXException, IOException {
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = dbf.newDocumentBuilder();
     Document doc = db.parse(kmlFile);
@@ -107,49 +110,69 @@ final class GeoServiceC
     StringReader sr = new StringReader(textContent);
     String string = IOUtils.toString(sr);
     String[] cords = string.split("[ ,]");
-    List<GeoPoint2> points = new ArrayList<GeoPoint2>();
+    List<GeoPoint> points = new ArrayList<GeoPoint>();
     for (int i = 0; i < cords.length; i += 3) {
-      Float lon = Sugar.valueOfFloat(cords[i + 0]);
-      Float lat = Sugar.valueOfFloat(cords[i + 1]);
-      points.add(point(lat, lon));
+      Float lon = valueOfFloat(cords[i + 0]);
+      Float lat = valueOfFloat(cords[i + 1]);
+      Float altitude = valueOfFloat(cords[i + 1]);
+      points.add(point(lat, lon, altitude));
     }
     return points;
   }
   @Override
-  public GeoBound2 getBounds(List<GeoPoint2> points) {
-    GeoPoint2 sw = points.get(0);
-    GeoPoint2 ne = point(sw);
-    for (GeoPoint2 point : points) {
+  public GeoBound getBounds(List<GeoPoint> points) {
+    GeoPoint sw = points.get(0);
+    GeoPoint ne = point(sw);
+    for (GeoPoint point : points) {
       sw = southWestPoint(sw, point);
       ne = northEastPoint(ne, point);
     }
-    return new GeoBound2C(sw, ne);
+    return new GeoBoundC(sw, ne);
   }
   @Override
-  public GeoPoint2 northEastPoint(GeoPoint2 a, GeoPoint2 b) {
-    float lat = max(a.getLat(), b.getLat());
-    float lon = max(a.getLon(), b.getLon());
-    Point2dC p = new Point2dC(lat, lon);
-    return p;
+  public boolean inside(GeoPoint point, List<GeoPoint> points) {
+    GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
+    return polygonUtil.isInside(pointsArray, point);
   }
   @Override
-  public GeoPoint2 point(Float lat, Float lon) {
-    return new Point2dC(lat, lon);
+  public double miles(GeoPoint p1, GeoPoint p2) {
+    float lat1 = p1.getLat();
+    float lon1 = p1.getLon();
+    float ele1 = p1.getElevation();
+    float lat2 = p2.getLat();
+    float lon2 = p2.getLon();
+    float ele2 = p2.getElevation();
+    double meters = polygonUtil.distance(lat1, lon1, ele1, lat2, lon2, ele2);
+    return meters * 0.000621371192;
   }
 
   @Override
-  public GeoPoint2 point(GeoPoint2 point) {
-    return new Point2dC(point);
+  public GeoPoint northEastPoint(GeoPoint a, GeoPoint b) {
+    float lat = max(a.getLat(), b.getLat());
+    float lon = max(a.getLon(), b.getLon());
+    GeoPoint p = point(lat, lon, 0F);
+    return p;
   }
   @Override
-  public List<GeoPoint2> readKml2(File kmlFile) {
+  public GeoPoint point(Float lat, Float lon, Float altitude) {
+    return new GeoPointC(lat, lon, altitude);
+  }
+
+  @Override
+  public GeoPoint point(GeoPoint point) {
+    return new GeoPointC(point);
+  }
+
+  @Override
+  public List<GeoPoint> readKml2(File kmlFile) {
     return Sugar.require(() -> doReadKml(kmlFile));
   }
   @Override
-  public GeoPoint2 southWestPoint(GeoPoint2 a, GeoPoint2 b) {
+  public GeoPoint southWestPoint(GeoPoint a, GeoPoint b) {
     float lat = min(a.getLat(), b.getLat());
     float lon = min(a.getLon(), b.getLon());
-    Point2dC p = new Point2dC(lat, lon);
+    GeoPoint p = point(lat, lon, 0F);
     return p;
   }
+
 }

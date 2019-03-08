@@ -2,20 +2,27 @@ package moar.geo;
 
 import static java.lang.String.format;
 
-public class Point2dC
+public class GeoPointC
     implements
-    GeoPoint2 {
+    GeoPoint {
 
   private final float lat;
   private final float lon;
+  private final float altitude;
 
-  public Point2dC(float lat, float lon) {
+  public GeoPointC(float lat, float lon, float altitude) {
     this.lat = lat;
     this.lon = lon;
+    this.altitude = altitude;
   }
 
-  public Point2dC(GeoPoint2 other) {
-    this(other.getLat(), other.getLon());
+  public GeoPointC(GeoPoint other) {
+    this(other.getLat(), other.getLon(), other.getElevation());
+  }
+
+  @Override
+  public float getElevation() {
+    return altitude;
   }
 
   @Override
