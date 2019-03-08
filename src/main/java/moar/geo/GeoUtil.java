@@ -25,6 +25,7 @@ import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import moar.awake.InterfaceUtil;
+import moar.sugar.MoarException;
 import moar.sugar.MoarJson;
 
 public class GeoUtil {
@@ -48,12 +49,12 @@ public class GeoUtil {
     return val > 0 ? 1 : 2;
   }
   private final AtomicLong openCageRemaining = new AtomicLong(1);
-  private final RateLimiter openCageRateLimit = RateLimiter.create(1);
+  private final RateLimiter openCageRateLimit = RateLimiter.create(10);
 
   private final Vector<String> openCageApiKeys;
 
   public GeoUtil() {
-    this.openCageApiKeys = new Vector<String>();
+    openCageApiKeys = new Vector<String>();
     int k = 0;
     String key = null;
     do {
@@ -68,32 +69,42 @@ public class GeoUtil {
   public GeoDescription describe(GeoPoint point) {
     return swallow(() -> {
       synchronized (openCageApiKeys) {
-        HttpResponse<String> response  = null;
-        int tries = 10;
+        HttpResponse<String> response = null;
         int status = 0;
+        int tries = 60;
         do {
+          if (openCageApiKeys.size() == 0) {
+            return null;
+          }
           StringBuilder url = new StringBuilder();
           url.append("https://api.opencagedata.com/geocode/v1/json?");
           url.append("q=");
           url.append(point.getLat());
           url.append("%2C");
           url.append(point.getLon());
-          openCageRateLimit.acquire();
           url.append(format("&key=%s", openCageApiKeys.get(0)));
+          openCageRateLimit.acquire();
           response = Unirest.get(url.toString()).asString();
           status = response.getStatus();
-          HttpResponse<String> finalResponse = response;
-          if(status != 200) {
-            openCageApiKeys.toString();
+          if (status == 401 || status == 402 || status == 403) {
+            openCageApiKeys.remove(0);
+          } else {
+            HttpResponse<String> finalResponse = response;
+            swallow(() -> {
+              Headers headers = finalResponse.getHeaders();
+              List<String> xRateLimitRemaining = headers.get("X-ratelimit-remaining");
+              if (xRateLimitRemaining != null) {
+                long remaining = parseLong(xRateLimitRemaining.get(0));
+                if (remaining <= 0) {
+                  openCageApiKeys.remove(0);
+                }
+                openCageRemaining.set(remaining);
+              }
+            });
           }
-          swallow(() -> {
-            Headers headers = finalResponse.getHeaders();
-            long remaining = parseLong(headers.get("X-ratelimit-remaining").get(0));
-            if (remaining <= 10) {
-              openCageApiKeys.remove(0);
-            }
-            openCageRemaining.set(remaining);
-          });
+          if (tries-- < 1) {
+            throw new MoarException();
+          }
         } while (status != 200);
         HttpResponse<String> finalResponse = response;
         String bodyRaw = require(() -> finalResponse.getBody());
@@ -104,6 +115,7 @@ public class GeoUtil {
         map(comp, map, "country_code", "country");
         map(comp, map, "_type", "type");
         map(comp, map, "footway", "footway");
+        map(comp, map, "hamlet", "hamlet");
         map(comp, map, "city", "city");
         map(comp, map, "county", "county");
         map(comp, map, "county", "county");
