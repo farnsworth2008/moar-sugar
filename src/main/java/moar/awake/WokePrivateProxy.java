@@ -152,25 +152,37 @@ class WokePrivateProxy
         if (isProperty(name)) {
           Class<?> returnType = method.getReturnType();
           Object value = getProperty(name);
+          if (value == null) {
+            return null;
+          }
           if (value instanceof Number) {
             Number number = (Number) value;
             if (returnType == Double.class) {
               return number.doubleValue();
-            } else if (returnType == Long.class) {
+            }
+            if (returnType == Long.class) {
               return number.longValue();
-            } else if (returnType == Integer.class) {
+            }
+            if (returnType == Integer.class) {
               return number.intValue();
-            } else if (returnType == Float.class) {
+            }
+            if (returnType == Float.class) {
               return number.floatValue();
-            } else if (returnType == Short.class) {
+            }
+            if (returnType == Short.class) {
               return number.shortValue();
-            } else if (returnType == Byte.class) {
+            }
+            if (returnType == Byte.class) {
               return number.byteValue();
             }
-          } else if (returnType.isInterface()) {
+          }
+          if (returnType.isAssignableFrom(value.getClass())) {
+            return value;
+          }
+          if (returnType.isInterface()) {
             return InterfaceUtil.use(returnType).of((Map<String, Object>) value);
           }
-          return value;
+          throw new MoarException();
         }
       }
     } else if (args.length == 1) {
