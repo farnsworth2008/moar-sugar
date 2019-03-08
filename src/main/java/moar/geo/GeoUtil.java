@@ -14,7 +14,9 @@ import static java.lang.System.getenv;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonElement;
@@ -46,41 +48,69 @@ public class GeoUtil {
     return val > 0 ? 1 : 2;
   }
   private final AtomicLong openCageRemaining = new AtomicLong(1);
-  private final int openCageKey = 1;
   private final RateLimiter openCageRateLimit = RateLimiter.create(1);
 
-  private final String[] openCageApiKeys = { getenv("MOAR_OPEN_CAGE_API_KEY1"), getenv("MOAR_OPEN_CAGE_API_KEY2") };
+  private final Vector<String> openCageApiKeys;
+
+  public GeoUtil() {
+    this.openCageApiKeys = new Vector<String>();
+    int k = 0;
+    String key = null;
+    do {
+      key = getenv(format(format("MOAR_OPEN_CAGE_API_KEY%d", ++k)));
+      if (key == null) {
+        break;
+      }
+      openCageApiKeys.add(key);
+    } while (true);
+  }
 
   public GeoDescription describe(GeoPoint point) {
     return swallow(() -> {
-      StringBuilder url = new StringBuilder();
-      url.append("https://api.opencagedata.com/geocode/v1/json?");
-      url.append("q=");
-      url.append(point.getLat());
-      url.append("%2C");
-      url.append(point.getLon());
-      openCageRateLimit.acquire();
-      url.append(format("&key=%s", openCageApiKeys[openCageKey]));
-      HttpResponse<String> response = Unirest.get(url.toString()).asString();
-      swallow(() -> {
-        Headers headers = response.getHeaders();
-        long remaining = parseLong(headers.get("X-ratelimit-remaining").get(0));
-        openCageRemaining.set(remaining);
-      });
-      String bodyRaw = require(() -> response.getBody());
-      JsonObject body = MoarJson.getMoarJson().getJsonParser().parse(bodyRaw).getAsJsonObject();
-      JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
-      JsonObject comp = result.get("components").getAsJsonObject();
-      Map<String, Object> map = new HashMap<>();
-      map(comp, map, "country_code", "country");
-      map(comp, map, "_type", "type");
-      map(comp, map, "footway", "footway");
-      map(comp, map, "city", "city");
-      map(comp, map, "county", "county");
-      map(comp, map, "county", "county");
-      map(comp, map, "postcode", "postcode");
-      map(comp, map, "road_type", "footway");
-      return InterfaceUtil.use(GeoDescription.class).of(map);
+      synchronized (openCageApiKeys) {
+        HttpResponse<String> response  = null;
+        int tries = 10;
+        int status = 0;
+        do {
+          StringBuilder url = new StringBuilder();
+          url.append("https://api.opencagedata.com/geocode/v1/json?");
+          url.append("q=");
+          url.append(point.getLat());
+          url.append("%2C");
+          url.append(point.getLon());
+          openCageRateLimit.acquire();
+          url.append(format("&key=%s", openCageApiKeys.get(0)));
+          response = Unirest.get(url.toString()).asString();
+          status = response.getStatus();
+          HttpResponse<String> finalResponse = response;
+          if(status != 200) {
+            openCageApiKeys.toString();
+          }
+          swallow(() -> {
+            Headers headers = finalResponse.getHeaders();
+            long remaining = parseLong(headers.get("X-ratelimit-remaining").get(0));
+            if (remaining <= 10) {
+              openCageApiKeys.remove(0);
+            }
+            openCageRemaining.set(remaining);
+          });
+        } while (status != 200);
+        HttpResponse<String> finalResponse = response;
+        String bodyRaw = require(() -> finalResponse.getBody());
+        JsonObject body = MoarJson.getMoarJson().getJsonParser().parse(bodyRaw).getAsJsonObject();
+        JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
+        JsonObject comp = result.get("components").getAsJsonObject();
+        Map<String, Object> map = new HashMap<>();
+        map(comp, map, "country_code", "country");
+        map(comp, map, "_type", "type");
+        map(comp, map, "footway", "footway");
+        map(comp, map, "city", "city");
+        map(comp, map, "county", "county");
+        map(comp, map, "county", "county");
+        map(comp, map, "postcode", "postcode");
+        map(comp, map, "road_type", "footway");
+        return InterfaceUtil.use(GeoDescription.class).of(map);
+      }
     });
   }
 
