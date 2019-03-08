@@ -2,8 +2,7 @@ package moar.geo;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.String.format;
-import static java.lang.System.getenv;
+import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.valueOfFloat;
 import java.io.File;
 import java.io.IOException;
@@ -18,24 +17,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import com.google.gson.JsonObject;
-import com.mashape.unirest.http.Unirest;
-import moar.sugar.MoarJson;
-import moar.sugar.Sugar;
 
 final class GeoServiceC
     implements
     GeoService {
-  static final String MOAR_OPEN_CAGE_API_KEY = getenv("MOAR_OPEN_CAGE_API_KEY");
+  private final GeoUtil geoUtil = new GeoUtil();
 
-  private final GeoUtil polygonUtil = new GeoUtil();
+  @Override
+  public String city(GeoPoint point) {
+    GeoDescription described = describe(point);
+    return described.getCity();
+  }
 
   /**
    * Method to decode polyline points Courtesy :
    *
-   * @see <a href=
-   * 'http://jeffreysambells.com/2010/05/27/decoding-polylines-from-google-maps-direction-api-with-java'>Jeffrey
-   * Sambells</a>
+   * @see <a href= 'https://tinyurl.com/y6be5mh6'>Jeffrey Sambells</a>
    */
   @Override
   public List<GeoPoint> decode(String encoded) {
@@ -72,23 +69,10 @@ final class GeoServiceC
 
     return poly;
   }
+
   @Override
-  public String describe(GeoPoint point) {
-    return Sugar.swallow(() -> {
-      StringBuilder url = new StringBuilder();
-      url.append("https://api.opencagedata.com/geocode/v1/json?");
-      url.append("q=");
-      url.append(point.getLat());
-      url.append("%2C");
-      url.append(point.getLon());
-      url.append(format("&key=%s", MOAR_OPEN_CAGE_API_KEY));
-      String bodyRaw = Sugar.require(() -> Unirest.get(url.toString()).asString().getBody());
-      JsonObject body = MoarJson.getMoarJson().getJsonParser().parse(bodyRaw).getAsJsonObject();
-      JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
-      String formatted = result.get("formatted").getAsString();
-      String clean = formatted.replaceAll(", United States of America$", "");
-      return clean;
-    });
+  public GeoDescription describe(GeoPoint point) {
+    return geoUtil.describe(point);
   }
   private List<GeoPoint> doReadKml(File kmlFile) throws ParserConfigurationException, SAXException, IOException {
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -119,6 +103,7 @@ final class GeoServiceC
     }
     return points;
   }
+
   @Override
   public GeoBound getBounds(List<GeoPoint> points) {
     GeoPoint sw = points.get(0);
@@ -129,20 +114,31 @@ final class GeoServiceC
     }
     return new GeoBoundC(sw, ne);
   }
+
+  @Override
+  public long getDescribeServiceRemaining() {
+    return geoUtil.getOpenCageRemaining();
+  }
+
   @Override
   public boolean inside(GeoPoint point, List<GeoPoint> points) {
     GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
-    return polygonUtil.isInside(pointsArray, point);
+    return geoUtil.isInside(pointsArray, point);
   }
   @Override
-  public double miles(GeoPoint p1, GeoPoint p2) {
+  public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();
     float lon1 = p1.getLon();
     float ele1 = p1.getElevation();
     float lat2 = p2.getLat();
     float lon2 = p2.getLon();
     float ele2 = p2.getElevation();
-    double meters = polygonUtil.distance(lat1, lon1, ele1, lat2, lon2, ele2);
+    double meters = geoUtil.meters(lat1, lon1, ele1, lat2, lon2, ele2);
+    return meters;
+  }
+
+  @Override
+  public double metersToMiles(double meters) {
     return meters * 0.000621371192;
   }
 
@@ -165,8 +161,9 @@ final class GeoServiceC
 
   @Override
   public List<GeoPoint> readKml2(File kmlFile) {
-    return Sugar.require(() -> doReadKml(kmlFile));
+    return require(() -> doReadKml(kmlFile));
   }
+
   @Override
   public GeoPoint southWestPoint(GeoPoint a, GeoPoint b) {
     float lat = min(a.getLat(), b.getLat());

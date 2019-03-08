@@ -5,15 +5,21 @@ import java.util.List;
 
 public interface GeoService {
 
+  String city(GeoPoint point);
+
   List<GeoPoint> decode(String polyline);
 
-  String describe(GeoPoint point);
+  GeoDescription describe(GeoPoint point);
 
   GeoBound getBounds(List<GeoPoint> points);
 
+  long getDescribeServiceRemaining();
+
   boolean inside(GeoPoint point, List<GeoPoint> points);
 
-  double miles(GeoPoint p1, GeoPoint p2);
+  double meters(GeoPoint p1, GeoPoint p2);
+
+  double metersToMiles(double meters);
 
   GeoPoint northEastPoint(GeoPoint min, GeoPoint point);
 
