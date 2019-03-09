@@ -5,4 +5,7 @@ public interface GeoDescription {
   String getCounty();
   String getFootway();
   String getHamlet();
+  String getRoad();
+  String getState();
+  String getVillage();
 }

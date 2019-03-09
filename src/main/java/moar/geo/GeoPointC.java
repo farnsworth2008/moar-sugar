@@ -9,6 +9,7 @@ public class GeoPointC
   private final float lat;
   private final float lon;
   private final float altitude;
+  private GeoDescription description;
 
   public GeoPointC(float lat, float lon, float altitude) {
     this.lat = lat;
@@ -18,6 +19,11 @@ public class GeoPointC
 
   public GeoPointC(GeoPoint other) {
     this(other.getLat(), other.getLon(), other.getElevation());
+  }
+
+  @Override
+  public GeoDescription getDescription() {
+    return description;
   }
 
   @Override
@@ -33,6 +39,11 @@ public class GeoPointC
   @Override
   public float getLon() {
     return lon;
+  }
+
+  @Override
+  public void setDescription(GeoDescription value) {
+    description = value;
   }
 
   @Override

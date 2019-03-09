@@ -11,6 +11,7 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.toRadians;
 import static java.lang.String.format;
 import static java.lang.System.getenv;
+import static moar.awake.InterfaceUtil.use;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.util.HashMap;
@@ -18,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import moar.awake.InterfaceUtil;
 import moar.sugar.MoarException;
 import moar.sugar.MoarJson;
 
@@ -48,8 +49,10 @@ public class GeoUtil {
 
     return val > 0 ? 1 : 2;
   }
+
+  private final AtomicLong openCageCount = new AtomicLong();
   private final AtomicLong openCageRemaining = new AtomicLong(1);
-  private final RateLimiter openCageRateLimit = RateLimiter.create(10);
+  private final AtomicReference<RateLimiter> openCageRateLimit = new AtomicReference<>(RateLimiter.create(1));
 
   private final Vector<String> openCageApiKeys;
 
@@ -64,6 +67,19 @@ public class GeoUtil {
       }
       openCageApiKeys.add(key);
     } while (true);
+  }
+
+  private void copy(JsonObject comp, Map<String, Object> map, String key) {
+    copy(comp, map, key, key);
+  }
+
+  private void copy(JsonObject comp, Map<String, Object> map, String mapFrom, String mapTo) {
+    JsonElement compValue = comp.get(mapFrom);
+    if (compValue == null) {
+      map.remove(mapTo);
+    } else {
+      map.put(mapTo, swallow(() -> comp.get(mapFrom).getAsString()));
+    }
   }
 
   public GeoDescription describe(GeoPoint point) {
@@ -83,7 +99,8 @@ public class GeoUtil {
           url.append("%2C");
           url.append(point.getLon());
           url.append(format("&key=%s", openCageApiKeys.get(0)));
-          openCageRateLimit.acquire();
+          openCageRateLimit.get().acquire();
+          openCageCount.incrementAndGet();
           response = Unirest.get(url.toString()).asString();
           status = response.getStatus();
           if (status == 401 || status == 402 || status == 403) {
@@ -112,16 +129,19 @@ public class GeoUtil {
         JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
         JsonObject comp = result.get("components").getAsJsonObject();
         Map<String, Object> map = new HashMap<>();
-        map(comp, map, "country_code", "country");
-        map(comp, map, "_type", "type");
-        map(comp, map, "footway", "footway");
-        map(comp, map, "hamlet", "hamlet");
-        map(comp, map, "city", "city");
-        map(comp, map, "county", "county");
-        map(comp, map, "county", "county");
-        map(comp, map, "postcode", "postcode");
-        map(comp, map, "road_type", "footway");
-        return InterfaceUtil.use(GeoDescription.class).of(map);
+        copy(comp, map, "country_code", "country");
+        copy(comp, map, "_type", "type");
+        copy(comp, map, "footway");
+        copy(comp, map, "hamlet");
+        copy(comp, map, "village");
+        copy(comp, map, "city");
+        copy(comp, map, "county");
+        copy(comp, map, "state");
+        copy(comp, map, "county");
+        copy(comp, map, "postcode");
+        copy(comp, map, "road_type");
+        copy(comp, map, "road");
+        return use(GeoDescription.class).of(map);
       }
     });
   }
@@ -160,6 +180,10 @@ public class GeoUtil {
     return false;
   }
 
+  public long getOpenCageCount() {
+    return openCageCount.get();
+  }
+
   public long getOpenCageRemaining() {
     return openCageRemaining.get();
   }
@@ -191,15 +215,6 @@ public class GeoUtil {
     } while (i != 0);
 
     return (count & 1) == 1 ? true : false;
-  }
-
-  private void map(JsonObject comp, Map<String, Object> map, String mapFrom, String mapTo) {
-    JsonElement compValue = comp.get(mapFrom);
-    if (compValue == null) {
-      map.remove(mapTo);
-    } else {
-      map.put(mapTo, swallow(() -> comp.get(mapFrom).getAsString()));
-    }
   }
 
   /**
@@ -237,6 +252,10 @@ public class GeoUtil {
     float pY = p.getLon();
     float rY = r.getLon();
     return qX <= max(pX, rX) && qX >= min(pX, rX) && qY <= max(pY, rY) && qY >= min(pY, rY);
+  }
+
+  public void setOpenCageRateLimit(double d) {
+    openCageRateLimit.set(RateLimiter.create(d));
   }
 
 }

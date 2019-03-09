@@ -116,15 +116,20 @@ final class GeoServiceC
   }
 
   @Override
+  public long getDescribeServiceCount() {
+    return geoUtil.getOpenCageCount();
+  }
+
+  @Override
   public long getDescribeServiceRemaining() {
     return geoUtil.getOpenCageRemaining();
   }
-
   @Override
   public boolean inside(GeoPoint point, List<GeoPoint> points) {
     GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
     return geoUtil.isInside(pointsArray, point);
   }
+
   @Override
   public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();
@@ -141,7 +146,6 @@ final class GeoServiceC
   public double metersToMiles(double meters) {
     return meters * 0.000621371192;
   }
-
   @Override
   public GeoPoint northEastPoint(GeoPoint a, GeoPoint b) {
     float lat = max(a.getLat(), b.getLat());
@@ -149,6 +153,7 @@ final class GeoServiceC
     GeoPoint p = point(lat, lon, 0F);
     return p;
   }
+
   @Override
   public GeoPoint point(Float lat, Float lon, Float altitude) {
     return new GeoPointC(lat, lon, altitude);
@@ -162,6 +167,11 @@ final class GeoServiceC
   @Override
   public List<GeoPoint> readKml2(File kmlFile) {
     return require(() -> doReadKml(kmlFile));
+  }
+
+  @Override
+  public void setDescribeRateLimit(double d) {
+    geoUtil.setOpenCageRateLimit(d);
   }
 
   @Override
