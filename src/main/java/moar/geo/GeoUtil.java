@@ -137,7 +137,7 @@ public class GeoUtil {
         copy(comp, map, "village");
         copy(comp, map, "city");
         copy(comp, map, "county");
-        copy(comp, map, "state");
+        copy(comp, map, "state_code", "state");
         copy(comp, map, "county");
         copy(comp, map, "postcode");
         copy(comp, map, "road_type");

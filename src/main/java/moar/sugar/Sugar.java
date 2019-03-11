@@ -255,19 +255,21 @@ public class Sugar {
    * @throws Exception
    */
   @SuppressWarnings("null")
-  public static <T> T retry(int triesAllowed, long retryWaitMs, Callable<T> call) throws Exception {
-    Exception last = null;
-    int tries = 0;
-    while (tries++ < triesAllowed) {
-      try {
-        last = null;
-        return call.call();
-      } catch (RetryableException e) {
-        last = e;
-        sleep(retryWaitMs + (long) (random() * retryWaitMs));
+  public static <T> T retry(int triesAllowed, long retryWaitMs, Callable<T> call) {
+    return require(() -> {
+      Exception last = null;
+      int tries = 0;
+      while (tries++ < triesAllowed) {
+        try {
+          last = null;
+          return call.call();
+        } catch (RetryableException e) {
+          last = e;
+          sleep(retryWaitMs + (long) (random() * retryWaitMs));
+        }
       }
-    }
-    throw last;
+      throw last;
+    });
   }
 
   /**
@@ -364,6 +366,22 @@ public class Sugar {
     } finally {
       setErr(priorErr);
     }
+  }
+
+  /**
+   * Make a call while suppressing System.out and System.err.
+   *
+   * @param call
+   *   Call to make while output is suppressed.
+   * @return Result
+   * @throws Exception
+   * @throws IOException
+   */
+  public static void silently(CallableVoid call) throws Exception, IOException {
+    silently(() -> {
+      call.call();
+      return null;
+    });
   }
 
   /**
