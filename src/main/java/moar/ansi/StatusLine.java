@@ -12,11 +12,9 @@ import static moar.sugar.Sugar.require;
 import static org.apache.commons.lang3.StringUtils.repeat;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import com.google.common.util.concurrent.AtomicDouble;
-import moar.sugar.CallableVoid;
 import moar.sugar.FunctionVoid;
 
 public class StatusLine {
@@ -57,19 +55,6 @@ public class StatusLine {
 
   public void completeOne() {
     complete(1);
-  }
-
-  public <T> T completeOne(Callable<T> call) {
-    try {
-      return require(() -> call.call());
-    } finally {
-      completeOne();
-    }
-  }
-
-  public void completeOne(CallableVoid call) throws Exception {
-    call.call();
-    completeOne();
   }
 
   private void output(ByteArrayOutputStream bos) {
