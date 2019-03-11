@@ -93,7 +93,7 @@ public class StatusLine {
   public void render() {
     synchronized (this) {
       reset();
-      if (percentDone.get() == 0) {
+      if (percentDone.get() == 0 && count.get() == 0) {
         out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
       } else {
         String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
