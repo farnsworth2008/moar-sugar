@@ -284,7 +284,6 @@ public class MoarThreadSugar {
         SafeResult<T> result = $(future);
         resultList.add(result);
       }
-      futures.clear();
       return resultList;
     }));
   }
