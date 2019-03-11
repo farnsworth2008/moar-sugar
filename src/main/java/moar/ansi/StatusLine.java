@@ -3,7 +3,9 @@ package moar.ansi;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 import static moar.ansi.Ansi.GREEN_BOLD;
+import static moar.ansi.Ansi.cyanBold;
 import static moar.ansi.Ansi.enabled;
+import static moar.ansi.Ansi.greenBold;
 import static moar.ansi.Ansi.purpleBold;
 import static moar.sugar.Sugar.bos;
 import static moar.sugar.Sugar.require;
@@ -104,8 +106,8 @@ public class StatusLine {
         int remaining = size - completed;
         String completeBar = repeat("=", completed);
         String remainBar = repeat("-", remaining);
-        out.println(purpleBold("<") + GREEN_BOLD.apply(completeBar) + purpleBold(remainBar)
-            + purpleBold(">" + " " + percent + label));
+        out.println(cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " "
+            + greenBold(percent) + purpleBold(label));
       }
       out.flush();
     }

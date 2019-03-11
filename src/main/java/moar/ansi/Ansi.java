@@ -107,6 +107,10 @@ public enum Ansi {
     return GREEN.apply(object);
   }
 
+  public static String greenBold(Object object) {
+    return GREEN_BOLD.apply(object);
+  }
+
   public static String purple(Object object) {
     return PURPLE.apply(object);
   }
