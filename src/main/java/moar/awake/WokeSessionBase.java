@@ -198,5 +198,4 @@ public abstract class WokeSessionBase {
       update(row);
     }
   }
-
 }

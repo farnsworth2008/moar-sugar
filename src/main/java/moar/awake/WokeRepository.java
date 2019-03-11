@@ -154,7 +154,7 @@ public class WokeRepository<Row>
    * @param session
    * @param tx
    */
-  public static void runWokeTransaction(WokeSessionBase session, Consumer<WokeTxSession> tx) {
+  static void runWokeTransaction(WokeSessionBase session, Consumer<WokeTxSession> tx) {
     synchronized (session) {
       require(() -> {
         try (WokeTxSession txSession = new WokeTxSession(session.reserve())) {
