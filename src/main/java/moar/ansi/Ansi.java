@@ -142,4 +142,8 @@ public enum Ansi {
   public String apply(Object object) {
     return enabled.get() ? code + object + RESET : object.toString();
   }
+
+  public static Object redBold(String object) {
+    return RED_BOLD.apply(object);
+  }
 }

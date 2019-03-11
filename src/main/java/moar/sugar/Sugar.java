@@ -357,15 +357,17 @@ public class Sugar {
    * @throws Exception
    * @throws IOException
    */
-  public static <T> SilentResult<T> silently(Callable<T> call) throws Exception, IOException {
+  public static <T> SilentResult<T> silently(Callable<T> call) {
     System.err.flush();
     PrintStream priorErr = System.err;
-    try (ByteArrayOutputStream bosErr = bos()) {
-      setErr(new PrintStream(bosErr));
-      return withRedirectedErr(call, bosErr);
-    } finally {
-      setErr(priorErr);
-    }
+    return require(() -> {
+      try (ByteArrayOutputStream bosErr = bos()) {
+        setErr(new PrintStream(bosErr));
+        return withRedirectedErr(call, bosErr);
+      } finally {
+        setErr(priorErr);
+      }
+    });
   }
 
   /**
