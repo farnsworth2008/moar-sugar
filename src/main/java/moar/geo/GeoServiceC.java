@@ -25,8 +25,8 @@ final class GeoServiceC
 
   @Override
   public String city(GeoPoint point) {
-    GeoDescription described = describe(point);
-    return described.getCity();
+    describe(point);
+    return point.getDescription().getCity();
   }
 
   /**
@@ -63,7 +63,7 @@ final class GeoServiceC
       float latitude = (float) (lat / 1E5);
       float longitude = (float) (lng / 1E5);
 
-      GeoPoint p = new GeoPointC(latitude, longitude, 0);
+      GeoPoint p = new GeoPointC(latitude, longitude, null);
       poly.add(p);
     }
 
@@ -71,9 +71,17 @@ final class GeoServiceC
   }
 
   @Override
-  public GeoDescription describe(GeoPoint point) {
-    return geoUtil.describe(point);
+  public void describe(GeoPoint point) {
+    if (point.getDescription() != null) {
+      return;
+    }
+    synchronized (point) {
+      if (point.getDescription() == null) {
+        ((GeoPointC) point).setDescription(geoUtil.describe(point));
+      }
+    }
   }
+
   private List<GeoPoint> doReadKml(File kmlFile) throws ParserConfigurationException, SAXException, IOException {
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder db = dbf.newDocumentBuilder();
@@ -134,10 +142,10 @@ final class GeoServiceC
   public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();
     float lon1 = p1.getLon();
-    float ele1 = p1.getElevation();
+    Double ele1 = p1.getEle() == null ? null : Double.valueOf(p1.getEle());
     float lat2 = p2.getLat();
     float lon2 = p2.getLon();
-    float ele2 = p2.getElevation();
+    Double ele2 = p2.getEle() == null ? null : Double.valueOf(p2.getEle());
     double meters = geoUtil.meters(lat1, lon1, ele1, lat2, lon2, ele2);
     return meters;
   }

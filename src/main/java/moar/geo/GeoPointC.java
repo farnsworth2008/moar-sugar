@@ -1,6 +1,7 @@
 package moar.geo;
 
 import static java.lang.String.format;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GeoPointC
     implements
@@ -8,27 +9,27 @@ public class GeoPointC
 
   private final float lat;
   private final float lon;
-  private final float altitude;
-  private GeoDescription description;
+  private final Float ele;
+  private final AtomicReference<GeoDescription> description = new AtomicReference<GeoDescription>();
 
-  public GeoPointC(float lat, float lon, float altitude) {
+  public GeoPointC(float lat, float lon, Float ele) {
     this.lat = lat;
     this.lon = lon;
-    this.altitude = altitude;
+    this.ele = ele;
   }
 
   public GeoPointC(GeoPoint other) {
-    this(other.getLat(), other.getLon(), other.getElevation());
+    this(other.getLat(), other.getLon(), other.getEle());
   }
 
   @Override
   public GeoDescription getDescription() {
-    return description;
+    return description.get();
   }
 
   @Override
-  public float getElevation() {
-    return altitude;
+  public Float getEle() {
+    return ele;
   }
 
   @Override
@@ -41,9 +42,8 @@ public class GeoPointC
     return lon;
   }
 
-  @Override
-  public void setDescription(GeoDescription value) {
-    description = value;
+  void setDescription(GeoDescription value) {
+    description.set(value);
   }
 
   @Override

@@ -17,6 +17,10 @@ public class MoarDateUtil {
     return safely(() -> OffsetDateTime.parse(string).toLocalDate());
   }
 
+  public static Date toDate(LocalDate value) {
+    return java.sql.Date.valueOf(value);
+  }
+
   public static LocalDate toLocalDate(Date date) {
     return toLocalDate(date, ZoneId.systemDefault());
   }

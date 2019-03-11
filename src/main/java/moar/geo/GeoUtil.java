@@ -12,6 +12,7 @@ import static java.lang.Math.toRadians;
 import static java.lang.String.format;
 import static java.lang.System.getenv;
 import static moar.awake.InterfaceUtil.use;
+import static moar.sugar.Sugar.nonNull;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.util.HashMap;
@@ -221,8 +222,9 @@ public class GeoUtil {
    * Adapted from <a href= 'https://tinyurl.com/y3urk9rt'>From Stack
    * Overflow</a>
    */
-  public double meters(double lat1, double lon1, double el1, double lat2, double lon2, double el2) {
-
+  public double meters(double lat1, double lon1, Double el1, double lat2, double lon2, Double el2) {
+    el1 = nonNull(el1, 0d);
+    el2 = nonNull(el2, 0d);
     final int R = 6371; // Radius of the earth
 
     double latDist = toRadians(lat2 - lat1);

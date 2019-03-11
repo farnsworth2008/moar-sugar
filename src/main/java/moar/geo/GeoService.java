@@ -9,7 +9,7 @@ public interface GeoService {
 
   List<GeoPoint> decode(String polyline);
 
-  GeoDescription describe(GeoPoint point);
+  void describe(GeoPoint point);
 
   GeoBound getBounds(List<GeoPoint> points);
 

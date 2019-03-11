@@ -2,8 +2,7 @@ package moar.geo;
 
 public interface GeoPoint {
   GeoDescription getDescription();
-  float getElevation();
+  Float getEle();
   float getLat();
   float getLon();
-  void setDescription(GeoDescription value);
 }

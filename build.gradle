@@ -2,10 +2,14 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-  compile "joda-time:joda-time:2.10.1"
-  compile "com.mashape.unirest:unirest-java:1.4.9"
   compile "com.google.code.gson:gson:2.8.5"
   compile "com.google.guava:guava:26.0-jre"
+  compile "com.google.http-client:google-http-client-jackson2:1.28.0"
+  compile "com.google.oauth-client:google-oauth-client-jetty:1.28.0"
+  compile "com.google.oauth-client:google-oauth-client:1.28.0"
+  compile "com.mashape.unirest:unirest-java:1.4.9"
+  compile "commons-dbcp:commons-dbcp:1.4"
   compile "commons-io:commons-io:2.6"
   compile "org.apache.commons:commons-text:1.6"
+  compile "mysql:mysql-connector-java:8.0.12"
 }
