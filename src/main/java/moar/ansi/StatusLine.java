@@ -2,15 +2,13 @@ package moar.ansi;
 
 import static java.lang.Math.min;
 import static java.lang.String.format;
+import static java.lang.System.out;
 import static moar.ansi.Ansi.GREEN_BOLD;
 import static moar.ansi.Ansi.cyanBold;
 import static moar.ansi.Ansi.enabled;
 import static moar.ansi.Ansi.greenBold;
 import static moar.ansi.Ansi.purpleBold;
-import static moar.sugar.Sugar.bos;
-import static moar.sugar.Sugar.require;
 import static org.apache.commons.lang3.StringUtils.repeat;
-import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,18 +17,12 @@ import moar.sugar.FunctionVoid;
 
 public class StatusLine {
 
-  private final PrintStream out;
   private final AtomicReference<String> label = new AtomicReference<String>("");
   private final AtomicDouble percentDone = new AtomicDouble();
   private final AtomicLong count = new AtomicLong();
   private final AtomicLong completed = new AtomicLong();
 
   public StatusLine() {
-    this(System.out);
-  }
-
-  public StatusLine(PrintStream out) {
-    this.out = out;
     out.println();
     render();
   }
@@ -57,22 +49,11 @@ public class StatusLine {
     complete(1);
   }
 
-  private void output(ByteArrayOutputStream bos) {
-    reset();
-    require(() -> out.write(bos.toByteArray()));
-    out.println();
-    render();
-  }
-
   public void output(FunctionVoid<PrintStream> out) {
-    synchronized (this) {
-      ByteArrayOutputStream bos = bos();
-      try (PrintStream os = new PrintStream(bos)) {
-        out.apply(os);
-        os.flush();
-        output(bos);
-      }
-    }
+    clear();
+    out.apply(System.out);
+    System.out.println();
+    render();
   }
 
   public void render() {
