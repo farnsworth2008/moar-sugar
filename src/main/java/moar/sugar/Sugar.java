@@ -87,6 +87,23 @@ public class Sugar {
     return null;
   }
 
+  public static boolean deleteDir(File dir) {
+    if (!dir.exists()) {
+      return true;
+    }
+    File[] files = dir.listFiles();
+    if (files != null) {
+      for (File f : files) {
+        if (f.isDirectory()) {
+          deleteDir(f);
+        } else {
+          f.delete();
+        }
+      }
+    }
+    return dir.delete();
+  }
+
   private static ExecuteResult doExec(String command, String input, File dir) throws IOException, InterruptedException {
     ProcessBuilder builder = new ProcessBuilder();
     builder.directory(dir);
