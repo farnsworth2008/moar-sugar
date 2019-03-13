@@ -17,7 +17,6 @@ public class WokeTxSession
     this.connectionHold = connectionHold;
     require(() -> {
       Connection cn = connectionHold.get();
-      cn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
       cn.setAutoCommit(false);
     });
   }

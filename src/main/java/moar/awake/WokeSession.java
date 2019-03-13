@@ -18,8 +18,8 @@ public abstract class WokeSession
    */
   @SafeVarargs
   public final void run(Consumer<WokeTxSession>... transactions) {
-    for (Consumer<WokeTxSession> transaction : transactions) {
-      runWokeTransaction(this, transaction);
+    for (Consumer<WokeTxSession> tx : transactions) {
+      runWokeTransaction(this, tx);
     }
   }
 
