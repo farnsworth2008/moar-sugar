@@ -2,18 +2,18 @@ package moar.ansi;
 
 import static java.lang.Math.min;
 import static java.lang.String.format;
-import static java.lang.System.out;
 import static moar.ansi.Ansi.GREEN_BOLD;
 import static moar.ansi.Ansi.cyanBold;
 import static moar.ansi.Ansi.enabled;
 import static moar.ansi.Ansi.greenBold;
 import static moar.ansi.Ansi.purpleBold;
+import static moar.sugar.Sugar.bos;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import com.google.common.util.concurrent.AtomicDouble;
-import moar.sugar.FunctionVoid;
 
 public class StatusLine {
 
@@ -21,26 +21,32 @@ public class StatusLine {
   private final AtomicDouble percentDone = new AtomicDouble();
   private final AtomicLong count = new AtomicLong();
   private final AtomicLong completed = new AtomicLong();
+  private final PrintStream out;
+  private final PrintStream outBuffer;
+  private final ByteArrayOutputStream outBufferBytes;
 
   public StatusLine() {
+    out = System.out;
+    outBufferBytes = bos();
+    outBuffer = new PrintStream(outBufferBytes);
+    if (enabled()) {
+      capture();
+    }
+  }
+
+  private void capture() {
+    System.setOut(outBuffer);
     out.println();
     render();
   }
 
-  public void clear() {
-    synchronized (this) {
-      if (enabled()) {
-        reset();
-        out.flush();
-      }
-    }
-  }
-
   public void complete(long number) {
-    synchronized (this) {
-      if (count.get() > 0) {
-        percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
-        render();
+    if (enabled()) {
+      synchronized (this) {
+        if (count.get() > 0) {
+          percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
+          render();
+        }
       }
     }
   }
@@ -49,16 +55,30 @@ public class StatusLine {
     complete(1);
   }
 
-  public void output(FunctionVoid<PrintStream> out) {
-    clear();
-    out.apply(System.out);
-    System.out.println();
+  public void output(Runnable call) {
+    release();
+    call.run();
+    capture();
+  }
+
+  private void release() {
     render();
+    reset();
+    out.flush();
+    System.setOut(out);
+  }
+
+  public void remove() {
+    if (enabled()) {
+      release();
+    }
   }
 
   public void render() {
     synchronized (this) {
       reset();
+      out.print(new String(outBufferBytes.toByteArray()));
+      outBufferBytes.reset();
       if (percentDone.get() == 0 && count.get() == 0) {
         out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
       } else {
