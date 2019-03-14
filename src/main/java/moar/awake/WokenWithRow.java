@@ -20,6 +20,8 @@ public interface WokenWithRow<Row> {
 
   List<Row> list();
 
+  List<Row> list(String orderBy);
+
   Row upsert();
 
   Row upsert(Consumer<Row> row);

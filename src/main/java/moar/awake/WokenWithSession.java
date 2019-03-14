@@ -29,6 +29,8 @@ public interface WokenWithSession<Row> {
 
   Row insert(Row row);
 
+  void insertBatch(List<Row> rows);
+
   WokeResultSet<Row> iterator(String where, Object... params);
 
   List<Row> list(String where, Object... params);

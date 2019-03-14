@@ -249,19 +249,52 @@ public class WokeRepository<Row>
     });
   }
 
-  private void doInsertRowWithConnection(Row row, boolean isUpsert, int[] identityColumn, ConnectionHold hold)
-      throws SQLException {
+  private void doInsertBatch(List<Row> rows) throws SQLException {
+    try (ConnectionHold hold = session.reserve()) {
+      Row row0 = rows.get(0);
+      boolean hasId = row0 instanceof WakeableRow.IdColumn;
+      WokePrivateProxy woke = asWokeProxy(row0);
+      woke.setIdentifierQuoteString(hold.getIdentifierQuoteString());
+      List<String> columns = woke.getColumns(!hasId);
+      String q = hold.getIdentifierQuoteString();
+      String idColumn = q + "id" + q;
+      String table = nonNull(this.tableName, woke.getTableName());
+      String sql = "insert into \n" + table + " (\n";
+      if (hasId) {
+        sql += idColumn + "\n,";
+      }
+      sql += join("\n,", columns);
+      sql += ") values (\n";
+      if (hasId) {
+        sql += "?,\n";
+      }
+      sql += "?\n";
+      for (int i = 1; i < columns.size(); i++) {
+        sql += "\n,?";
+      }
+      sql += "\n)\n";
+      try (PreparedStatement ps = hold.get().prepareStatement(sql)) {
+        for (Row row : rows) {
+          setObjects(hold, ps, false, row);
+          ps.addBatch();
+        }
+        ps.executeBatch();
+      }
+    }
+  }
+
+  @SuppressWarnings("resource")
+  private void doInsertRowWithConnection(Row row, boolean isUpsert, ConnectionHold hold) throws SQLException {
     boolean hasId = row instanceof WakeableRow.IdColumn;
     WokePrivateProxy woke = asWokeProxy(row);
     woke.setIdentifierQuoteString(hold.getIdentifierQuoteString());
     List<String> columns = woke.getColumns(!hasId);
-    Map<String, Object> map = woke.get();
     String q = hold.getIdentifierQuoteString();
     String idColumn = q + "id" + q;
     String table = nonNull(this.tableName, woke.getTableName());
     String sql = "insert into \n" + table + " (\n";
     if (hasId) {
-      sql += q + "id" + q + "\n,";
+      sql += idColumn + "\n,";
     }
     sql += join("\n,", columns);
     sql += ") values (\n";
@@ -277,7 +310,7 @@ public class WokeRepository<Row>
       sql += " on duplicate key update\n";
       boolean commaNeeded;
       if (hasId) {
-        sql += q + "id" + q + "=last_insert_id(" + q + "id" + q + ") ";
+        sql += idColumn + "=last_insert_id(" + idColumn + ") ";
         commaNeeded = true;
       } else {
         commaNeeded = false;
@@ -290,33 +323,23 @@ public class WokeRepository<Row>
         commaNeeded = true;
       }
     }
-    boolean useGeneratedKeys = isUpsert && hasId;
 
-    @SuppressWarnings("resource")
+    boolean auto = isUpsert && row instanceof WakeableRow.IdColumnAsAutoLong;
     Connection cn = hold.get();
-    try (
-        PreparedStatement ps = useGeneratedKeys ? cn.prepareStatement(sql, identityColumn) : cn.prepareStatement(sql)) {
-      int p = 0;
-      if (hasId) {
-        ps.setObject(++p, map.get(idColumn));
-      }
-      for (int i = 0; i < columns.size(); i++) {
-        ps.setObject(++p, woke.getDbValue(columns.get(i)));
-      }
-      if (isUpsert) {
-        for (int i = 0; i < columns.size(); i++) {
-          ps.setObject(++p, woke.getDbValue(columns.get(i)));
-        }
-      }
+    int[] identityColumn = { 1 };
+    try (PreparedStatement ps = auto ? cn.prepareStatement(sql, identityColumn) : cn.prepareStatement(sql)) {
+      setObjects(hold, ps, isUpsert, row);
+      WokePrivateProxy woke3 = asWokeProxy(row);
+      Map<String, Object> map3 = woke3.get();
       try {
         int upResult = ps.executeUpdate();
         swallow(() -> require(upResult == 0 || upResult == 1 || upResult == 2));
-        if (useGeneratedKeys) {
+        if (auto) {
           try (ResultSet rs = ps.getGeneratedKeys()) {
             if (rs.next()) {
               Object id = rs.getObject(1);
-              map.put(idColumn, id);
-              woke.set(map);
+              map3.put(idColumn, id);
+              woke.set(map3);
             }
           }
         }
@@ -403,20 +426,20 @@ public class WokeRepository<Row>
     };
   }
 
-  private List<Row> doSessionFind() {
+  private List<Row> doSessionFind(String orderBy) {
     LOG.trace("sessionFind");
     try {
-      return doSessionFindOp();
+      return doSessionFindOp(orderBy);
     } finally {
       LOG.trace("out sessionFind");
     }
   }
 
-  private List<Row> doSessionFindOp() {
+  private List<Row> doSessionFindOp(String orderBy) {
     Row keyRow = create(clz);
     asWokeProxy(keyRow);
     key.get().accept(keyRow);
-    return doTableFind(keyRow);
+    return doTableFind(keyRow, orderBy);
   }
 
   private void doSessionInsertOp(Row row, Consumer<Row> updator, boolean isUpsert) {
@@ -444,11 +467,11 @@ public class WokeRepository<Row>
     }
   }
 
-  private List<Row> doTableFind(Row row) {
-    return require(() -> doTableFindSql(row));
+  private List<Row> doTableFind(Row row, String orderBy) {
+    return require(() -> doTableFindSql(row, orderBy));
   }
 
-  private List<Row> doTableFindSql(Row row) {
+  private List<Row> doTableFindSql(Row row, String orderBy) {
     try (ConnectionHold cn = session.reserve()) {
       boolean hasId = row instanceof WakeableRow.IdColumn;
       WokePrivateProxy woke = asWokeProxy(row);
@@ -465,6 +488,9 @@ public class WokeRepository<Row>
           sql += " and ";
         }
         sql += key + " = ?";
+      }
+      if (orderBy != null) {
+        sql += " order by " + orderBy;
       }
       try {
         try (PreparedStatement ps = cn.get().prepareStatement(sql)) {
@@ -483,9 +509,8 @@ public class WokeRepository<Row>
   }
 
   private void doTableInsertSql(Row row, boolean isUpsert) throws SQLException {
-    int[] identityColumn = { 1 };
     try (ConnectionHold hold = session.reserve()) {
-      doInsertRowWithConnection(row, isUpsert, identityColumn, hold);
+      doInsertRowWithConnection(row, isUpsert, hold);
     }
   }
 
@@ -504,7 +529,7 @@ public class WokeRepository<Row>
   @Override
   public Row find() {
     return require(() -> {
-      List<Row> list = doSessionFind();
+      List<Row> list = doSessionFind(null);
       return list.isEmpty() ? null : list.get(0);
     });
   }
@@ -553,13 +578,23 @@ public class WokeRepository<Row>
   }
 
   @Override
+  public void insertBatch(List<Row> rows) {
+    require(() -> doInsertBatch(rows));
+  }
+
+  @Override
   public WokeResultSet<Row> iterator(String tableish, Object... params) {
     return require(() -> doIterator(tableish, params));
   }
 
   @Override
   public List<Row> list() {
-    return require(() -> doSessionFind());
+    return list(null);
+  }
+
+  @Override
+  public List<Row> list(String orderBy) {
+    return require(() -> doSessionFind(orderBy));
   }
 
   @Override
@@ -583,6 +618,27 @@ public class WokeRepository<Row>
   public WokenWithSession<Row> of(WokeSessionBase session) {
     this.session = session;
     return this;
+  }
+
+  private void setObjects(ConnectionHold hold, PreparedStatement ps, boolean isUpsert, Row row) throws SQLException {
+    int p = 0;
+    String q = hold.getIdentifierQuoteString();
+    WokePrivateProxy woke = asWokeProxy(row);
+    String idColumn = q + "id" + q;
+    boolean hasId = row instanceof WakeableRow.IdColumn;
+    Map<String, Object> map = woke.get();
+    List<String> columns = woke.getColumns(!hasId);
+    if (hasId) {
+      ps.setObject(++p, map.get(idColumn));
+    }
+    for (int i = 0; i < columns.size(); i++) {
+      ps.setObject(++p, woke.getDbValue(columns.get(i)));
+    }
+    if (isUpsert) {
+      for (int i = 0; i < columns.size(); i++) {
+        ps.setObject(++p, woke.getDbValue(columns.get(i)));
+      }
+    }
   }
 
   private void setupStatement(Map<String, Object> map, Set<String> columns, PreparedStatement ps) throws SQLException {
