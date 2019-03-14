@@ -7,6 +7,7 @@ import static moar.ansi.Ansi.cyanBold;
 import static moar.ansi.Ansi.enabled;
 import static moar.ansi.Ansi.greenBold;
 import static moar.ansi.Ansi.purpleBold;
+import static moar.ansi.Ansi.upOneLine;
 import static moar.sugar.Sugar.bos;
 import static org.apache.commons.lang3.StringUtils.repeat;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 
 public class StatusLine {
 
+  private static StatusLine current;
   private final AtomicReference<String> label = new AtomicReference<String>("");
   private final AtomicDouble percentDone = new AtomicDouble();
   private final AtomicLong count = new AtomicLong();
@@ -24,8 +26,18 @@ public class StatusLine {
   private final PrintStream out;
   private final PrintStream outBuffer;
   private final ByteArrayOutputStream outBufferBytes;
+  private final StatusLine parent;
 
   public StatusLine() {
+    this(current);
+  }
+
+  private StatusLine(StatusLine parent) {
+    if (parent != null) {
+      parent.release(false);
+    }
+    this.parent = parent;
+    current = this;
     out = System.out;
     outBufferBytes = bos();
     outBuffer = new PrintStream(outBufferBytes);
@@ -56,57 +68,63 @@ public class StatusLine {
   }
 
   public void output(Runnable call) {
-    release();
+    release(true);
     call.run();
     capture();
   }
 
-  private void release() {
+  private void release(boolean reset) {
     render();
-    reset();
+    if (reset) {
+      reset();
+    }
     out.flush();
     System.setOut(out);
   }
 
   public void remove() {
     if (enabled()) {
-      release();
+      release(true);
+      if (parent != null) {
+        out.flush();
+        out.print(upOneLine());
+        out.print("\033[2K");
+        out.flush();
+        parent.capture();
+      }
+      current = parent;
     }
   }
 
   public void render() {
-    synchronized (this) {
-      reset();
-      out.print(new String(outBufferBytes.toByteArray()));
-      outBufferBytes.reset();
-      if (percentDone.get() == 0 && count.get() == 0) {
-        out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
-      } else {
-        String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
-        if (!enabled()) {
-          out.println(format("%s %s", percent, label.get()));
-          return;
-        }
-        int size = 20;
-        int completed = (int) (size * percentDone.get());
-        int remaining = size - completed;
-        String completeBar = repeat("=", completed);
-        String remainBar = repeat("-", remaining);
-        out.println(cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " "
-            + greenBold(percent) + purpleBold(label));
+    reset();
+    out.print(new String(outBufferBytes.toByteArray()));
+    outBufferBytes.reset();
+    if (percentDone.get() == 0 && count.get() == 0) {
+      out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
+    } else {
+      String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
+      if (!enabled()) {
+        out.println(format("%s %s", percent, label.get()));
+        return;
       }
-      out.flush();
+      int size = 20;
+      int completed = (int) (size * percentDone.get());
+      int remaining = size - completed;
+      String completeBar = repeat("=", completed);
+      String remainBar = repeat("-", remaining);
+      out.println(cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " "
+          + greenBold(percent) + purpleBold(label));
     }
+    out.flush();
   }
 
   private void reset() {
     if (enabled()) {
-      synchronized (this) {
-        out.flush();
-        out.print("\033[1A");
-        out.print("\033[2K");
-        out.flush();
-      }
+      out.flush();
+      out.print(upOneLine());
+      out.print("\033[2K");
+      out.flush();
     }
   }
 

@@ -127,6 +127,10 @@ public enum Ansi {
     return RED_BOLD.apply(object);
   }
 
+  public static String upOneLine() {
+    return "\033[1A";
+  }
+
   public static String white(Object object) {
     return WHITE.apply(object);
   }
