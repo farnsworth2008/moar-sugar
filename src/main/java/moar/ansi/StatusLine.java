@@ -27,9 +27,15 @@ public class StatusLine {
   private final PrintStream outBuffer;
   private final ByteArrayOutputStream outBufferBytes;
   private final StatusLine parent;
+  private String lastLine;
 
   public StatusLine() {
     this(current);
+  }
+
+  public StatusLine(int count, String string) {
+    this();
+    setCount(count, string);
   }
 
   private StatusLine(StatusLine parent) {
@@ -53,12 +59,10 @@ public class StatusLine {
   }
 
   public void complete(long number) {
-    if (enabled()) {
-      synchronized (this) {
-        if (count.get() > 0) {
-          percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
-          render();
-        }
+    synchronized (this) {
+      if (count.get() > 0) {
+        percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
+        render();
       }
     }
   }
@@ -98,25 +102,34 @@ public class StatusLine {
 
   public void render() {
     reset();
-    out.print(new String(outBufferBytes.toByteArray()));
-    outBufferBytes.reset();
+    byte[] bytes = outBufferBytes.toByteArray();
+    if (bytes.length > 0) {
+      out.print(new String(bytes));
+      outBufferBytes.reset();
+    }
     if (percentDone.get() == 0 && count.get() == 0) {
       out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
+      out.flush();
     } else {
       String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
+      String line;
       if (!enabled()) {
-        out.println(format("%s %s", percent, label.get()));
-        return;
+        line = format("%s %s", percent, label.get());
+      } else {
+        int size = 20;
+        int completed = (int) (size * percentDone.get());
+        int remaining = size - completed;
+        String completeBar = repeat("=", completed);
+        String remainBar = repeat("-", remaining);
+        line = cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " " + greenBold(percent)
+            + purpleBold(label);
       }
-      int size = 20;
-      int completed = (int) (size * percentDone.get());
-      int remaining = size - completed;
-      String completeBar = repeat("=", completed);
-      String remainBar = repeat("-", remaining);
-      out.println(cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " "
-          + greenBold(percent) + purpleBold(label));
+      if (!line.equals(lastLine)) {
+        out.println(line);
+        out.flush();
+      }
+      lastLine = line;
     }
-    out.flush();
   }
 
   private void reset() {
