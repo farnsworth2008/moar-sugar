@@ -148,6 +148,8 @@ class WokePrivateProxy
         return this;
       } else if (name.equals("toString")) {
         return toString();
+      } else if (name.equals("hashCode")) {
+        return hashCode();
       } else {
         if (isProperty(name)) {
           Class<?> returnType = method.getReturnType();
@@ -194,6 +196,8 @@ class WokePrivateProxy
           setIdentifierQuoteString((String) args[0]);
           return null;
         }
+      } else if (name.equals("equals")) {
+        return equals(args[0]);
       } else {
         if (isProperty(name)) {
           setProperty(name, args[0]);
