@@ -249,7 +249,12 @@ public class WokeRepository<Row>
     });
   }
 
-  private void doInsertBatch(List<Row> rows) throws SQLException {
+  private synchronized Row doInsert(Row row) {
+    key.set(r -> {});
+    return doSessionInsertRow(row, r -> {}, false);
+  }
+
+  private synchronized void doInsertBatch(List<Row> rows) throws SQLException {
     try (ConnectionHold hold = session.reserve()) {
       Row row0 = rows.get(0);
       boolean hasId = row0 instanceof WakeableRow.IdColumn;
@@ -442,7 +447,7 @@ public class WokeRepository<Row>
     return doTableFind(keyRow, orderBy);
   }
 
-  private void doSessionInsertOp(Row row, Consumer<Row> updator, boolean isUpsert) {
+  private synchronized void doSessionInsertOp(Row row, Consumer<Row> updator, boolean isUpsert) {
     asWokeProxy(row);
     if (key.get() != null) {
       key.get().accept(row);
@@ -451,7 +456,7 @@ public class WokeRepository<Row>
     doTableInsert(row, isUpsert);
   }
 
-  private Row doSessionInsertRow(Row row, Consumer<Row> updator, boolean isUpsert) {
+  private synchronized Row doSessionInsertRow(Row row, Consumer<Row> updator, boolean isUpsert) {
     try {
       if (inInsert.get()) {
         throw new MoarException("reentry");
@@ -471,7 +476,7 @@ public class WokeRepository<Row>
     return require(() -> doTableFindSql(row, orderBy));
   }
 
-  private List<Row> doTableFindSql(Row row, String orderBy) {
+  private synchronized List<Row> doTableFindSql(Row row, String orderBy) {
     try (ConnectionHold cn = session.reserve()) {
       boolean hasId = row instanceof WakeableRow.IdColumn;
       WokePrivateProxy woke = asWokeProxy(row);
@@ -508,13 +513,18 @@ public class WokeRepository<Row>
     require(() -> doTableInsertSql(row, isUpsert));
   }
 
-  private void doTableInsertSql(Row row, boolean isUpsert) throws SQLException {
+  private synchronized void doTableInsertSql(Row row, boolean isUpsert) throws SQLException {
     try (ConnectionHold hold = session.reserve()) {
       doInsertRowWithConnection(row, isUpsert, hold);
     }
   }
 
-  private Row enterSessionInsertRow(Row row, Consumer<Row> updator, boolean isUpsert) {
+  private synchronized Row doUpsert(Row row) {
+    key.set(r -> {});
+    return doSessionInsertRow(row, r -> {}, true);
+  }
+
+  private synchronized Row enterSessionInsertRow(Row row, Consumer<Row> updator, boolean isUpsert) {
     LOG.trace("sessionUpsert");
     try {
       synchronized (session) {
@@ -573,8 +583,7 @@ public class WokeRepository<Row>
 
   @Override
   public Row insert(Row row) {
-    key.set(r -> {});
-    return doSessionInsertRow(row, r -> {}, false);
+    return doInsert(row);
   }
 
   @Override
@@ -669,8 +678,7 @@ public class WokeRepository<Row>
 
   @Override
   public Row upsert(Row row) {
-    key.set(r -> {});
-    return doSessionInsertRow(row, r -> {}, true);
+    return doUpsert(row);
   }
 
   @Override

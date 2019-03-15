@@ -13,13 +13,13 @@ public abstract class WokeSession
     WokeSessionBase {
 
   /**
-   * @param transactions
+   * @param tx
    *   Transaction(s) to run.
    */
   @SafeVarargs
-  public final void run(Consumer<WokeTxSession>... transactions) {
-    for (Consumer<WokeTxSession> tx : transactions) {
-      runWokeTransaction(this, tx);
+  public final void run(Consumer<WokeTxSession>... tx) {
+    for (Consumer<WokeTxSession> t : tx) {
+      runWokeTransaction(this, t);
     }
   }
 
