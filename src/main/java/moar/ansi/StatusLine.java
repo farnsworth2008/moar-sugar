@@ -52,6 +52,11 @@ public class StatusLine {
     }
   }
 
+  public StatusLine(String string) {
+    this();
+    set(string);
+  }
+
   private void capture() {
     System.setOut(outBuffer);
     out.println();
@@ -115,6 +120,10 @@ public class StatusLine {
       String line;
       if (!enabled()) {
         line = format("%s %s", percent, label.get());
+        if (!line.equals(lastLine)) {
+          out.println(line);
+          out.flush();
+        }
       } else {
         int size = 20;
         int completed = (int) (size * percentDone.get());
@@ -123,8 +132,6 @@ public class StatusLine {
         String remainBar = repeat("-", remaining);
         line = cyanBold("<") + greenBold(completeBar) + purpleBold(remainBar) + cyanBold(">") + " " + greenBold(percent)
             + purpleBold(label);
-      }
-      if (!line.equals(lastLine)) {
         out.println(line);
         out.flush();
       }
