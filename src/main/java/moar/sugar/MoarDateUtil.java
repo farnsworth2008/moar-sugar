@@ -26,8 +26,8 @@ public class MoarDateUtil {
   }
 
   public static LocalDate toLocalDate(Date date, ZoneId timeZone) {
-    if(date instanceof java.sql.Date) {
-      return ((java.sql.Date)date).toLocalDate();
+    if (date instanceof java.sql.Date) {
+      return ((java.sql.Date) date).toLocalDate();
     }
     return date == null ? null : date.toInstant().atZone(timeZone).toLocalDate();
   }
