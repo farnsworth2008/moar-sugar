@@ -63,17 +63,19 @@ public class StatusLine {
     render();
   }
 
-  public void complete(long number) {
-    synchronized (this) {
-      if (count.get() > 0) {
-        percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
-        render();
-      }
+  public synchronized void complete(long number) {
+    if (count.get() > 0) {
+      percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
+      render();
     }
   }
 
   public void completeOne() {
     complete(1);
+  }
+
+  public long getCompleted() {
+    return completed.get();
   }
 
   public void output(Runnable call) {
@@ -148,7 +150,7 @@ public class StatusLine {
     }
   }
 
-  public void set(String value) {
+  public synchronized void set(String value) {
     label.set(value);
     render();
   }
