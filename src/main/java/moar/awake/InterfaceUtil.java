@@ -4,16 +4,37 @@ import static moar.sugar.Sugar.require;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 public class InterfaceUtil {
   static <Row> WokePrivateProxy asWokeProxy(Row row) {
     return ((WokeProxiedObject) row).privateProxy();
   }
 
-  /**
-   * @param clz
-   * @return Waker configured for the class.
-   */
+  private static CacheBuilder<Object, Object> cache(int maxSize) {
+    return CacheBuilder.newBuilder().maximumSize(maxSize);
+  }
+
+  public static <T> LoadingCache<Long, T> createLoadingCache(DataSource dataSource, int maxSize, Class<T> clz) {
+    return cache(maxSize).build(new CacheLoader<Long, T>() {
+      @Override
+      public T load(Long id) throws Exception {
+        return findOrDefine(dataSource, id, clz);
+      }
+    });
+  }
+
+  private static <T> T findOrDefine(DataSource ds, Long id, Class<T> clz) {
+    WokenWithSession<T> repo = use(clz).of(ds);
+    T row = repo.id(id).find();
+    if (row == null) {
+      return repo.define();
+    }
+    return row;
+  }
+
   public static <Row> WokenWithoutSession<Row> use(Class<Row> clz) {
     return new WokeRepository<>(clz);
   }
@@ -48,4 +69,5 @@ public class InterfaceUtil {
     }
     return list;
   }
+
 }
