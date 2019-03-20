@@ -179,6 +179,19 @@ class WokePrivateProxy
             }
           }
           if (returnType.isAssignableFrom(value.getClass())) {
+            if (value instanceof List) {
+              if (name.endsWith("s")) {
+                String itemClassName = name.substring(3, name.length() - 1);
+                String fqn = clz.getPackage().getName() + "." + itemClassName;
+                Class<?> clz = Class.forName(fqn);
+                List<Map> list = (List) value;
+                List<Object> result = new ArrayList<Object>();
+                for (Map item : list) {
+                  result.add(InterfaceUtil.use(clz).of(item));
+                }
+                return result;
+              }
+            }
             return value;
           }
           if (returnType.isInterface()) {
