@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,6 +23,8 @@ final class GeoServiceC
     implements
     GeoService {
   private final GeoUtil geoUtil = new GeoUtil();
+  private final AtomicLong describeTime = new AtomicLong();
+  private final AtomicLong describeCount = new AtomicLong();
 
   @Override
   public String city(GeoPoint point) {
@@ -77,7 +80,11 @@ final class GeoServiceC
     }
     synchronized (point) {
       if (point.getDescription() == null) {
+        long start = System.currentTimeMillis();
         ((GeoPointC) point).setDescription(geoUtil.describe(point));
+        long elap = System.currentTimeMillis() - start;
+        describeTime.addAndGet(elap);
+        describeCount.incrementAndGet();
       }
     }
   }
@@ -124,20 +131,29 @@ final class GeoServiceC
   }
 
   @Override
+  public long getDescribeCount() {
+    return describeCount.get();
+  }
+
+  @Override
   public long getDescribeServiceCount() {
     return geoUtil.getOpenCageCount();
   }
-
   @Override
   public long getDescribeServiceRemaining() {
     return geoUtil.getOpenCageRemaining();
   }
+
+  @Override
+  public long getDescribeTime() {
+    return describeTime.get();
+  }
+
   @Override
   public boolean inside(GeoPoint point, List<GeoPoint> points) {
     GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
     return geoUtil.isInside(pointsArray, point);
   }
-
   @Override
   public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();
@@ -154,6 +170,7 @@ final class GeoServiceC
   public double metersToMiles(double meters) {
     return meters * 0.000621371192;
   }
+
   @Override
   public GeoPoint northEastPoint(GeoPoint a, GeoPoint b) {
     float lat = max(a.getLat(), b.getLat());
@@ -175,6 +192,12 @@ final class GeoServiceC
   @Override
   public List<GeoPoint> readKml2(File kmlFile) {
     return require(() -> doReadKml(kmlFile));
+  }
+
+  @Override
+  public void resetStats() {
+    describeCount.set(0);
+    describeTime.set(0);
   }
 
   @Override

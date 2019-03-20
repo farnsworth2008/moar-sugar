@@ -13,9 +13,13 @@ public interface GeoService {
 
   GeoBound getBounds(List<GeoPoint> points);
 
+  long getDescribeCount();
+
   long getDescribeServiceCount();
 
   long getDescribeServiceRemaining();
+
+  long getDescribeTime();
 
   boolean inside(GeoPoint point, List<GeoPoint> points);
 
@@ -30,6 +34,8 @@ public interface GeoService {
   GeoPoint point(GeoPoint southWest);
 
   List<GeoPoint> readKml2(File kmlFile);
+
+  void resetStats();
 
   void setDescribeRateLimit(double d);
 

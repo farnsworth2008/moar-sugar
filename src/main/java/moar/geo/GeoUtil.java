@@ -94,8 +94,8 @@ public class GeoUtil {
             return null;
           }
           StringBuilder url = new StringBuilder();
-          url.append("https://api.opencagedata.com/geocode/v1/json?");
-          url.append("q=");
+          url.append("https://api.opencagedata.com/geocode/v1/json?no_annotations=1");
+          url.append("&q=");
           url.append(point.getLat());
           url.append("%2C");
           url.append(point.getLon());
