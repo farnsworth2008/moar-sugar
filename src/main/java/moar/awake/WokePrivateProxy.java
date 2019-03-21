@@ -139,7 +139,7 @@ class WokePrivateProxy
     return clz;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String name = method.getName();
