@@ -161,18 +161,24 @@ public abstract class WokeSessionBase {
     for (Object row : rows) {
       WokePrivateProxy proxy = ((WokeProxiedObject) row).privateProxy();
       String sql = "update\n";
-      sql += proxy.getTableName() + "\n";
-      sql += "set\n";
+      sql += proxy.getTableName();
+      sql += "\nset";
       AtomicInteger i = new AtomicInteger();
       List<Consumer<PreparedStatement>> setProps = new ArrayList<>();
       boolean hasId = row instanceof WakeableRow.IdColumn;
+      boolean comma = false;
       for (String column : proxy.getColumns(!hasId)) {
         if (proxy.isDbDirty(column)) {
-          sql += column + "=?\n";
+          if (comma) {
+            sql += ", ";
+          } else {
+            comma = true;
+          }
+          sql += "\n" + column + "=?";
           setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
         }
       }
-      sql += "where\n";
+      sql += "\nwhere ";
       sql += proxy.getIdColumn() + "=?";
       Object idValue = proxy.getIdValue();
       setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), idValue)));
