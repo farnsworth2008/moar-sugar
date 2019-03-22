@@ -106,16 +106,63 @@ class DriverUpdate {
 
   void init() throws SQLException {
     synchronized (Object.class) {
-      String findSql = "select " + q + "id" + q + " from " + q + "%s" + q + " where not " + q + "completed" + q
-          + " is null order by " + q + "id" + q + " desc";
-      findSql = String.format(findSql, trackTableName);
-      try (PreparedStatement find = connection.prepareStatement(findSql)) {
-        String registerSql = "insert into " + q + "%s" + q + " (" + q + "id" + q + ", " + q + "instance" + q + ", " + q
-            + "created" + q + ", " + q + "run_event" + q + ") values (?, ?, CURRENT_TIMESTAMP, ?)";
+      StringBuilder b = new StringBuilder();
+      b.append("select ");
+      b.append(q);
+      b.append("id");
+      b.append(q);
+      b.append(" from ");
+      b.append(q);
+      b.append("%s");
+      b.append(q);
+      b.append(" where ");
+      b.append(q);
+      b.append("completed");
+      b.append(q);
+      b.append(" <= ");
+      b.append(q);
+      b.append("created");
+      b.append(q);
+      b.append(" order by ");
+      b.append(q);
+      b.append("id");
+      b.append(q);
+      b.append(" desc");
+      String findBuilder = b.toString();
+      findBuilder = String.format(findBuilder, trackTableName);
+      try (PreparedStatement find = connection.prepareStatement(findBuilder)) {
+        StringBuilder registerBuilder = new StringBuilder();
+        registerBuilder.append("insert into ");
+        registerBuilder.append(q);
+        registerBuilder.append("%s");
+        registerBuilder.append(q);
+        registerBuilder.append(" (");
+        registerBuilder.append(q);
+        registerBuilder.append("id");
+        registerBuilder.append(q);
+        registerBuilder.append(", ");
+        registerBuilder.append(q);
+        registerBuilder.append("instance");
+        registerBuilder.append(q);
+        registerBuilder.append(", ");
+        registerBuilder.append(q);
+        registerBuilder.append("created");
+        registerBuilder.append(q);
+        registerBuilder.append(", ");
+        registerBuilder.append(q);
+        registerBuilder.append("run_event");
+        registerBuilder.append(q);
+        registerBuilder.append(") values (?, ?, CURRENT_TIMESTAMP, ?)");
+        String registerSql = registerBuilder.toString();
         registerSql = String.format(registerSql, trackTableName);
         try (PreparedStatement register = connection.prepareStatement(registerSql)) {
-          String recordSql
-              = String.format("update " + q + "%s" + q + " set completed=CURRENT_TIMESTAMP WHERE id=?", trackTableName);
+          StringBuilder recordBuilder = new StringBuilder();
+          recordBuilder.append("update ");
+          recordBuilder.append(q);
+          recordBuilder.append("%s");
+          recordBuilder.append(q);
+          recordBuilder.append(" set completed=CURRENT_TIMESTAMP WHERE id=?");
+          String recordSql = String.format(recordBuilder.toString(), trackTableName);
           try (PreparedStatement record = connection.prepareStatement(recordSql)) {
             try (Statement statement = connection.createStatement()) {
               execute(find, register, statement, record);
