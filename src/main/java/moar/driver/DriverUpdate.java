@@ -117,12 +117,9 @@ class DriverUpdate {
       b.append(q);
       b.append(" where ");
       b.append(q);
-      b.append("completed");
+      b.append("complete");
       b.append(q);
-      b.append(" <= ");
-      b.append(q);
-      b.append("created");
-      b.append(q);
+      b.append(" is not null ");
       b.append(" order by ");
       b.append(q);
       b.append("id");
@@ -161,7 +158,7 @@ class DriverUpdate {
           recordBuilder.append(q);
           recordBuilder.append("%s");
           recordBuilder.append(q);
-          recordBuilder.append(" set completed=CURRENT_TIMESTAMP WHERE id=?");
+          recordBuilder.append(" set complete=1 WHERE id=?");
           String recordSql = String.format(recordBuilder.toString(), trackTableName);
           try (PreparedStatement record = connection.prepareStatement(recordSql)) {
             try (Statement statement = connection.createStatement()) {
