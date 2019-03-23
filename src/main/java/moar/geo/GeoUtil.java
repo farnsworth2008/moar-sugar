@@ -130,7 +130,7 @@ public class GeoUtil {
         JsonObject result = body.get("results").getAsJsonArray().get(0).getAsJsonObject();
         JsonObject comp = result.get("components").getAsJsonObject();
         Map<String, Object> map = new HashMap<>();
-        copy(comp, map, "country_code", "country");
+        copy(comp, map, "country");
         copy(comp, map, "_type", "type");
         copy(comp, map, "footway");
         copy(comp, map, "hamlet");
