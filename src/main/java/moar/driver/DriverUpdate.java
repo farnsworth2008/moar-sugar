@@ -1,6 +1,7 @@
 package moar.driver;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
 import static moar.driver.Driver.getDriverProps;
 import java.io.InputStream;
@@ -81,12 +82,39 @@ class DriverUpdate {
       int errorCode = ex.getErrorCode();
       String sqlState = ex.getSQLState();
       if (sqlState.equals("42P01") || tableDoesNotExistErrorCode == errorCode) {
-        String sql = "CREATE TABLE " + q + "%s" + q + " (" + q + "id" + q + " BIGINT, " + q + "instance" + q
-            + " VARCHAR(255)," + q + "run_event" + q + " VARCHAR(255),";
-        sql += q + "created" + q + " TIMESTAMP," + q + "completed" + q + " TIMESTAMP, PRIMARY KEY(" + q + "id" + q
-            + "));";
-        sql = String.format(sql, trackTableName);
-        statement.execute(sql);
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE TABLE ");
+        sql.append(q);
+        sql.append("%s");
+        sql.append(q);
+        sql.append(" (");
+        sql.append(q);
+        sql.append("id");
+        sql.append(q);
+        sql.append(" BIGINT, ");
+        sql.append(q);
+        sql.append("instance");
+        sql.append(q);
+        sql.append(" VARCHAR(255),");
+        sql.append(q);
+        sql.append("run_event");
+        sql.append(q);
+        sql.append(" VARCHAR(255),");
+        String sqlx = sql.toString();
+        sql.append(q);
+        sql.append("created");
+        sql.append(q);
+        sql.append(" TIMESTAMP,");
+        sql.append(q);
+        sql.append("complete");
+        sql.append(q);
+        sql.append(" BOOLEAN, PRIMARY KEY(");
+        sql.append(q);
+        sql.append("id");
+        sql.append(q);
+        sql.append("));");
+        sqlx = format(sql.toString(), trackTableName);
+        statement.execute(sqlx);
         id = 1000;
       } else {
         throw ex;
@@ -99,7 +127,7 @@ class DriverUpdate {
   }
 
   private InputStream getResource(int id) {
-    String resource = String.format("/%s/%d.sql", track, id);
+    String resource = format("/%s/%d.sql", track, id);
     InputStream stream = loader.getResourceAsStream(resource);
     return stream;
   }
@@ -126,7 +154,7 @@ class DriverUpdate {
       b.append(q);
       b.append(" desc");
       String findBuilder = b.toString();
-      findBuilder = String.format(findBuilder, trackTableName);
+      findBuilder = format(findBuilder, trackTableName);
       try (PreparedStatement find = connection.prepareStatement(findBuilder)) {
         StringBuilder registerBuilder = new StringBuilder();
         registerBuilder.append("insert into ");
@@ -151,7 +179,7 @@ class DriverUpdate {
         registerBuilder.append(q);
         registerBuilder.append(") values (?, ?, CURRENT_TIMESTAMP, ?)");
         String registerSql = registerBuilder.toString();
-        registerSql = String.format(registerSql, trackTableName);
+        registerSql = format(registerSql, trackTableName);
         try (PreparedStatement register = connection.prepareStatement(registerSql)) {
           StringBuilder recordBuilder = new StringBuilder();
           recordBuilder.append("update ");
@@ -159,7 +187,7 @@ class DriverUpdate {
           recordBuilder.append("%s");
           recordBuilder.append(q);
           recordBuilder.append(" set complete=1 WHERE id=?");
-          String recordSql = String.format(recordBuilder.toString(), trackTableName);
+          String recordSql = format(recordBuilder.toString(), trackTableName);
           try (PreparedStatement record = connection.prepareStatement(recordSql)) {
             try (Statement statement = connection.createStatement()) {
               execute(find, register, statement, record);
