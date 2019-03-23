@@ -18,8 +18,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import moar.sugar.MoarLogger;
 
 public abstract class WokeSessionBase {
+  private final MoarLogger log = new MoarLogger(WokeSessionBase.class);
 
   private String buildSql(String finalTableish, Object[] woken) {
     boolean isCall = finalTableish.startsWith("call ") || finalTableish.startsWith("call\n");
@@ -191,6 +193,9 @@ public abstract class WokeSessionBase {
             }
             int result = ps.executeUpdate();
             require(1 == result);
+          } catch (Exception e) {
+            log.error(finalSql, e);
+            throw e;
           }
         });
       }
