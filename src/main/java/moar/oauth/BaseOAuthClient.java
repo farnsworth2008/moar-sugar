@@ -26,14 +26,14 @@ final class BaseOAuthClient
   private final AtomicInteger available = new AtomicInteger();
   private final AtomicInteger availableDaily = new AtomicInteger();
   private final String url;
-  private final String token;
+  private final AtomicReference<String> token = new AtomicReference<>();
   private final AtomicReference<RateLimiter> rate = new AtomicReference<>();
   private final AtomicReference<CallableVoid> on429 = new AtomicReference<CallableVoid>(() -> {});
   private final AtomicReference<String> xRateDesc = new AtomicReference<String>("");
 
   BaseOAuthClient(String url, String token) {
     this.url = url;
-    this.token = token;
+    this.token.set(token);
   }
 
   @Override
@@ -105,6 +105,11 @@ final class BaseOAuthClient
   }
 
   @Override
+  public void setAccessToken(String value) {
+    token.set(value);
+  }
+
+  @Override
   public void setThrottleRate(Double permitsPerSecond) {
     rate.set(RateLimiter.create(permitsPerSecond));
 
@@ -114,4 +119,5 @@ final class BaseOAuthClient
   public void setThrottleWhen(Integer value) {
     throttle.set(value);
   }
+
 }
