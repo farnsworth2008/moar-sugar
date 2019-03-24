@@ -180,7 +180,7 @@ public abstract class WokeSessionBase {
           setProps.add(ps -> require(() -> ps.setObject(i.incrementAndGet(), proxy.getDbValue(column))));
         }
       }
-      if(comma == false) {
+      if (comma == false) {
         // Special case where there are no dirty columns.
         return;
       }
