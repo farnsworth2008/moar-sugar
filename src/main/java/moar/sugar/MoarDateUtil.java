@@ -1,7 +1,9 @@
 package moar.sugar;
 
+import static java.time.ZoneOffset.UTC;
 import static moar.sugar.Sugar.safely;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -12,6 +14,10 @@ import java.util.Date;
  * @author Mark Farnsworth
  */
 public class MoarDateUtil {
+
+  public static Long getEpochSecond() {
+    return LocalDateTime.now().atZone(UTC).toInstant().getEpochSecond();
+  }
 
   public static SafeResult<LocalDate> parse8601Date(String string) {
     return safely(() -> OffsetDateTime.parse(string).toLocalDate());

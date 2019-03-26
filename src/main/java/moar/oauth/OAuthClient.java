@@ -14,7 +14,7 @@ public interface OAuthClient {
 
   void on429(CallableVoid call);
 
-  void setAccessToken(String value);
+  void setAccessToken(String token, long expiresAt);
 
   void setThrottleRate(Double value);
 

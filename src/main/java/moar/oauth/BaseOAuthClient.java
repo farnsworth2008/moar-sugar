@@ -26,14 +26,16 @@ final class BaseOAuthClient
   private final AtomicInteger available = new AtomicInteger();
   private final AtomicInteger availableDaily = new AtomicInteger();
   private final String url;
-  private final AtomicReference<String> token = new AtomicReference<>();
   private final AtomicReference<RateLimiter> rate = new AtomicReference<>();
   private final AtomicReference<CallableVoid> on429 = new AtomicReference<CallableVoid>(() -> {});
   private final AtomicReference<String> xRateDesc = new AtomicReference<String>("");
+  private String token;
+  private long expiresAt;
 
-  BaseOAuthClient(String url, String token) {
+  BaseOAuthClient(String url, String token, long expiresAt) {
     this.url = url;
-    this.token.set(token);
+    this.token = token;
+    this.expiresAt = expiresAt;
   }
 
   @Override
@@ -105,8 +107,9 @@ final class BaseOAuthClient
   }
 
   @Override
-  public void setAccessToken(String value) {
-    token.set(value);
+  public void setAccessToken(String token, long expiresAt) {
+    this.token = token;
+    this.expiresAt = expiresAt;
   }
 
   @Override
