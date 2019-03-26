@@ -10,6 +10,8 @@ public interface OAuthClient {
 
   Integer getAvailableDaily();
 
+  long getExpiresAt();
+
   String getXRateDesc();
 
   void on429(CallableVoid call);

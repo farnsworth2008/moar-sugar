@@ -97,6 +97,11 @@ final class BaseOAuthClient
   }
 
   @Override
+  public long getExpiresAt() {
+    return expiresAt;
+  }
+
+  @Override
   public String getXRateDesc() {
     return xRateDesc.get();
   }
