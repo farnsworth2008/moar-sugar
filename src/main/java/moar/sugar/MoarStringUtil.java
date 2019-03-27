@@ -68,6 +68,12 @@ public class MoarStringUtil {
     return string == null ? null : cleanWithOnly(CharMatcher.ascii(), string);
   }
 
+  public static String lastWord(String s) {
+    String[] split = s.split("\\s");
+    String part = split[split.length - 1];
+    return part.trim();
+  }
+
   public static String leftTruncate(String text, int maxLen, String truncatedSuffix) {
     if (text.length() > maxLen) {
       int trimedSize = maxLen - truncatedSuffix.length();
@@ -196,4 +202,5 @@ public class MoarStringUtil {
       }
     });
   }
+
 }
