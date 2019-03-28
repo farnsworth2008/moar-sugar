@@ -39,10 +39,10 @@ public class UsPostalAddress {
     String endsWithStateCodePlusZip = "\\s*[A-Z]{2}\\s*" + endsWithZip;
     if (s.matches(".*" + endsWithStateCode)) {
       // Parse city with 2 digit state code
-      address.city = s.replaceAll(endsWithStateCode, "").trim();
+      address.city = s.replaceAll(endsWithStateCode, "").replaceAll(",", "").trim();
     } else if (s.matches(".*" + endsWithStateCodePlusZip)) {
       // Parse city with 2 digit state code plus zip
-      address.city = s.replaceAll(endsWithStateCodePlusZip, "");
+      address.city = s.replaceAll(endsWithStateCodePlusZip, "").replaceAll(",", "").trim();
     } else if (s.matches(".*" + endsWithZip)) {
       // Parse zip by assuming it
       address.zip = s.replaceAll(".* ", "").trim();
@@ -61,10 +61,10 @@ public class UsPostalAddress {
           address.state = stateWord + " " + address.state;
         }
       }
-      address.city = s.replaceAll(",", "");
+      address.city = s.replaceAll(",", "").trim();
       return;
     }
-    s = s.substring(address.city.length()).trim();
+    s = s.replaceAll(",", "").substring(address.city.length()).trim();
     if (s.isEmpty()) {
       return;
     }
