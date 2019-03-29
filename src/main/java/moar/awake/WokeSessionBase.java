@@ -12,6 +12,7 @@ import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,17 +61,15 @@ public abstract class WokeSessionBase {
     }
   }
 
-  public void executeSql(String sql, Object... args) {
+  public int executeSql(String sql, Object... args) throws SQLException {
     try (ConnectionHold c = reserve()) {
-      require(() -> {
-        try (PreparedStatement ps = c.get().prepareStatement(sql)) {
-          int i = 0;
-          for (Object arg : args) {
-            ps.setObject(++i, arg);
-          }
-          return ps.executeUpdate();
+      try (PreparedStatement ps = c.get().prepareStatement(sql)) {
+        int i = 0;
+        for (Object arg : args) {
+          ps.setObject(++i, arg);
         }
-      });
+        return ps.executeUpdate();
+      }
     }
   }
 
