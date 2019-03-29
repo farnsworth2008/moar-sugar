@@ -258,7 +258,7 @@ public class Sugar {
    * @param call
    * @throws Exception
    */
-  public static void retry(int tries, CallableVoid call) throws Exception {
+  public static void retry(int tries, CallableVoid call) {
     retry(tries, 1000, call);
   }
 
@@ -297,7 +297,7 @@ public class Sugar {
    * @param call
    * @throws Exception
    */
-  public static void retry(int tries, long retryWaitMs, CallableVoid call) throws Exception {
+  public static void retry(int tries, long retryWaitMs, CallableVoid call) {
     retry(tries, retryWaitMs, () -> {
       call.call();
       return null;
@@ -336,6 +336,18 @@ public class Sugar {
       call.call();
       return null;
     });
+  }
+
+  /**
+   * Make any exception thrown from the call retryable and retry as needed.
+   *
+   * @param call
+   *   Call to make.
+   * @throws RetryableException
+   *   Exception from the call as a {@link RetryableException}.
+   */
+  public static void retryable(int tries, CallableVoid call) throws RetryableException {
+    retry(tries, () -> retryable(call));
   }
 
   /**
