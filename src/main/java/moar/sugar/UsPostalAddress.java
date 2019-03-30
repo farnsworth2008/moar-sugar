@@ -18,6 +18,8 @@ public class UsPostalAddress {
   public String state;
 
   public UsPostalAddress(String singleLineAddress) {
+    singleLineAddress.replace('.', ',');
+    singleLineAddress.replace(",,", ",");
     UsPostalAddress address = this;
     String s = singleLineAddress;
     String endsWithZip = "[0-9]{5}(?:-[0-9]{4})?$";
@@ -35,8 +37,8 @@ public class UsPostalAddress {
       }
     }
 
-    String endsWithStateCode = "\\s*[A-Z]{2}$";
-    String endsWithStateCodePlusZip = "\\s*[A-Z]{2}\\s*" + endsWithZip;
+    String endsWithStateCode = "\\s*(?i)[A-Z]{2}$";
+    String endsWithStateCodePlusZip = "\\s*(?i)[A-Z]{2}\\s*" + endsWithZip;
     if (s.matches(".*" + endsWithStateCode)) {
       // Parse city with 2 digit state code
       address.city = s.replaceAll(endsWithStateCode, "").replaceAll(",", "").trim();
@@ -51,8 +53,8 @@ public class UsPostalAddress {
       s = s.substring(0, s.length() - address.state.length() - 1);
       if (isTwoWordState(address.state)) {
         String stateWord = MoarStringUtil.lastWord(s);
-        if (address.state.equalsIgnoreCase("Virginia")) {
-          if (stateWord.equalsIgnoreCase("West")) {
+        if (address.state.equalsIgnoreCase("(?i)Virginia")) {
+          if (stateWord.equalsIgnoreCase("(?i)West")) {
             s = s.substring(0, s.length() - stateWord.length());
             address.state = stateWord + " " + address.state;
           }
