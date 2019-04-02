@@ -185,7 +185,7 @@ class WokePrivateProxy
                 String fqn = clz.getPackage().getName() + "." + itemClassName;
                 Class<?> clz = Class.forName(fqn);
                 List<Map> list = (List) value;
-                List<Object> result = new ArrayList<Object>();
+                List<Object> result = new ArrayList<>();
                 for (Map item : list) {
                   result.add(InterfaceUtil.use(clz).of(item));
                 }

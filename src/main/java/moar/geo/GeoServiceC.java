@@ -39,7 +39,7 @@ final class GeoServiceC
    */
   @Override
   public List<GeoPoint> decode(String encoded) {
-    List<GeoPoint> poly = new ArrayList<GeoPoint>();
+    List<GeoPoint> poly = new ArrayList<>();
     int index = 0, len = encoded.length();
     int lat = 0, lng = 0;
 
@@ -109,7 +109,7 @@ final class GeoServiceC
     StringReader sr = new StringReader(textContent);
     String string = IOUtils.toString(sr);
     String[] cords = string.split("[ ,]");
-    List<GeoPoint> points = new ArrayList<GeoPoint>();
+    List<GeoPoint> points = new ArrayList<>();
     for (int i = 0; i < cords.length; i += 3) {
       Float lon = valueOfFloat(cords[i + 0]);
       Float lat = valueOfFloat(cords[i + 1]);

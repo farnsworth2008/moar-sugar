@@ -10,7 +10,7 @@ public class GeoPointC
   private final float lat;
   private final float lon;
   private final Float ele;
-  private final AtomicReference<GeoDescription> description = new AtomicReference<GeoDescription>();
+  private final AtomicReference<GeoDescription> description = new AtomicReference<>();
 
   public GeoPointC(float lat, float lon, Float ele) {
     this.lat = lat;

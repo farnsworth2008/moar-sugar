@@ -58,7 +58,7 @@ public class GeoUtil {
   private final Vector<String> openCageApiKeys;
 
   public GeoUtil() {
-    openCageApiKeys = new Vector<String>();
+    openCageApiKeys = new Vector<>();
     int k = 0;
     String key = null;
     do {

@@ -134,7 +134,7 @@ public class MoarStringUtil {
 
   public static List<String> toLineList(String statusOutput) {
     return swallow(() -> {
-      List<String> lineList = new ArrayList<String>();
+      List<String> lineList = new ArrayList<>();
       try (ByteArrayInputStream in = new ByteArrayInputStream(statusOutput.getBytes())) {
         try (Reader isr = new InputStreamReader(in)) {
           try (BufferedReader br = new BufferedReader(isr)) {

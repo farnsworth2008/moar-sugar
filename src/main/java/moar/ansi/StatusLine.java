@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 public class StatusLine {
 
   private static StatusLine current;
-  private final AtomicReference<String> label = new AtomicReference<String>("");
+  private final AtomicReference<String> label = new AtomicReference<>("");
   private final AtomicDouble percentDone = new AtomicDouble();
   private final AtomicLong count = new AtomicLong();
   private final AtomicLong completed = new AtomicLong();
