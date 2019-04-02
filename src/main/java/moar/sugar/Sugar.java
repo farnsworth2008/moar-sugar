@@ -279,7 +279,7 @@ public class Sugar {
       while (tries++ < triesAllowed) {
         try {
           last = null;
-          return new RetryResult<T>(tries - 1, call.call());
+          return new RetryResult<>(tries - 1, call.call());
         } catch (RetryableException e) {
           last = e;
           sleep(retryWaitMs + (long) (random() * retryWaitMs));
