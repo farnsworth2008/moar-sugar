@@ -247,7 +247,7 @@ public class Sugar {
    * @throws Exception
    *   Exception thrown
    */
-  public static <T> T retry(int tries, Callable<T> call) throws Exception {
+  public static <T> RetryResult<T> retry(int tries, Callable<T> call) throws Exception {
     return retry(tries, 1000, call);
   }
 
@@ -258,8 +258,8 @@ public class Sugar {
    * @param call
    * @throws Exception
    */
-  public static void retry(int tries, CallableVoid call) {
-    retry(tries, 1000, call);
+  public static int retry(int tries, CallableVoid call) {
+    return retry(tries, 1000, call);
   }
 
   /**
@@ -272,14 +272,14 @@ public class Sugar {
    * @throws Exception
    */
   @SuppressWarnings("null")
-  public static <T> T retry(int triesAllowed, long retryWaitMs, Callable<T> call) {
+  public static <T> RetryResult<T> retry(int triesAllowed, long retryWaitMs, Callable<T> call) {
     return require(() -> {
       Exception last = null;
       int tries = 0;
       while (tries++ < triesAllowed) {
         try {
           last = null;
-          return call.call();
+          return new RetryResult<T>(tries - 1, call.call());
         } catch (RetryableException e) {
           last = e;
           sleep(retryWaitMs + (long) (random() * retryWaitMs));
@@ -297,11 +297,11 @@ public class Sugar {
    * @param call
    * @throws Exception
    */
-  public static void retry(int tries, long retryWaitMs, CallableVoid call) {
-    retry(tries, retryWaitMs, () -> {
+  public static int retry(int tries, long retryWaitMs, CallableVoid call) {
+    return retry(tries, retryWaitMs, () -> {
       call.call();
       return null;
-    });
+    }).getRetryCount();
   }
 
   /**
@@ -346,8 +346,8 @@ public class Sugar {
    * @throws RetryableException
    *   Exception from the call as a {@link RetryableException}.
    */
-  public static void retryable(int tries, CallableVoid call) throws RetryableException {
-    retry(tries, () -> retryable(call));
+  public static int retryable(int tries, CallableVoid call) throws RetryableException {
+    return retry(tries, () -> retryable(call));
   }
 
   /**

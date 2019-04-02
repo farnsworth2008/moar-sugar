@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import moar.sugar.MoarException;
 import moar.sugar.MoarLogger;
 import moar.sugar.PropertyAccessor;
+import moar.sugar.RetryResult;
 import moar.sugar.Sugar;
 
 /**
@@ -268,11 +269,12 @@ public class Driver
   private Connection getRealConnection(ConnectionSpec cs) {
     String url = cs.getUrl();
     Properties props = cs.getProps();
-    return require(() -> {
+    RetryResult<Connection> result = require(() -> {
       return retry(CONNECTION_RETRY_LIMIT, () -> {
         return retryable(() -> getConnection(url, props));
       });
     });
+    return result.get();
   }
 
   private void init(ConnectionSpec cs) throws SQLException {

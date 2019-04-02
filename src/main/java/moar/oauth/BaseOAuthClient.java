@@ -82,7 +82,7 @@ final class BaseOAuthClient
         String json = response.getBody();
         T result = getMoarJson().getGson().fromJson(json, clz);
         return result;
-      });
+      }).get();
     });
   }
 
