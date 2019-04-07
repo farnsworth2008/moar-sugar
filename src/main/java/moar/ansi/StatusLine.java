@@ -16,7 +16,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import com.google.common.util.concurrent.AtomicDouble;
 
-public class StatusLine {
+public class StatusLine
+    implements
+    StatusManager {
 
   private static StatusLine current;
   private final AtomicReference<String> label = new AtomicReference<>("");
@@ -33,7 +35,7 @@ public class StatusLine {
     this(current);
   }
 
-  public StatusLine(int count, String string) {
+  public StatusLine(long count, String string) {
     this();
     setCount(count, string);
   }
@@ -63,6 +65,7 @@ public class StatusLine {
     render();
   }
 
+  @Override
   public synchronized void complete(long number) {
     if (count.get() > 0) {
       percentDone.set(min(1, (double) completed.addAndGet(number) / count.get()));
@@ -150,6 +153,7 @@ public class StatusLine {
     }
   }
 
+  @Override
   public synchronized void set(String value) {
     label.set(value);
     render();
@@ -161,6 +165,7 @@ public class StatusLine {
     percentDone.set(0);
   }
 
+  @Override
   public void setCount(long count, String string) {
     setCount(count);
     set(string);
