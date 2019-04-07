@@ -1,3 +1,3 @@
 set -e
 ./build.sh
-java -jar `find . -name \*.fat.jar` script "$@"
+java -Dmoar.ansi.enabled=true -jar `find . -name \*.fat.jar` script "$@"
