@@ -13,11 +13,13 @@ import java.util.UUID;
 public interface WakeableRow {
   interface IdColumn
       extends
-      WakeableRow {}
+      WakeableRow {
+  }
 
   interface IdColumnAsAutoLong
       extends
-      IdColumnAsLong {}
+      IdColumnAsLong {
+  }
 
   interface IdColumnAsLong
       extends
@@ -42,6 +44,7 @@ public interface WakeableRow {
 
   interface WithoutIdColumn
       extends
-      WakeableRow {}
+      WakeableRow {
+  }
 
 }

@@ -27,7 +27,8 @@ final class BaseOAuthClient
   private final AtomicInteger availableDaily = new AtomicInteger();
   private final String url;
   private final AtomicReference<RateLimiter> rate = new AtomicReference<>();
-  private final AtomicReference<CallableVoid> on429 = new AtomicReference<>(() -> {});
+  private final AtomicReference<CallableVoid> on429 = new AtomicReference<>(() -> {
+  });
   private final AtomicReference<String> xRateDesc = new AtomicReference<>("");
   private String token;
   private long expiresAt;

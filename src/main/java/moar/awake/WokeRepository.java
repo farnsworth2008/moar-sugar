@@ -213,7 +213,8 @@ public class WokeRepository<Row>
 
   @Override
   public Row define() {
-    return define(r -> {});
+    return define(r -> {
+    });
   }
 
   @Override
@@ -250,8 +251,10 @@ public class WokeRepository<Row>
   }
 
   private synchronized Row doInsert(Row row) {
-    key.set(r -> {});
-    return doSessionInsertRow(row, r -> {}, false);
+    key.set(r -> {
+    });
+    return doSessionInsertRow(row, r -> {
+    }, false);
   }
 
   private synchronized void doInsertBatch(List<Row> rows) throws SQLException {
@@ -468,7 +471,8 @@ public class WokeRepository<Row>
         inInsert.set(false);
       }
     } finally {
-      key.set(r -> {});
+      key.set(r -> {
+      });
     }
   }
 
@@ -520,8 +524,10 @@ public class WokeRepository<Row>
   }
 
   private synchronized Row doUpsert(Row row) {
-    key.set(r -> {});
-    return doSessionInsertRow(row, r -> {}, true);
+    key.set(r -> {
+    });
+    return doSessionInsertRow(row, r -> {
+    }, true);
   }
 
   private synchronized Row enterSessionInsertRow(Row row, Consumer<Row> updator, boolean isUpsert) {
@@ -573,7 +579,8 @@ public class WokeRepository<Row>
 
   @Override
   public Row insert() {
-    return insert(r -> {});
+    return insert(r -> {
+    });
   }
 
   @Override
@@ -618,7 +625,8 @@ public class WokeRepository<Row>
 
   @Override
   public Row of(Map<String, Object> map) {
-    Row row = define(r -> {});
+    Row row = define(r -> {
+    });
     asWokeProxy(row).set(map);
     return row;
   }
@@ -668,7 +676,8 @@ public class WokeRepository<Row>
 
   @Override
   public Row upsert() {
-    return upsert(r -> {});
+    return upsert(r -> {
+    });
   }
 
   @Override
