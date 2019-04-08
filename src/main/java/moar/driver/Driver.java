@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
 import com.google.common.util.concurrent.RateLimiter;
 import com.zaxxer.hikari.HikariDataSource;
 import moar.sugar.MoarException;
@@ -64,9 +65,9 @@ public class Driver
   public static DataSource createDataSource(String jdbcUrl, String username, String password)
       throws Exception, IOException {
     return silently(() -> {
-      HikariDataSource ds = new HikariDataSource();
+      BasicDataSource ds = new BasicDataSource();
       ds.setDriverClassName(Driver.class.getName());
-      ds.setJdbcUrl(jdbcUrl);
+      ds.setUrl(jdbcUrl);
       ds.setUsername(username);
       ds.setPassword(password);
       try (Connection cn = ds.getConnection()) {
