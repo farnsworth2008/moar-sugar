@@ -15,15 +15,16 @@ public class Mapper
     MapperInit {
 
   public static MapperInit defineMapper(Map<String, Object> map) {
-    return new Mapper(map);
+    return new Mapper(map, null);
   }
 
   private final Map<String, Object> map;
 
   private Object value;
 
-  private Mapper(Map<String, Object> map) {
+  private Mapper(Map<String, Object> map, Object value) {
     this.map = map;
+    this.value = value;
   }
 
   @Override
@@ -50,7 +51,7 @@ public class Mapper
   @Override
   public MapperWithValue copy(String key) {
     value = map.get(key);
-    return this;
+    return new Mapper(map, value);
   }
 
   @Override
@@ -82,5 +83,10 @@ public class Mapper
   @SuppressWarnings("unchecked")
   public <T> void to(Consumer<T> target) {
     target.accept((T) value);
+  }
+
+  @Override
+  public Map<String, Object> getMap() {
+    return map;
   }
 }
