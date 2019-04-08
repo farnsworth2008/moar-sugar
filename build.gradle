@@ -2,6 +2,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
+  compile "commons-dbcp:commons-dbcp:1.4"
   compile "com.google.code.gson:gson:2.8.5"
   compile "com.google.guava:guava:26.0-jre"
   compile "com.google.http-client:google-http-client-jackson2:1.28.0"
