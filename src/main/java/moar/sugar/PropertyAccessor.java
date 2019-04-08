@@ -2,6 +2,7 @@ package moar.sugar;
 
 import static java.lang.System.getenv;
 import java.util.function.Function;
+import com.google.common.base.CaseFormat;
 
 /**
  * A bit of syntactical sugar to make it easier to interact with properties.
@@ -22,7 +23,7 @@ public class PropertyAccessor {
   }
 
   public PropertyAccessor(Class<?> clz) {
-    this(clz.getName());
+    this(clz.getSimpleName());
   }
 
   public PropertyAccessor(Class<?> clz, Function<String, String> fetch) {
@@ -55,7 +56,10 @@ public class PropertyAccessor {
   }
 
   private String getEnvName(String key) {
-    return key.toUpperCase().replace('.', '_');
+    String name = CaseFormat.UPPER_CAMEL.converterTo(CaseFormat.UPPER_UNDERSCORE).convert(key);
+    name = name.replace('.', '_');
+    name = name.replaceAll("__", "_");
+    return name;
   }
 
   public Integer getInteger(String name, Integer defaultValue) {
