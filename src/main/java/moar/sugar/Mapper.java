@@ -42,6 +42,12 @@ public class Mapper
 
   @Override
   public MapperWithValue change(Object from, Object to) {
+    if (from == null) {
+      if (value == null) {
+        value = to;
+      }
+      return this;
+    }
     if (from.equals(value)) {
       value = to;
     }
