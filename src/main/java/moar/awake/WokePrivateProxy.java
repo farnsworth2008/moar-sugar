@@ -229,7 +229,10 @@ class WokePrivateProxy
       return false;
     }
     if (mapValue != null) {
-      return !mapValue.equals(setValue);
+      boolean equal = mapValue.equals(setValue);
+      if (equal) {
+        return false;
+      }
     }
     return true;
   }
