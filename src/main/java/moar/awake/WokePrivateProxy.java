@@ -3,12 +3,12 @@ package moar.awake;
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
 import static com.google.common.base.CaseFormat.LOWER_UNDERSCORE;
 import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static java.util.Collections.unmodifiableMap;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -289,10 +289,10 @@ class WokePrivateProxy
     tableName = tableish;
   }
 
-  @SuppressWarnings("rawtypes")
   @Override
-  public Map toMap() {
-    return unmodifiableMap(map);
+  public Map<String, Object> toMap() {
+    // defensive copy of map
+    return new HashMap<String, Object>(map);
   }
 
   @Override

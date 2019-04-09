@@ -10,6 +10,5 @@ import java.util.Map;
 public interface WokeProxy {
   boolean isDirty();
 
-  @SuppressWarnings("rawtypes")
-  Map toMap();
+  Map<String, Object> toMap();
 }

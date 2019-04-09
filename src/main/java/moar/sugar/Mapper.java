@@ -67,6 +67,11 @@ public class Mapper
   }
 
   @Override
+  public Map<String, Object> getMap() {
+    return map;
+  }
+
+  @Override
   public MapperWithValue simpleDateFormat() {
     if (value instanceof String) {
       if (((String) value).isEmpty()) {
@@ -89,10 +94,5 @@ public class Mapper
   @SuppressWarnings("unchecked")
   public <T> void to(Consumer<T> target) {
     target.accept((T) value);
-  }
-
-  @Override
-  public Map<String, Object> getMap() {
-    return map;
   }
 }

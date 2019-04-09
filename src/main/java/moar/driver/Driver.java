@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import com.google.common.util.concurrent.RateLimiter;
-import com.zaxxer.hikari.HikariDataSource;
 import moar.sugar.MoarException;
 import moar.sugar.MoarLogger;
 import moar.sugar.PropertyAccessor;
