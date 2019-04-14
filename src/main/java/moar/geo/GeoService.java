@@ -31,7 +31,7 @@ public interface GeoService {
 
   GeoPoint point(Float lat, Float lon, Float altitude);
 
-  GeoPoint point(GeoPoint southWest);
+  GeoPoint point(GeoPoint point);
 
   List<GeoPoint> readKml2(File kmlFile);
 
