@@ -207,7 +207,10 @@ public class GeoUtil {
     return jsonResults;
   }
 
-  private String getAtlasAddress(String address, final String city, final String state) {
+  private String getAtlasAddress(String address, String city, String state) {
+    address = nonNull(address, "");
+    city = nonNull(city, "");
+    state = nonNull(state, "");
     final int commaPos = address.indexOf(",");
     if (commaPos != -1) {
       address = address.substring(0, commaPos);
