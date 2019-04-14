@@ -40,5 +40,5 @@ public interface GeoService {
   void setDescribeRateLimit(double d);
 
   GeoPoint southWestPoint(GeoPoint min, GeoPoint point);
-
+  GeoPoint point(String address, String city, String state);
 }

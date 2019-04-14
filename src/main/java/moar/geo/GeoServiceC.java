@@ -139,6 +139,7 @@ final class GeoServiceC
   public long getDescribeServiceCount() {
     return geoUtil.getOpenCageCount();
   }
+
   @Override
   public long getDescribeServiceRemaining() {
     return geoUtil.getOpenCageRemaining();
@@ -154,6 +155,7 @@ final class GeoServiceC
     GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
     return geoUtil.isInside(pointsArray, point);
   }
+
   @Override
   public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();

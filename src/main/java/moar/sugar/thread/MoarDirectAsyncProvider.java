@@ -10,11 +10,9 @@ final class MoarDirectAsyncProvider
     MoarAsyncProvider {
   private static ListeningExecutorService directExecutorService = MoreExecutors.newDirectExecutorService();
   @Override
-  public void close() throws Exception {
-  }
+  public void close() throws Exception {}
   @Override
-  public void shutdown() {
-  }
+  public void shutdown() {}
   @Override
   public <T> Future<T> submit(Callable<T> c) {
     return directExecutorService.submit(c);

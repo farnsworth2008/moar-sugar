@@ -83,8 +83,7 @@ public class Driver
   /**
    * Initialization method to ensure class is loaded.
    */
-  public static void init() {
-  }
+  public static void init() {}
   private final DriverPropertyInfo[] driverProps = new DriverPropertyInfo[] {};
 
   final HashMap<String, ConnectionSpec> failFast = new HashMap<>();
