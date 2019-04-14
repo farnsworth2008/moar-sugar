@@ -1,6 +1,8 @@
 package moar.sugar;
 
 import static java.lang.Math.min;
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
 import java.io.BufferedReader;
@@ -193,6 +195,10 @@ public class MoarStringUtil {
       text = text.substring(0, trimedSize) + truncatedSuffix;
     }
     return text;
+  }
+
+  public static String urlEncode(String postalAddress) {
+    return require(() -> encode(postalAddress, UTF_8.toString()));
   }
 
   public static void writeStringToFile(File file, String string) {

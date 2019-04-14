@@ -192,6 +192,11 @@ final class GeoServiceC
   }
 
   @Override
+  public GeoPoint point(String address, String city, String state) {
+    return geoUtil.point(address, city, state);
+  }
+
+  @Override
   public List<GeoPoint> readKml2(File kmlFile) {
     return require(() -> doReadKml(kmlFile));
   }
@@ -200,6 +205,16 @@ final class GeoServiceC
   public void resetStats() {
     describeCount.set(0);
     describeTime.set(0);
+  }
+
+  @Override
+  public void setAzureAtlasKey(String value) {
+    geoUtil.setAzureAtlasKey(value);
+  }
+
+  @Override
+  public void setAzureAtlasUrl(String value) {
+    geoUtil.setAzureAtlasUrl(value);
   }
 
   @Override

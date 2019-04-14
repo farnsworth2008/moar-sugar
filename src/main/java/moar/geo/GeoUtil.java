@@ -1,5 +1,6 @@
 package moar.geo;
 
+import static com.mashape.unirest.http.Unirest.get;
 import static java.lang.Long.parseLong;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
@@ -12,6 +13,7 @@ import static java.lang.Math.toRadians;
 import static java.lang.String.format;
 import static java.lang.System.getenv;
 import static moar.awake.InterfaceUtil.use;
+import static moar.sugar.MoarStringUtil.urlEncode;
 import static moar.sugar.Sugar.nonNull;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
@@ -22,13 +24,15 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import com.google.common.util.concurrent.RateLimiter;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import moar.sugar.MoarException;
 import moar.sugar.MoarJson;
+import moar.sugar.PropertyAccessor;
 
 public class GeoUtil {
   /**
@@ -54,8 +58,10 @@ public class GeoUtil {
   private final AtomicLong openCageCount = new AtomicLong();
   private final AtomicLong openCageRemaining = new AtomicLong(1);
   private final AtomicReference<RateLimiter> openCageRateLimit = new AtomicReference<>(RateLimiter.create(1));
-
   private final Vector<String> openCageApiKeys;
+  private final RateLimiter azureAtlasRateLimit;
+  private String azureAtlasUrl;
+  private String azureAtlasKey;
 
   public GeoUtil() {
     openCageApiKeys = new Vector<>();
@@ -68,6 +74,10 @@ public class GeoUtil {
       }
       openCageApiKeys.add(key);
     } while (true);
+    PropertyAccessor props = new PropertyAccessor();
+    azureAtlasUrl = props.getString("azureAtlasUrl") + "/search/address/json";
+    azureAtlasKey = props.getString("azureAtlasKey");
+    azureAtlasRateLimit = RateLimiter.create(props.getDouble("azureAtlasRate", 30));
   }
 
   private void copy(JsonObject comp, Map<String, Object> map, String key) {
@@ -102,7 +112,7 @@ public class GeoUtil {
           url.append(format("&key=%s", openCageApiKeys.get(0)));
           openCageRateLimit.get().acquire();
           openCageCount.incrementAndGet();
-          response = Unirest.get(url.toString()).asString();
+          response = get(url.toString()).asString();
           status = response.getStatus();
           if (status == 401 || status == 402 || status == 403) {
             openCageApiKeys.remove(0);
@@ -181,6 +191,31 @@ public class GeoUtil {
     return false;
   }
 
+  private JsonArray fetchAtlasResult(final String postalAddress) throws UnirestException {
+    String url = azureAtlasUrl;
+    if (url == null) {
+      return null;
+    }
+    azureAtlasRateLimit.acquire();
+    url += "/search/address/json";
+    url += format("?subscription-key=%s", azureAtlasKey);
+    url += format("&api-version=%s", "1.0");
+    url += format("&query=%s", urlEncode(postalAddress));
+    HttpResponse<String> result = get(url).asString();
+    final JsonObject json = MoarJson.getMoarJson().fromJson(result.getBody());
+    final JsonArray jsonResults = json == null ? new JsonArray() : json.getAsJsonArray("results");
+    return jsonResults;
+  }
+
+  private String getAtlasAddress(String address, final String city, final String state) {
+    final int commaPos = address.indexOf(",");
+    if (commaPos != -1) {
+      address = address.substring(0, commaPos);
+    }
+    final String postalAddress = address + "\n" + city + ", " + state;
+    return postalAddress;
+  }
+
   public long getOpenCageCount() {
     return openCageCount.get();
   }
@@ -254,6 +289,38 @@ public class GeoUtil {
     float pY = p.getLon();
     float rY = r.getLon();
     return qX <= max(pX, rX) && qX >= min(pX, rX) && qY <= max(pY, rY) && qY >= min(pY, rY);
+  }
+
+  public GeoPoint point(String address, String city, String state) {
+    String postalAddress = getAtlasAddress(address, city, state);
+    JsonArray atlasResult = swallow(() -> fetchAtlasResult(postalAddress));
+    if (atlasResult == null) {
+      return null;
+    }
+    if (atlasResult.size() < 1) {
+      return null;
+    }
+    JsonObject jsonFirst = (JsonObject) atlasResult.get(0);
+    if (jsonFirst == null) {
+      return null;
+    }
+    final JsonObject jsonPosition;
+    jsonPosition = (JsonObject) jsonFirst.get("position");
+    if (jsonPosition == null) {
+      return null;
+    }
+    float lat = jsonPosition.get("lat").getAsFloat();
+    float lon = jsonPosition.get("lon").getAsFloat();
+    return new GeoPointC(lat, lon, null);
+
+  }
+
+  public void setAzureAtlasKey(String value) {
+    azureAtlasKey = value;
+  }
+
+  public void setAzureAtlasUrl(String value) {
+    azureAtlasUrl = value;
   }
 
   public void setOpenCageRateLimit(double d) {
