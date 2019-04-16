@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -33,6 +34,19 @@ public class MoarJson {
   private static ThreadLocal<MoarJson> instance = ThreadLocal.withInitial(() -> {
     return staticInstance;
   });
+
+  public static void convertKeyObject(JSONObject object, String contentKey, String... keys) {
+    for (String key : keys) {
+      if (object.has(key)) {
+        Object value = object.get(key);
+        if (value instanceof String) {
+          JSONObject contentObject = new JSONObject();
+          contentObject.put(contentKey, value);
+          object.put(key, contentObject);
+        }
+      }
+    }
+  }
 
   /**
    * @return instance for the thread
@@ -186,9 +200,9 @@ public class MoarJson {
           gson.toJson(a);
           safe[i] = a;
         } catch (RuntimeException e) {
-          Map<String, String> toStringMap = new HashMap<>();
-          toStringMap.put(a.getClass().getSimpleName() + ".toString()", gson.toJson(a.toString()));
-          safe[i] = toStringMap;
+          Map<String, String> map = new HashMap<>();
+          map.put(a.getClass().getSimpleName() + ".toString()", gson.toJson(a.toString()));
+          safe[i] = map;
         }
       }
       return gson.toJson(safe);
