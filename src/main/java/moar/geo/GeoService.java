@@ -31,14 +31,15 @@ public interface GeoService {
 
   GeoPoint point(Float lat, Float lon, Float altitude);
 
-  GeoPoint point(GeoPoint southWest);
+  GeoPoint point(GeoPoint point);
 
+  GeoPoint point(String address, String city, String state);
   List<GeoPoint> readKml2(File kmlFile);
-
   void resetStats();
+  void setAzureAtlasKey(String getenv);
+  void setAzureAtlasUrl(String getenv);
 
   void setDescribeRateLimit(double d);
 
   GeoPoint southWestPoint(GeoPoint min, GeoPoint point);
-
 }

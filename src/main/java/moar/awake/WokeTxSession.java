@@ -13,7 +13,7 @@ public class WokeTxSession
   private final ConnectionHold connectionHold;
 
   @SuppressWarnings("resource")
-  WokeTxSession(ConnectionHold connectionHold) {
+  public WokeTxSession(ConnectionHold connectionHold) {
     this.connectionHold = connectionHold;
     require(() -> {
       Connection cn = connectionHold.get();

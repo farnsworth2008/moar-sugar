@@ -4,9 +4,12 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.sql.DriverManager.getConnection;
 import static java.sql.DriverManager.registerDriver;
+import static moar.sugar.Sugar.asRuntimeException;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.retry;
 import static moar.sugar.Sugar.retryable;
+import static moar.sugar.Sugar.silently;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.Connection;
@@ -25,6 +28,8 @@ import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.sql.DataSource;
+import org.apache.commons.dbcp.BasicDataSource;
 import com.google.common.util.concurrent.RateLimiter;
 import moar.sugar.MoarException;
 import moar.sugar.MoarLogger;
@@ -56,6 +61,21 @@ public class Driver
   private static String PREFIX = "moar:";
   private static long VALID_CHECK_MILLIS = 1000 * 60;
 
+  public static DataSource createDataSource(String jdbcUrl, String username, String password)
+      throws Exception, IOException {
+    return silently(() -> {
+      BasicDataSource ds = new BasicDataSource();
+      ds.setDriverClassName(Driver.class.getName());
+      ds.setUrl(jdbcUrl);
+      ds.setUsername(username);
+      ds.setPassword(password);
+      try (Connection cn = ds.getConnection()) {
+        cn.isValid(1000);
+      }
+      return ds;
+    }).get();
+  }
+
   static PropertyAccessor getDriverProps() {
     return props;
   }
@@ -64,8 +84,8 @@ public class Driver
    * Initialization method to ensure class is loaded.
    */
   public static void init() {}
-
   private final DriverPropertyInfo[] driverProps = new DriverPropertyInfo[] {};
+
   final HashMap<String, ConnectionSpec> failFast = new HashMap<>();
 
   Timer recovery;
@@ -279,11 +299,19 @@ public class Driver
 
   private void init(ConnectionSpec cs) throws SQLException {
     String url = cs.getUrl();
-    if (!connectionSource.containsKey(url)) {
-      try (Connection cn = getRealConnection(cs)) {
-        new DriverUpdate(cs.getConfig(), cs.getUrl(), cn).init();
-      }
-      connectionSource.put(url, () -> getRealConnection(cs));
+    try {
+      silently(() -> {
+        if (!connectionSource.containsKey(url)) {
+          try (Connection cn = getRealConnection(cs)) {
+            new DriverUpdate(cs.getConfig(), cs.getUrl(), cn).init();
+          }
+          connectionSource.put(url, () -> getRealConnection(cs));
+        }
+      });
+    } catch (SQLException e) {
+      throw e;
+    } catch (Exception e) {
+      throw asRuntimeException(e);
     }
   }
 
@@ -344,7 +372,7 @@ public class Driver
         if (methodName.equals("close")) {
           if (connection.get() != null) {
             LOG.trace("close", cs.getUrl());
-            connection.get().close();
+            silently(connection.get()::close);
             connection.set(null);
           }
           return null;

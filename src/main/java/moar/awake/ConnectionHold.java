@@ -10,7 +10,7 @@ import java.sql.Connection;
  *
  * @author Mark Farnsworth
  */
-interface ConnectionHold
+public interface ConnectionHold
     extends
     AutoCloseable {
 

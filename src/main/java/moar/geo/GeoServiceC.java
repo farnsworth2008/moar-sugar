@@ -139,6 +139,7 @@ final class GeoServiceC
   public long getDescribeServiceCount() {
     return geoUtil.getOpenCageCount();
   }
+
   @Override
   public long getDescribeServiceRemaining() {
     return geoUtil.getOpenCageRemaining();
@@ -154,6 +155,7 @@ final class GeoServiceC
     GeoPoint[] pointsArray = points.toArray(new GeoPoint[0]);
     return geoUtil.isInside(pointsArray, point);
   }
+
   @Override
   public double meters(GeoPoint p1, GeoPoint p2) {
     float lat1 = p1.getLat();
@@ -190,6 +192,11 @@ final class GeoServiceC
   }
 
   @Override
+  public GeoPoint point(String address, String city, String state) {
+    return geoUtil.point(address, city, state);
+  }
+
+  @Override
   public List<GeoPoint> readKml2(File kmlFile) {
     return require(() -> doReadKml(kmlFile));
   }
@@ -198,6 +205,16 @@ final class GeoServiceC
   public void resetStats() {
     describeCount.set(0);
     describeTime.set(0);
+  }
+
+  @Override
+  public void setAzureAtlasKey(String value) {
+    geoUtil.setAzureAtlasKey(value);
+  }
+
+  @Override
+  public void setAzureAtlasUrl(String value) {
+    geoUtil.setAzureAtlasUrl(value);
   }
 
   @Override
