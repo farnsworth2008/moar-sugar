@@ -9,7 +9,6 @@ import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.retry;
 import static moar.sugar.Sugar.retryable;
 import static moar.sugar.Sugar.silently;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.Connection;
@@ -61,8 +60,7 @@ public class Driver
   private static String PREFIX = "moar:";
   private static long VALID_CHECK_MILLIS = 1000 * 60;
 
-  public static DataSource createDataSource(String jdbcUrl, String username, String password)
-      throws Exception, IOException {
+  public static DataSource createDataSource(String jdbcUrl, String username, String password) throws Exception {
     return silently(() -> {
       BasicDataSource ds = new BasicDataSource();
       ds.setDriverClassName(Driver.class.getName());

@@ -291,8 +291,7 @@ class WokePrivateProxy
 
   @Override
   public Map<String, Object> toMap() {
-    // defensive copy of map
-    return new HashMap<String, Object>(map);
+    return new HashMap<>(map);
   }
 
   @Override
