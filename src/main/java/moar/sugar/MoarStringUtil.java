@@ -2,6 +2,7 @@ package moar.sugar;
 
 import static java.lang.Math.min;
 import static java.net.URLEncoder.encode;
+import static java.nio.charset.Charset.defaultCharset;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static moar.sugar.Sugar.require;
 import static moar.sugar.Sugar.swallow;
@@ -16,7 +17,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
@@ -104,6 +104,23 @@ public class MoarStringUtil {
   }
 
   /**
+   * Simple way to read a string from a resource.
+   *
+   * @param clz
+   *   Class for accessing the resource system.
+   * @param name
+   *   Name of stream in resource system.
+   * @return String result
+   */
+  public static String readStringFromResource(Class<?> clz, String name) {
+    return require(() -> {
+      try (InputStream in = clz.getResourceAsStream(name)) {
+        return IOUtils.toString(in, defaultCharset());
+      }
+    });
+  }
+
+  /**
    * Replace targeted characters with blanks.
    *
    * @param matcher
@@ -131,7 +148,7 @@ public class MoarStringUtil {
   }
 
   public static String streamToString(InputStream is) {
-    return swallow(() -> IOUtils.toString(is, Charset.defaultCharset()));
+    return swallow(() -> IOUtils.toString(is, defaultCharset()));
   }
 
   public static List<String> toLineList(String statusOutput) {
