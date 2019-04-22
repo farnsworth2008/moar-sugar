@@ -12,9 +12,9 @@ import org.apache.commons.text.WordUtils;
 public class Mapper
     implements
     MapperWithValue,
-    MapperInit {
+    MapperForMap {
 
-  public static MapperInit defineMapper(Map<String, Object> map) {
+  public static MapperForMap defineMapper(Map<String, Object> map) {
     return new Mapper(map, null);
   }
 

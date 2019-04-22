@@ -2,7 +2,7 @@ package moar.sugar;
 
 import java.util.Map;
 
-public interface MapperInit {
+public interface MapperForMap {
   MapperWithValue copy(String key);
 
   Map<String, Object> getMap();
