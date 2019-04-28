@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -412,23 +411,6 @@ public class Sugar {
     silently(() -> {
       call.call();
       return null;
-    });
-  }
-
-  /**
-   * Get a string representation for a stack trace.
-   *
-   * @param thrown
-   * @return string of stack trace
-   */
-  public static String stackTraceAsString(Throwable thrown) {
-    return require(() -> {
-      try (StringWriter sw = new StringWriter()) {
-        try (PrintWriter pw = new PrintWriter(sw)) {
-          thrown.printStackTrace(pw);
-        }
-        return sw.toString();
-      }
     });
   }
 

@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,6 +150,24 @@ public class MoarStringUtil {
 
   public static String streamToString(InputStream is) {
     return swallow(() -> IOUtils.toString(is, defaultCharset()));
+  }
+
+  /**
+   * Get a string representation for a throwable with message and stack trace.
+   *
+   * @param thrown
+   * @return string of stack trace
+   */
+  public static String throwableToString(Throwable thrown) {
+    return require(() -> {
+      try (StringWriter sw = new StringWriter()) {
+        sw.append(thrown.getMessage() + "\n");
+        try (PrintWriter pw = new PrintWriter(sw)) {
+          thrown.printStackTrace(pw);
+        }
+        return sw.toString();
+      }
+    });
   }
 
   public static List<String> toLineList(String statusOutput) {

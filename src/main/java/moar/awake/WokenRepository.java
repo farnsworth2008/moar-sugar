@@ -9,8 +9,9 @@ import java.util.function.Consumer;
  *
  * @author Mark Farnsworth
  * @param <Row>
+ *   Row type
  */
-public interface WokenWithSession<Row> {
+public interface WokenRepository<Row> {
   Row define();
 
   Row define(Consumer<Row> row);
@@ -42,5 +43,4 @@ public interface WokenWithSession<Row> {
   Row upsert(Row row);
 
   WokenWithRow<Row> where(Consumer<Row> row);
-
 }

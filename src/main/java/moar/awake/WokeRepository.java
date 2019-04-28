@@ -41,7 +41,7 @@ import moar.sugar.RetryableException;
  */
 public class WokeRepository<Row>
     implements
-    WokenWithSession<Row>,
+    WokenRepository<Row>,
     WokenWithoutSession<Row>,
     WokenWithRow<Row> {
 
@@ -612,7 +612,7 @@ public class WokeRepository<Row>
   }
 
   @Override
-  public WokenWithSession<Row> of(DataSource ds) {
+  public WokenRepository<Row> of(DataSource ds) {
     return of(new WokeDataSourceSession(ds));
   }
 
@@ -624,7 +624,7 @@ public class WokeRepository<Row>
   }
 
   @Override
-  public WokenWithSession<Row> of(WokeSessionBase session) {
+  public WokenRepository<Row> of(WokeSessionBase session) {
     this.session = session;
     return this;
   }

@@ -27,7 +27,7 @@ public class InterfaceUtil {
   }
 
   private static <T> T findOrDefine(DataSource ds, Long id, Class<T> clz) {
-    WokenWithSession<T> repo = use(clz).of(ds);
+    WokenRepository<T> repo = use(clz).of(ds);
     T row = repo.id(id).find();
     if (row == null) {
       return repo.define();

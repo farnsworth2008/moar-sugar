@@ -54,7 +54,7 @@ public class WokeDataSourceSession
    */
   @SafeVarargs
   public final <T> void upsert(Class<T> clz, Consumer<T>... updators) {
-    WokenWithSession<T> repo = use(clz).of(ds);
+    WokenRepository<T> repo = use(clz).of(ds);
     for (Consumer<T> updator : updators) {
       repo.upsert(updator);
     }
