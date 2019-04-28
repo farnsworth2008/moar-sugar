@@ -97,8 +97,8 @@ public class StatusLine
   }
 
   public void remove() {
+    release(true);
     if (enabled()) {
-      release(true);
       if (parent != null) {
         out.flush();
         out.print(upOneLine());
@@ -118,7 +118,9 @@ public class StatusLine
       outBufferBytes.reset();
     }
     if (percentDone.get() == 0 && count.get() == 0) {
-      out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
+      if (!label.get().isEmpty()) {
+        out.println(format("%s %s", GREEN_BOLD.apply("Running:"), purpleBold(label.get())));
+      }
       out.flush();
     } else {
       String percent = format("%d", (int) (100 * percentDone.get())) + "%" + " ";
