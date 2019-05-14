@@ -63,7 +63,8 @@ public class PropertyAccessor {
   }
 
   public Integer getInteger(String name, Integer defaultValue) {
-    return Integer.valueOf(getString(name, defaultValue.toString()));
+    Integer intValue = Integer.valueOf(getString(name, defaultValue.toString()));
+    return intValue;
   }
 
   public Long getLong(String name, Integer i) {
@@ -94,6 +95,7 @@ public class PropertyAccessor {
     if (downStreamValue == null) {
       downStreamValue = defaultValue;
     }
-    return System.getProperty(key, downStreamValue);
+    String propValue = System.getProperty(key, downStreamValue);
+    return propValue;
   }
 }
