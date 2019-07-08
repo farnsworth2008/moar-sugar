@@ -9,6 +9,7 @@ import moar.sugar.SafeResult;
  * 
  * @author Mark Farnsworth
  */
+@SuppressWarnings("serial")
 public class FutureListException
     extends
     RuntimeException {

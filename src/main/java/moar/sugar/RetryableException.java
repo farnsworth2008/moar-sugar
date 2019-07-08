@@ -7,6 +7,7 @@ package moar.sugar;
  *
  * @author Mark Farnsworth
  */
+@SuppressWarnings("serial")
 public class RetryableException
     extends
     RuntimeException {

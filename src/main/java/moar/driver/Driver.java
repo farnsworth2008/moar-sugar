@@ -39,7 +39,6 @@ import moar.sugar.Sugar;
 /**
  * Driver with the ability to run scripts and recover from connection errors
  */
-@SuppressWarnings("resource")
 public class Driver
     implements
     java.sql.Driver {

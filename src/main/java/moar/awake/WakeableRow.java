@@ -9,7 +9,6 @@ import java.util.UUID;
  *
  * @author Mark Farnsworth
  */
-@SuppressWarnings("javadoc")
 public interface WakeableRow {
   interface IdColumn
       extends

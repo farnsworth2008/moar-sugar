@@ -42,7 +42,6 @@ public class MoarStringUtil {
     });
   }
 
-  @SuppressWarnings("javadoc")
   public static String asString(Object o) {
     return o == null ? null : o.toString();
   }

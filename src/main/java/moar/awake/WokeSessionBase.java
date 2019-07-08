@@ -73,7 +73,7 @@ public abstract class WokeSessionBase {
     }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked", "resource" })
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public WokeMappableResultSet iterator(String tableish, Class[] classes, Object... params) {
     boolean isSelect = tableish.startsWith("select ") || tableish.startsWith("select\n");
     if (isSelect) {

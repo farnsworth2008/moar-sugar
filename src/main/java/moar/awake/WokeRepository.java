@@ -288,7 +288,6 @@ public class WokeRepository<Row>
     }
   }
 
-  @SuppressWarnings("resource")
   private void doInsertRowWithConnection(Row row, boolean isUpsert, ConnectionHold hold) throws SQLException {
     boolean hasId = row instanceof WakeableRow.IdColumn;
     WokePrivateProxy woke = asWokeProxy(row);

@@ -270,7 +270,6 @@ public class Sugar {
    * @return result
    * @throws Exception
    */
-  @SuppressWarnings("null")
   public static <T> RetryResult<T> retry(int triesAllowed, long retryWaitMs, Callable<T> call) {
     return require(() -> {
       Exception last = null;

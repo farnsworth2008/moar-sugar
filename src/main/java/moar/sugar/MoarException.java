@@ -6,6 +6,7 @@ package moar.sugar;
  *
  * @author Mark Farnsworth
  */
+@SuppressWarnings("serial")
 public class MoarException
     extends
     RuntimeException {

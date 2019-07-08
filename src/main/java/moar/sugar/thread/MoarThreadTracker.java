@@ -62,27 +62,22 @@ public class MoarThreadTracker {
     return unmodifiableMap(buckets);
   }
 
-  @SuppressWarnings("javadoc")
   public Long getCount() {
     return count.get();
   }
 
-  @SuppressWarnings("javadoc")
   public String getDescription() {
     return description;
   }
 
-  @SuppressWarnings("javadoc")
   public Long getMax() {
     return max.get();
   }
 
-  @SuppressWarnings("javadoc")
   public Long getMin() {
     return min.get();
   }
 
-  @SuppressWarnings("javadoc")
   public Long getTotal() {
     return total.get();
   }

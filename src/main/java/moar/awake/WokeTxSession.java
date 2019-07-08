@@ -12,7 +12,6 @@ public class WokeTxSession
     AutoCloseable {
   private final ConnectionHold connectionHold;
 
-  @SuppressWarnings("resource")
   public WokeTxSession(ConnectionHold connectionHold) {
     this.connectionHold = connectionHold;
     require(() -> {

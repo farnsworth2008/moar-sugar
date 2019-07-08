@@ -7,7 +7,6 @@ import moar.sugar.PropertyAccessor;
 /**
  * @author Mark Farnsworth
  */
-@SuppressWarnings("javadoc")
 public enum Ansi {
 
   BLACK("\033[0;30m"),
